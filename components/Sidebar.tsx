@@ -29,7 +29,6 @@ export default function Sidebar() {
   };
 
   const isHome = pathname === '/home' || pathname.startsWith('/car/');
-  const isAddCar = pathname === '/add-car';
 
   return (
     <View style={styles.sidebar}>
@@ -97,15 +96,6 @@ export default function Sidebar() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.navItem, isAddCar && styles.navItemActive]}
-          onPress={() => router.push('/add-car')}
-        >
-          <Text style={styles.navIcon}>➕</Text>
-          <Text style={[styles.navLabel, isAddCar && styles.navLabelActive]}>
-            Adaugă mașină
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <View style={{ flex: 1 }} />
