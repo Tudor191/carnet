@@ -25,6 +25,7 @@ export interface User {
   photoURL?: string;
   isPremium: boolean;
   carCount: number;
+  isGuest: boolean;
 }
 
 export interface RovinetaStatus {

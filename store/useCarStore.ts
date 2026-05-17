@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Car, User } from '../types';
+import { loadPersistedSession, clearSession } from '../services/auth';
 
 const STORAGE_KEY = '@carnet_data';
-const USER_KEY = '@carnet_user';
 
 interface CarStore {
   user: User | null;
@@ -11,6 +11,7 @@ interface CarStore {
   isLoading: boolean;
 
   setUser: (user: User | null) => void;
+  logout: () => Promise<void>;
   loadCars: () => Promise<void>;
   addCar: (car: Omit<Car, 'id' | 'userId' | 'createdAt'>) => Promise<Car>;
   updateCar: (id: string, updates: Partial<Car>) => Promise<void>;
@@ -29,24 +30,25 @@ export const useCarStore = create<CarStore>((set, get) => ({
 
   setUser: (user) => {
     set({ user });
-    if (user) {
-      AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
-    } else {
-      AsyncStorage.removeItem(USER_KEY);
-    }
+  },
+
+  logout: async () => {
+    await clearSession();
+    set({ user: null });
   },
 
   loadCars: async () => {
     set({ isLoading: true });
     try {
+      // Load cars
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored) {
-        const cars: Car[] = JSON.parse(stored);
-        set({ cars });
+        set({ cars: JSON.parse(stored) });
       }
-      const storedUser = await AsyncStorage.getItem(USER_KEY);
-      if (storedUser) {
-        set({ user: JSON.parse(storedUser) });
+      // Load persisted session (only if keepLoggedIn was checked)
+      const persistedUser = await loadPersistedSession();
+      if (persistedUser) {
+        set({ user: persistedUser });
       }
     } catch {
       // ignore
