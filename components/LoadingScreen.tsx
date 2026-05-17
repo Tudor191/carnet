@@ -88,8 +88,8 @@ export default function LoadingScreen() {
   const roadOffset = (tick * 1.8) % (28 + 18); // road dash scroll speed
   const bobY = Math.sin(tick * 0.18) * 1.2;    // subtle car body bob
 
-  // Progress bar: linear 0→100% over 5000ms
-  const TOTAL_MS = 5000;
+  // Progress bar: linear 0→100% over 3000ms
+  const TOTAL_MS = 3000;
   const elapsed = Date.now() - startTime.current;
   const progress = Math.min(elapsed / TOTAL_MS, 1) * 100;
 

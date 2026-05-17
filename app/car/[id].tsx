@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   Linking,
   ActivityIndicator,
 } from 'react-native';
@@ -164,22 +163,9 @@ export default function CarDetailScreen() {
     );
   }
 
-  const handleDelete = () => {
-    Alert.alert(
-      'Șterge mașina',
-      `Ești sigur că vrei să ștergi ${car.make} ${car.model}?`,
-      [
-        { text: 'Anulează', style: 'cancel' },
-        {
-          text: 'Șterge',
-          style: 'destructive',
-          onPress: async () => {
-            await deleteCar(car.id);
-            router.replace('/home');
-          },
-        },
-      ]
-    );
+  const handleDelete = async () => {
+    await deleteCar(car.id);
+    router.replace('/home');
   };
 
   const handleSavePlate = async (plate: string) => {
@@ -316,7 +302,7 @@ const styles = StyleSheet.create({
   deleteBtn: {
     width: 40, height: 40,
     justifyContent: 'center', alignItems: 'center',
-    backgroundColor: 'rgba(239,68,68,0.15)', borderRadius: 12,
+    backgroundColor: '#FCA5A5', borderRadius: 12,
   },
   deleteIcon: { fontSize: 18 },
   scroll: { padding: 16 },

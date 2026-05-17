@@ -13,8 +13,8 @@ import { Colors } from '../constants/colors';
 import { formatPlate } from '../services/rovinieta';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = Math.min(SCREEN_WIDTH - 16, 460);
-const CARD_HEIGHT = CARD_WIDTH * 0.9;
+const CARD_WIDTH = Math.min(SCREEN_WIDTH - 32, 400);
+const CARD_HEIGHT = CARD_WIDTH * 0.76;
 
 interface Props {
   car: Car;
@@ -244,14 +244,14 @@ const styles = StyleSheet.create({
   },
   silhouetteArea: {
     alignItems: 'center',
-    marginTop: 6,
-    marginBottom: 4,
+    marginTop: 2,
+    marginBottom: 2,
   },
   chipArea: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 8,
+    marginBottom: 5,
   },
   chip: {
     width: 36, height: 28, borderRadius: 5,
@@ -270,8 +270,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: 8,
-    padding: 8,
-    marginBottom: 9,
+    padding: 6,
+    marginBottom: 6,
   },
   detail: { flex: 1, alignItems: 'center' },
   detailDivider: { width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.12)' },
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   expiryRow: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    marginBottom: 7,
+    marginBottom: 5,
   },
   expiryRowDivider: {
     width: 1,
@@ -300,8 +300,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 6,
-    paddingHorizontal: 7,
-    paddingVertical: 5,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
     gap: 5,
   },
   expiryDot: { width: 6, height: 6, borderRadius: 3 },

@@ -6,7 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import { useCarStore } from '../store/useCarStore';
 import LoadingScreen from '../components/LoadingScreen';
 
-const LOADER_DURATION = 5000; // ms to show loader on each navigation
+const LOADER_DURATION = 3000; // ms to show loader on each navigation
 
 export default function RootLayout() {
   const loadCars = useCarStore(s => s.loadCars);
