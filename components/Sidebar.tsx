@@ -102,7 +102,7 @@ export default function Sidebar() {
 
       {/* ── Premium card (bottom) ── */}
       {!user?.isPremium && (
-        <TouchableOpacity style={styles.premiumCard} activeOpacity={0.85}>
+        <TouchableOpacity style={styles.premiumCard} activeOpacity={0.85} onPress={() => router.push('/premium')}>
           <LinearGradient
             colors={['#78350F', '#B45309', '#D97706']}
             start={{ x: 0, y: 0 }}

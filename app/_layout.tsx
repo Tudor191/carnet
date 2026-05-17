@@ -39,6 +39,7 @@ export default function RootLayout() {
               <Stack.Screen name="register" />
               <Stack.Screen name="home" />
               <Stack.Screen name="add-car" />
+              <Stack.Screen name="premium" />
               <Stack.Screen name="car/[id]" />
             </Stack>
           </View>
