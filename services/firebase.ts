@@ -6,49 +6,23 @@ import {
   OAuthProvider,
   signInWithPopup,
   signOut,
-  onAuthStateChanged,
-  User as FirebaseUser,
 } from 'firebase/auth';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CONFIGURARE FIREBASE
-//
-// Pași pentru a obține aceste date (GRATUIT, ~5 minute):
-//
-// 1. Mergi la https://console.firebase.google.com/
-// 2. Apasă "Adaugă proiect" → dă-i un nume (ex: carnet-app) → Continuă
-// 3. În meniu stânga → "Build" → "Authentication" → "Începeți"
-// 4. Tab "Sign-in method" → activează: Google, Facebook, Apple
-// 5. În setări proiect (iconiță roată) → "Aplicațiile tale" → "</>" (Web)
-// 6. Înregistrează aplicația → copiază obiectul firebaseConfig de mai jos
-// 7. Înlocuiește valorile placeholder cu cele reale
-//
-// IMPORTANT: După ce ai config-ul, dacă folosești Firebase pe web (localhost),
-// adaugă localhost la "Domenii autorizate" în Firebase Console →
-// Authentication → Settings → Authorized domains
-// ─────────────────────────────────────────────────────────────────────────────
+import type { User as FirebaseUser } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_AUTH_DOMAIN',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_STORAGE_BUCKET',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID',
+  apiKey: 'AIzaSyAH9MCFBi6dHwRU1HiO-_VIKs-Lk0ukEZ0',
+  authDomain: 'carnet-a6089.firebaseapp.com',
+  projectId: 'carnet-a6089',
+  storageBucket: 'carnet-a6089.firebasestorage.app',
+  messagingSenderId: '646251926967',
+  appId: '1:646251926967:web:08f122e4279a498ff74432',
+  measurementId: 'G-DTJZX55YM5',
 };
 
-export const FIREBASE_CONFIGURED =
-  firebaseConfig.apiKey !== 'YOUR_API_KEY' &&
-  firebaseConfig.projectId !== 'YOUR_PROJECT_ID';
+export const FIREBASE_CONFIGURED = true;
 
-let auth: ReturnType<typeof getAuth> | null = null;
-
-if (FIREBASE_CONFIGURED) {
-  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  auth = getAuth(app);
-}
-
-export { auth };
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+export const auth = getAuth(app);
 
 // ─── Provider sign-in helpers ─────────────────────────────────────────────────
 
