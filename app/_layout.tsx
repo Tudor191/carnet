@@ -5,8 +5,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet, View } from 'react-native';
 import { useCarStore } from '../store/useCarStore';
 import LoadingScreen from '../components/LoadingScreen';
+import Sidebar from '../components/Sidebar';
 
-const LOADER_DURATION = 3000; // ms to show loader on each navigation
+const LOADER_DURATION = 2000;
 
 export default function RootLayout() {
   const loadCars = useCarStore(s => s.loadCars);
@@ -16,10 +17,7 @@ export default function RootLayout() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirst = useRef(true);
 
-  // Show loader on every route change
   useEffect(() => {
-    // Skip showing loader again for the very first render
-    // (initial load is already handled by the timer below)
     if (!isFirst.current) {
       setShowLoader(true);
     }
@@ -41,17 +39,25 @@ export default function RootLayout() {
     <View style={styles.root}>
       <SafeAreaProvider>
         <StatusBar style="light" />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="login" />
-          <Stack.Screen name="register" />
-          <Stack.Screen name="home" />
-          <Stack.Screen name="add-car" />
-          <Stack.Screen name="car/[id]" />
-        </Stack>
+        <View style={styles.appRow}>
+          {/* Left sidebar — renders null on auth pages / narrow screens */}
+          <Sidebar />
+
+          {/* Main content */}
+          <View style={styles.content}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="login" />
+              <Stack.Screen name="register" />
+              <Stack.Screen name="home" />
+              <Stack.Screen name="add-car" />
+              <Stack.Screen name="car/[id]" />
+            </Stack>
+          </View>
+        </View>
       </SafeAreaProvider>
 
-      {/* Loading overlay — rendered on top of everything */}
+      {/* Loading overlay — on top of everything */}
       {showLoader && (
         <View style={StyleSheet.absoluteFill}>
           <LoadingScreen />
@@ -63,4 +69,6 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  appRow: { flex: 1, flexDirection: 'row' },
+  content: { flex: 1 },
 });

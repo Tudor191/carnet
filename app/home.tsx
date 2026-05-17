@@ -255,7 +255,6 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {!user?.isPremium && <PremiumBanner />}
           <View style={{ height: 100 }} />
         </ScrollView>
 
