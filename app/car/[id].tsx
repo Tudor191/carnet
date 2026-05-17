@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useCarStore } from '../../store/useCarStore';
 import CarCard from '../../components/CarCard';
 import { Colors } from '../../constants/colors';
-import { checkRovinieta, validateRomanianPlate, formatPlate } from '../../services/rovinieta';
+import { validateRomanianPlate, formatPlate } from '../../services/rovinieta';
+import {
+  ErovinetaCreds,
+  checkPlateVignette,
+  loadCredentials,
+  saveCredentials,
+  clearCredentials,
+} from '../../services/erovinieta';
 
 function DateField({ label, value, onSave }: { label: string; value?: string; onSave: (v: string) => void }) {
   const [editing, setEditing] = useState(false);
@@ -192,10 +199,85 @@ function PlateField({
   );
 }
 
+type RovinetaStatus = 'no_plate' | 'checking' | 'active' | 'expiring_soon' | 'expired' | 'unknown';
+
+function getRovinetaStatus(plate: string | undefined, expiry: string | undefined, checking: boolean): RovinetaStatus {
+  if (!plate) return 'no_plate';
+  if (checking) return 'checking';
+  if (!expiry) return 'unknown';
+  const [d, m, y] = expiry.split('.').map(Number);
+  const exp = new Date(y, m - 1, d);
+  const now = new Date();
+  if (exp < now) return 'expired';
+  if (exp.getTime() - now.getTime() < 30 * 24 * 60 * 60 * 1000) return 'expiring_soon';
+  return 'active';
+}
+
+const ROVINIETA_LABELS: Record<RovinetaStatus, { label: string; color: string; icon: string }> = {
+  no_plate:      { label: 'Adaugă plăcuța pentru verificare', color: Colors.gray400, icon: '—' },
+  checking:      { label: 'Se verifică...', color: Colors.accent, icon: '⟳' },
+  active:        { label: 'ROVinieta ACTIVĂ', color: Colors.success, icon: '✓' },
+  expiring_soon: { label: 'Expiră în curând', color: Colors.warning, icon: '⚠' },
+  expired:       { label: 'ROVinieta EXPIRATĂ', color: Colors.danger, icon: '✗' },
+  unknown:       { label: 'Status necunoscut — verificați manual', color: Colors.gray400, icon: '?' },
+};
+
 export default function CarDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { cars, updateCar, deleteCar } = useCarStore();
   const car = cars.find(c => c.id === id);
+
+  const [rovinetaChecking, setRovinetaChecking] = useState(false);
+  const [creds, setCreds] = useState<ErovinetaCreds | null>(null);
+  const [showCredsForm, setShowCredsForm] = useState(false);
+  const [credsUser, setCredsUser] = useState('');
+  const [credsPass, setCredsPass] = useState('');
+  const [credsError, setCredsError] = useState('');
+  const [credsSaving, setCredsSaving] = useState(false);
+
+  useEffect(() => {
+    loadCredentials().then(setCreds);
+  }, []);
+
+  const handleSaveCreds = async () => {
+    if (!credsUser.trim() || !credsPass.trim()) {
+      setCredsError('Completează ambele câmpuri.');
+      return;
+    }
+    setCredsSaving(true);
+    setCredsError('');
+    const newCreds = { username: credsUser.trim(), password: credsPass.trim() };
+    await saveCredentials(newCreds);
+    setCreds(newCreds);
+    setShowCredsForm(false);
+    setCredsSaving(false);
+    // auto-check with new credentials if plate is set
+    if (car?.registrationNumber) {
+      triggerCheck(newCreds, car.registrationNumber);
+    }
+  };
+
+  const handleClearCreds = async () => {
+    await clearCredentials();
+    setCreds(null);
+    setCredsUser('');
+    setCredsPass('');
+  };
+
+  const triggerCheck = async (useCreds: ErovinetaCreds, plate: string) => {
+    if (!validateRomanianPlate(plate)) return;
+    setRovinetaChecking(true);
+    try {
+      const result = await checkPlateVignette(useCreds, plate);
+      if (result?.expiryDate) {
+        await updateCar(id!, { rovinetaExpiry: result.expiryDate });
+      }
+    } catch {
+      // silent — user can set manually
+    } finally {
+      setRovinetaChecking(false);
+    }
+  };
 
   if (!car) {
     return (
@@ -210,6 +292,9 @@ export default function CarDetailScreen() {
     );
   }
 
+  const rovinetaStatus = getRovinetaStatus(car.registrationNumber, car.rovinetaExpiry, rovinetaChecking);
+  const rovinetaInfo = ROVINIETA_LABELS[rovinetaStatus];
+
   const handleDelete = async () => {
     await deleteCar(car.id);
     router.replace('/home');
@@ -217,15 +302,8 @@ export default function CarDetailScreen() {
 
   const handleSavePlate = async (plate: string) => {
     await updateCar(car.id, { registrationNumber: plate || undefined });
-    if (plate && validateRomanianPlate(plate)) {
-      try {
-        const result = await checkRovinieta(plate);
-        if (result.valid && result.expiryDate) {
-          await updateCar(car.id, { rovinetaExpiry: result.expiryDate });
-        }
-      } catch {
-        // silent — user can set manually
-      }
+    if (plate && creds) {
+      triggerCheck(creds, plate);
     }
   };
 
@@ -293,26 +371,107 @@ export default function CarDetailScreen() {
           {/* Plate & ROVinieta */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Plăcuță & ROViniete</Text>
-            <View style={styles.expiryContainer}>
-              <PlateField
-                value={car.registrationNumber}
-                onSave={handleSavePlate}
-              />
-              <View style={styles.expiryDivider} />
-              <DateField
-                label="ROVinieta — dată expirare"
-                value={car.rovinetaExpiry}
-                onSave={v => updateCar(car.id, { rovinetaExpiry: v || undefined })}
-              />
+
+            <PlateField value={car.registrationNumber} onSave={handleSavePlate} />
+
+            {/* ROVinieta status badge */}
+            {car.registrationNumber && (
+              <View style={[styles.rovinetaBadge, { borderColor: rovinetaInfo.color + '40', backgroundColor: rovinetaInfo.color + '12' }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  {rovinetaStatus === 'checking'
+                    ? <ActivityIndicator size="small" color={rovinetaInfo.color} />
+                    : <Text style={{ fontSize: 18, color: rovinetaInfo.color, fontWeight: '800' }}>{rovinetaInfo.icon}</Text>
+                  }
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.rovinetaBadgeLabel, { color: rovinetaInfo.color }]}>{rovinetaInfo.label}</Text>
+                    {car.rovinetaExpiry && rovinetaStatus !== 'expired' && (
+                      <Text style={styles.rovinetaBadgeSub}>Valabil până la {car.rovinetaExpiry}</Text>
+                    )}
+                    {car.rovinetaExpiry && rovinetaStatus === 'expired' && (
+                      <Text style={[styles.rovinetaBadgeSub, { color: Colors.danger }]}>A expirat la {car.rovinetaExpiry}</Text>
+                    )}
+                  </View>
+                  {creds && car.registrationNumber && !rovinetaChecking && (
+                    <TouchableOpacity
+                      onPress={() => triggerCheck(creds, car.registrationNumber!)}
+                      style={styles.reCheckBtn}
+                    >
+                      <Text style={styles.reCheckBtnText}>↻ Verifică</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {/* erovinieta.ro credentials */}
+            <View style={styles.credsBox}>
+              {!creds && !showCredsForm && (
+                <TouchableOpacity onPress={() => setShowCredsForm(true)} style={styles.credsConnectBtn}>
+                  <Text style={styles.credsConnectText}>🔐  Conectează erovinieta.ro pentru verificare automată</Text>
+                </TouchableOpacity>
+              )}
+
+              {showCredsForm && (
+                <View>
+                  <Text style={styles.credsTitle}>Cont erovinieta.ro</Text>
+                  <TextInput
+                    style={styles.credsInput}
+                    value={credsUser}
+                    onChangeText={setCredsUser}
+                    placeholder="Email / utilizator"
+                    placeholderTextColor={Colors.gray400}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                  />
+                  <TextInput
+                    style={[styles.credsInput, { marginTop: 8 }]}
+                    value={credsPass}
+                    onChangeText={setCredsPass}
+                    placeholder="Parolă"
+                    placeholderTextColor={Colors.gray400}
+                    secureTextEntry
+                  />
+                  {credsError ? <Text style={styles.credsError}>{credsError}</Text> : null}
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+                    <TouchableOpacity
+                      onPress={handleSaveCreds}
+                      style={[styles.credsSaveBtn, credsSaving && { opacity: 0.6 }]}
+                      disabled={credsSaving}
+                    >
+                      {credsSaving
+                        ? <ActivityIndicator size="small" color={Colors.white} />
+                        : <Text style={styles.credsSaveBtnText}>Salvează & verifică</Text>
+                      }
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setShowCredsForm(false)} style={styles.credsCancelBtn}>
+                      <Text style={styles.credsCancelBtnText}>Anulează</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
+              {creds && !showCredsForm && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={styles.credsConnectedText}>✓ Conectat: {creds.username}</Text>
+                  <TouchableOpacity onPress={handleClearCreds}>
+                    <Text style={styles.credsDisconnectText}>Deconectează</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
 
-            <TouchableOpacity style={styles.rovinetaLink} onPress={openRovinieta}>
+            <View style={styles.expiryDivider} />
+
+            <DateField
+              label="Dată expirare ROVinieta (manual)"
+              value={car.rovinetaExpiry}
+              onSave={v => updateCar(car.id, { rovinetaExpiry: v || undefined })}
+            />
+
+            <TouchableOpacity style={[styles.rovinetaLink, { marginTop: 14 }]} onPress={openRovinieta}>
               <Text style={styles.rovinetaLinkText}>🔍  Verifică pe roviniete.ro</Text>
             </TouchableOpacity>
-
-            <Text style={styles.rovinetaHint}>
-              Dacă verificarea automată nu funcționează, introduceți data manual sau vizitați site-ul oficial.
-            </Text>
           </View>
 
           {/* Oil change / service history */}
@@ -418,12 +577,106 @@ const styles = StyleSheet.create({
     borderColor: Colors.accent + '30',
   },
   rovinetaLinkText: { color: Colors.accent, fontSize: 13, fontWeight: '700' },
-  rovinetaHint: {
-    fontSize: 11,
-    color: Colors.gray400,
+  rovinetaBadge: {
+    borderWidth: 1.5,
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  rovinetaBadgeLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  rovinetaBadgeSub: {
+    fontSize: 12,
+    color: Colors.gray500,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  reCheckBtn: {
+    backgroundColor: Colors.gray100,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  reCheckBtnText: {
+    fontSize: 12,
+    color: Colors.accent,
+    fontWeight: '700',
+  },
+  credsBox: {
     marginTop: 10,
-    lineHeight: 16,
-    fontStyle: 'italic',
+    marginBottom: 2,
+  },
+  credsConnectBtn: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: Colors.accent + '30',
+  },
+  credsConnectText: {
+    fontSize: 13,
+    color: Colors.accent,
+    fontWeight: '600',
+  },
+  credsTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.primary,
+    marginBottom: 8,
+  },
+  credsInput: {
+    borderWidth: 1.5,
+    borderColor: Colors.accent,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: Colors.primary,
+    backgroundColor: Colors.gray100,
+  },
+  credsError: {
+    fontSize: 12,
+    color: Colors.danger,
+    marginTop: 6,
+    fontWeight: '500',
+  },
+  credsSaveBtn: {
+    flex: 1,
+    backgroundColor: Colors.accent,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  credsSaveBtnText: {
+    color: Colors.white,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  credsCancelBtn: {
+    flex: 1,
+    backgroundColor: Colors.gray100,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  credsCancelBtnText: {
+    color: Colors.gray500,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  credsConnectedText: {
+    fontSize: 13,
+    color: Colors.success,
+    fontWeight: '600',
+  },
+  credsDisconnectText: {
+    fontSize: 12,
+    color: Colors.danger,
+    fontWeight: '600',
   },
 });
 
