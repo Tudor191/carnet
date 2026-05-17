@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { G, Rect, Circle, Path, Line } from 'react-native-svg';
+import Svg, { G, Rect, Circle, Path, Line, Defs, ClipPath } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/colors';
 
@@ -166,14 +166,22 @@ export default function LoadingScreen() {
         <Rect x={NB.x + 14} y={42} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
         <Rect x={NB.x + 14} y={49} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
 
-        {/* ── Road surface (clipped to notebook) ── */}
-        <Rect
-          x={NB.x + 1} y={WY + WR}
-          width={NB.w - 2} height={18}
-          fill="#1E293B" opacity={0.9}
-        />
-        {/* Road dashes (animated, clipped inside notebook bounds) */}
-        <RoadDashes offset={roadOffset} y={WY + WR + 6} viewWidth={VW} />
+        {/* ── Clip path: road stays inside notebook ── */}
+        <Defs>
+          <ClipPath id="nbRoad">
+            <Rect x={NB.x + 1} y={WY + WR - 1} width={NB.w - 2} height={20} />
+          </ClipPath>
+        </Defs>
+
+        {/* ── Road surface + dashes clipped to notebook width ── */}
+        <G clipPath="url(#nbRoad)">
+          <Rect
+            x={NB.x + 1} y={WY + WR}
+            width={NB.w - 2} height={18}
+            fill="#1E293B" opacity={0.9}
+          />
+          <RoadDashes offset={roadOffset} y={WY + WR + 6} viewWidth={VW} />
+        </G>
 
         {/* ── Notebook lines — below road ── */}
         <Rect x={NB.x + 14} y={130} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
