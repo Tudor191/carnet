@@ -107,7 +107,7 @@ export default function LoginScreen() {
       setError('Email sau parolă incorectă. Verificați datele și încercați din nou.');
       return;
     }
-    setUser(result.user);
+    await setUser(result.user);
     router.replace('/home');
   };
 
@@ -124,7 +124,7 @@ export default function LoginScreen() {
       else if (provider === 'Facebook') fbUser = await signInWithFacebook();
       else fbUser = await signInWithApple();
 
-      setUser(firebaseUserToAppUser(fbUser));
+      await setUser(firebaseUserToAppUser(fbUser));
       router.replace('/home');
     } catch (e: any) {
       const code = e?.code || '';
@@ -144,8 +144,8 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGuest = () => {
-    setUser({
+  const handleGuest = async () => {
+    await setUser({
       id: `guest_${Date.now()}`,
       email: 'demo@guest.com',
       displayName: 'Utilizator Demo',
