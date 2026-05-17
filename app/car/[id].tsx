@@ -262,13 +262,6 @@ export default function CarDetailScreen() {
                 { label: 'Marcă', value: car.make },
                 { label: 'Model', value: car.model },
                 { label: 'An fabricație', value: String(car.year) },
-                { label: 'Culoare', value: car.color },
-                { label: 'Tip motor', value: car.engineType },
-                { label: 'Cilindree', value: car.engineDisplacement },
-                { label: 'Putere', value: car.horsepower > 0 ? `${car.horsepower} CP` : 'N/A' },
-                { label: 'Combustibil', value: car.fuelType },
-                { label: 'Transmisie', value: car.transmission },
-                { label: 'Caroserie', value: car.bodyType },
                 { label: 'Număr șasiu', value: car.vin },
               ].map((item, i) => (
                 <View key={i} style={styles.detailRow}>
