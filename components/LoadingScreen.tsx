@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Svg, { G, Rect, Circle, Path, Line } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -65,11 +65,13 @@ function RoadDashes({ offset, y, viewWidth }: { offset: number; y: number; viewW
 export default function LoadingScreen() {
   const [tick, setTick] = useState(0);
   const [dots, setDots] = useState('');
+  const startTime = useRef(Date.now());
 
   useEffect(() => {
+    // Reset start time every time the component mounts
+    startTime.current = Date.now();
     // Animation loop ~60fps
-    let id: ReturnType<typeof setInterval>;
-    id = setInterval(() => setTick(t => t + 1), 16);
+    const id = setInterval(() => setTick(t => t + 1), 16);
     return () => clearInterval(id);
   }, []);
 
@@ -85,6 +87,11 @@ export default function LoadingScreen() {
   const wheelDeg = (tick * 4) % 360;           // wheel rotation speed
   const roadOffset = (tick * 1.8) % (28 + 18); // road dash scroll speed
   const bobY = Math.sin(tick * 0.18) * 1.2;    // subtle car body bob
+
+  // Progress bar: linear 0→100% over 5000ms
+  const TOTAL_MS = 5000;
+  const elapsed = Date.now() - startTime.current;
+  const progress = Math.min(elapsed / TOTAL_MS, 1) * 100;
 
   // ── SVG coordinate constants ─────────────────────────────────────────────
   const VW = 200;  // viewBox width
@@ -233,10 +240,7 @@ export default function LoadingScreen() {
       {/* Loading bar */}
       <View style={styles.loadingBarTrack}>
         <View
-          style={[
-            styles.loadingBarFill,
-            { width: `${30 + (Math.sin(tick * 0.04) * 0.5 + 0.5) * 60}%` },
-          ]}
+          style={[styles.loadingBarFill, { width: `${progress}%` }]}
         />
       </View>
     </LinearGradient>
