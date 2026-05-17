@@ -113,8 +113,15 @@ export default function LoginScreen() {
       setUser(firebaseUserToAppUser(fbUser));
       router.replace('/home');
     } catch (e: any) {
-      if (e?.code === 'auth/popup-closed-by-user' || e?.code === 'auth/cancelled-popup-request') {
-        // user closed popup — no error needed
+      const code = e?.code || '';
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        // utilizatorul a închis popup-ul — fără eroare
+      } else if (code === 'auth/operation-not-allowed') {
+        setError(`Autentificarea cu ${provider} nu este activată încă. Activează-o în Firebase Console → Authentication → Sign-in method.`);
+      } else if (code === 'auth/popup-blocked') {
+        setError('Popup-ul a fost blocat de browser. Permite popup-uri pentru localhost și încearcă din nou.');
+      } else if (code === 'auth/network-request-failed') {
+        setError('Eroare de conexiune. Verifică internetul și încearcă din nou.');
       } else {
         setError(`Eroare ${provider}: ${e?.message || 'Încearcă din nou.'}`);
       }
