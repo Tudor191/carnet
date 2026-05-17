@@ -13,6 +13,7 @@ export interface Car {
   transmission: string;
   bodyType: string;
   registrationNumber?: string;
+  rovinetaExpiry?: string;
   insuranceExpiry?: string;
   itpExpiry?: string;
   createdAt: number;

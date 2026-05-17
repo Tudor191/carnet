@@ -7,14 +7,16 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCarStore } from '../../store/useCarStore';
 import CarCard from '../../components/CarCard';
-import RovinetaChecker from '../../components/RovinetaChecker';
 import { Colors } from '../../constants/colors';
+import { checkRovinieta, validateRomanianPlate, formatPlate } from '../../services/rovinieta';
 
 function DateField({ label, value, onSave }: { label: string; value?: string; onSave: (v: string) => void }) {
   const [editing, setEditing] = useState(false);
@@ -39,11 +41,7 @@ function DateField({ label, value, onSave }: { label: string; value?: string; on
   };
 
   const statusColor = value
-    ? isExpired(value)
-      ? Colors.danger
-      : isExpiringSoon(value)
-      ? Colors.warning
-      : Colors.success
+    ? isExpired(value) ? Colors.danger : isExpiringSoon(value) ? Colors.warning : Colors.success
     : Colors.gray400;
 
   return (
@@ -52,12 +50,8 @@ function DateField({ label, value, onSave }: { label: string; value?: string; on
         <Text style={detailStyles.dateLabel}>{label}</Text>
         <TouchableOpacity
           onPress={() => {
-            if (editing) {
-              onSave(text);
-              setEditing(false);
-            } else {
-              setEditing(true);
-            }
+            if (editing) { onSave(text); setEditing(false); }
+            else setEditing(true);
           }}
           style={detailStyles.editBtn}
         >
@@ -89,6 +83,64 @@ function DateField({ label, value, onSave }: { label: string; value?: string; on
       )}
       {value && isExpired(value) && (
         <Text style={detailStyles.expiryError}>⛔ Expirat! Reînnoiește cât mai curând.</Text>
+      )}
+    </View>
+  );
+}
+
+function PlateField({
+  value,
+  onSave,
+}: {
+  value?: string;
+  onSave: (plate: string) => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(value || '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setEditing(false);
+    await onSave(text.trim().toUpperCase());
+    setSaving(false);
+  };
+
+  return (
+    <View style={detailStyles.dateField}>
+      <View style={detailStyles.dateFieldHeader}>
+        <Text style={detailStyles.dateLabel}>Număr de înmatriculare</Text>
+        <TouchableOpacity
+          onPress={() => editing ? handleSave() : setEditing(true)}
+          style={detailStyles.editBtn}
+          disabled={saving}
+        >
+          {saving
+            ? <ActivityIndicator size="small" color={Colors.accent} />
+            : <Text style={detailStyles.editBtnText}>{editing ? 'Salvează' : '✏️ Editează'}</Text>
+          }
+        </TouchableOpacity>
+      </View>
+      {editing ? (
+        <TextInput
+          style={detailStyles.dateInput}
+          value={text}
+          onChangeText={t => setText(t.toUpperCase().replace(/[^A-Z0-9\-]/g, ''))}
+          placeholder="Ex: B-12-ABC sau CJ-12-XYZ"
+          placeholderTextColor={Colors.gray400}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          maxLength={10}
+          autoFocus
+          onSubmitEditing={handleSave}
+        />
+      ) : (
+        <View style={detailStyles.dateValue}>
+          <View style={[detailStyles.statusDot, { backgroundColor: value ? Colors.accent : Colors.gray400 }]} />
+          <Text style={[detailStyles.dateText, { color: value ? Colors.primary : Colors.gray400 }]}>
+            {value ? formatPlate(value) : 'Necompletat — apasă Editează'}
+          </Text>
+        </View>
       )}
     </View>
   );
@@ -130,6 +182,25 @@ export default function CarDetailScreen() {
     );
   };
 
+  const handleSavePlate = async (plate: string) => {
+    await updateCar(car.id, { registrationNumber: plate || undefined });
+    if (plate && validateRomanianPlate(plate)) {
+      try {
+        const result = await checkRovinieta(plate);
+        if (result.valid && result.expiryDate) {
+          await updateCar(car.id, { rovinetaExpiry: result.expiryDate });
+        }
+      } catch {
+        // silent — user can set manually
+      }
+    }
+  };
+
+  const openRovinieta = () => {
+    const norm = (car.registrationNumber || '').replace(/[\s\-\.]/g, '').toUpperCase();
+    Linking.openURL(`https://www.roviniete.ro/ro/verificare-rovinieta?plate=${encodeURIComponent(norm)}`);
+  };
+
   return (
     <LinearGradient colors={[Colors.primary, '#0D1F3C']} style={styles.gradient}>
       <SafeAreaView style={styles.safe} edges={['top']}>
@@ -150,7 +221,7 @@ export default function CarDetailScreen() {
             <CarCard car={car} />
           </View>
 
-          {/* Full details */}
+          {/* Technical details */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Date tehnice</Text>
             <View style={styles.detailsGrid}>
@@ -175,33 +246,47 @@ export default function CarDetailScreen() {
             </View>
           </View>
 
-          {/* Expiry dates section */}
+          {/* Documents & expiry */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Documente & Termene</Text>
             <View style={styles.expiryContainer}>
               <DateField
                 label="RCA / Asigurare"
                 value={car.insuranceExpiry}
-                onSave={v => updateCar(car.id, { insuranceExpiry: v })}
+                onSave={v => updateCar(car.id, { insuranceExpiry: v || undefined })}
               />
               <View style={styles.expiryDivider} />
               <DateField
                 label="ITP (Inspecție Tehnică Periodică)"
                 value={car.itpExpiry}
-                onSave={v => updateCar(car.id, { itpExpiry: v })}
+                onSave={v => updateCar(car.id, { itpExpiry: v || undefined })}
               />
             </View>
           </View>
 
-          {/* ROVinieta section */}
+          {/* Plate & ROVinieta */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Verificare ROViniete</Text>
-            <RovinetaChecker initialPlate={car.registrationNumber || ''} />
-            {!car.registrationNumber && (
-              <Text style={styles.plateHint}>
-                Introduceți numărul de înmatriculare pentru a verifica rovinięta.
-              </Text>
-            )}
+            <Text style={styles.sectionTitle}>Plăcuță & ROViniete</Text>
+            <View style={styles.expiryContainer}>
+              <PlateField
+                value={car.registrationNumber}
+                onSave={handleSavePlate}
+              />
+              <View style={styles.expiryDivider} />
+              <DateField
+                label="ROVinieta — dată expirare"
+                value={car.rovinetaExpiry}
+                onSave={v => updateCar(car.id, { rovinetaExpiry: v || undefined })}
+              />
+            </View>
+
+            <TouchableOpacity style={styles.rovinetaLink} onPress={openRovinieta}>
+              <Text style={styles.rovinetaLinkText}>🔍  Verifică pe roviniete.ro</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.rovinetaHint}>
+              Dacă verificarea automată nu funcționează, introduceți data manual sau vizitați site-ul oficial.
+            </Text>
           </View>
 
           <View style={{ height: 40 }} />
@@ -222,22 +307,16 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 12,
+    width: 40, height: 40,
+    justifyContent: 'center', alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12,
   },
   backIcon: { color: Colors.white, fontSize: 20, fontWeight: '600' },
   headerTitle: { color: Colors.white, fontSize: 18, fontWeight: '700' },
   deleteBtn: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(239,68,68,0.15)',
-    borderRadius: 12,
+    width: 40, height: 40,
+    justifyContent: 'center', alignItems: 'center',
+    backgroundColor: 'rgba(239,68,68,0.15)', borderRadius: 12,
   },
   deleteIcon: { fontSize: 18 },
   scroll: { padding: 16 },
@@ -253,12 +332,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: Colors.primary,
-    marginBottom: 14,
-  },
+  sectionTitle: { fontSize: 17, fontWeight: '800', color: Colors.primary, marginBottom: 14 },
   detailsGrid: { gap: 0 },
   detailRow: {
     flexDirection: 'row',
@@ -272,11 +346,22 @@ const styles = StyleSheet.create({
   detailValue: { fontSize: 13, fontWeight: '600', color: Colors.primary, flex: 1, textAlign: 'right' },
   expiryContainer: { gap: 0 },
   expiryDivider: { height: 1, backgroundColor: Colors.gray100, marginVertical: 8 },
-  plateHint: {
-    fontSize: 12,
+  rovinetaLink: {
+    marginTop: 14,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: Colors.accent + '30',
+  },
+  rovinetaLinkText: { color: Colors.accent, fontSize: 13, fontWeight: '700' },
+  rovinetaHint: {
+    fontSize: 11,
     color: Colors.gray400,
-    marginTop: 8,
-    textAlign: 'center',
+    marginTop: 10,
+    lineHeight: 16,
     fontStyle: 'italic',
   },
 });
@@ -295,6 +380,8 @@ const detailStyles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
+    minWidth: 80,
+    alignItems: 'center',
   },
   editBtnText: { fontSize: 12, color: Colors.accent, fontWeight: '600' },
   dateInput: {
@@ -311,16 +398,6 @@ const detailStyles = StyleSheet.create({
   dateValue: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
   dateText: { fontSize: 15, fontWeight: '600' },
-  expiryWarning: {
-    fontSize: 12,
-    color: Colors.warning,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  expiryError: {
-    fontSize: 12,
-    color: Colors.danger,
-    marginTop: 4,
-    fontWeight: '500',
-  },
+  expiryWarning: { fontSize: 12, color: Colors.warning, marginTop: 4, fontWeight: '500' },
+  expiryError: { fontSize: 12, color: Colors.danger, marginTop: 4, fontWeight: '500' },
 });

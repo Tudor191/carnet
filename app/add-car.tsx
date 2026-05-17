@@ -79,6 +79,7 @@ export default function AddCarScreen() {
 
   // Editable fields
   const [color, setColor] = useState('');
+  const [registrationNumber, setRegistrationNumber] = useState('');
   const [insuranceExpiry, setInsuranceExpiry] = useState('');
   const [itpExpiry, setItpExpiry] = useState('');
 
@@ -127,6 +128,7 @@ export default function AddCarScreen() {
         fuelType: lookupResult.fuelType,
         transmission: lookupResult.transmission,
         bodyType: lookupResult.bodyType,
+        registrationNumber: registrationNumber.trim() || undefined,
         insuranceExpiry: insuranceExpiry || undefined,
         itpExpiry: itpExpiry || undefined,
       });
@@ -243,6 +245,12 @@ export default function AddCarScreen() {
                     onChangeText={setColor}
                     placeholder="Ex: Negru, Alb, Argintiu..."
                     hint="Culoarea nu poate fi detectată automat"
+                  />
+                  <Field
+                    label="Număr de înmatriculare (opțional)"
+                    value={registrationNumber}
+                    onChangeText={t => setRegistrationNumber(t.toUpperCase().replace(/[^A-Z0-9\-]/g, ''))}
+                    placeholder="Ex: B-12-ABC sau CJ-12-XYZ"
                   />
                   <DateField
                     label="Expirare RCA / Asigurare"
