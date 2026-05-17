@@ -6,9 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Image,
   Dimensions,
   RefreshControl,
+  Modal,
+  Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -16,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useCarStore } from '../store/useCarStore';
 import CarCard from '../components/CarCard';
 import { Colors } from '../constants/colors';
+import { User } from '../types';
 
 const { width: W } = Dimensions.get('window');
 
@@ -51,9 +54,101 @@ function PremiumBanner() {
   );
 }
 
+function ProfileModal({
+  visible,
+  onClose,
+  user,
+  onLogin,
+  onLogout,
+  loginLoading,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  user: User | null;
+  onLogin: (provider: string) => void;
+  onLogout: () => void;
+  loginLoading: string | null;
+}) {
+  const isGuest = user?.id?.startsWith('user_') && user?.email?.includes('Guest');
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={modalStyles.backdrop} onPress={onClose}>
+        <Pressable style={modalStyles.sheet} onPress={e => e.stopPropagation()}>
+          {/* User info */}
+          <View style={modalStyles.userInfo}>
+            <View style={modalStyles.avatarLarge}>
+              <Text style={modalStyles.avatarLargeText}>
+                {(user?.displayName || 'U')[0].toUpperCase()}
+              </Text>
+            </View>
+            <View style={modalStyles.userDetails}>
+              <Text style={modalStyles.userName}>{user?.displayName || 'Utilizator'}</Text>
+              <Text style={modalStyles.userEmail}>{user?.email || ''}</Text>
+              <View style={[modalStyles.planBadge, user?.isPremium && modalStyles.planBadgePremium]}>
+                <Text style={[modalStyles.planBadgeText, user?.isPremium && modalStyles.planBadgeTextPremium]}>
+                  {user?.isPremium ? '⭐ PREMIUM' : 'GRATUIT'}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={modalStyles.divider} />
+
+          {/* Auth section */}
+          {isGuest && (
+            <>
+              <Text style={modalStyles.sectionLabel}>Autentifică-te cu un cont real</Text>
+              <Text style={modalStyles.sectionDesc}>
+                Contul tău de invitat nu salvează datele permanent. Autentifică-te pentru a nu pierde mașinile adăugate.
+              </Text>
+
+              {[
+                { provider: 'Google', icon: 'G', bg: '#FFFFFF', color: '#1F2937', border: Colors.gray200 },
+                { provider: 'Facebook', icon: 'f', bg: '#1877F2', color: '#FFFFFF', border: '#1877F2' },
+                { provider: 'Apple', icon: '', bg: '#000000', color: '#FFFFFF', border: '#000000' },
+              ].map(({ provider, icon, bg, color, border }) => (
+                <TouchableOpacity
+                  key={provider}
+                  style={[modalStyles.socialBtn, { backgroundColor: bg, borderColor: border }]}
+                  onPress={() => onLogin(provider)}
+                  disabled={loginLoading !== null}
+                >
+                  {loginLoading === provider ? (
+                    <ActivityIndicator color={color} size="small" style={{ width: 24 }} />
+                  ) : (
+                    <Text style={[modalStyles.socialIcon, { color }]}>{icon}</Text>
+                  )}
+                  <Text style={[modalStyles.socialLabel, { color }]}>
+                    Continuă cu {provider}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+
+              <View style={modalStyles.divider} />
+            </>
+          )}
+
+          {/* Logout */}
+          <TouchableOpacity style={modalStyles.logoutBtn} onPress={onLogout}>
+            <Text style={modalStyles.logoutIcon}>🚪</Text>
+            <Text style={modalStyles.logoutText}>Deconectează-te</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={modalStyles.cancelBtn} onPress={onClose}>
+            <Text style={modalStyles.cancelText}>Anulează</Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
 export default function HomeScreen() {
   const { user, cars, canAddCar, deleteCar, setUser } = useCarStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [profileVisible, setProfileVisible] = useState(false);
+  const [loginLoading, setLoginLoading] = useState<string | null>(null);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -95,22 +190,40 @@ export default function HomeScreen() {
     );
   };
 
+  const handleLogin = async (provider: string) => {
+    setLoginLoading(provider);
+    await new Promise(r => setTimeout(r, 900));
+    const mockUser: User = {
+      id: `user_${provider}_${Date.now()}`,
+      email: `utilizator@${provider.toLowerCase()}.com`,
+      displayName: `Utilizator ${provider}`,
+      isPremium: false,
+      carCount: cars.length,
+    };
+    setUser(mockUser);
+    setLoginLoading(null);
+    setProfileVisible(false);
+  };
+
   const handleLogout = () => {
-    Alert.alert(
-      'Deconectare',
-      'Ești sigur că vrei să te deconectezi?',
-      [
-        { text: 'Anulează', style: 'cancel' },
-        {
-          text: 'Deconectează',
-          style: 'destructive',
-          onPress: () => {
-            setUser(null);
-            router.replace('/login');
+    setProfileVisible(false);
+    setTimeout(() => {
+      Alert.alert(
+        'Deconectare',
+        'Ești sigur că vrei să te deconectezi?',
+        [
+          { text: 'Anulează', style: 'cancel' },
+          {
+            text: 'Deconectează',
+            style: 'destructive',
+            onPress: () => {
+              setUser(null);
+              router.replace('/login');
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }, 300);
   };
 
   return (
@@ -131,7 +244,7 @@ export default function HomeScreen() {
                 <Text style={styles.freeBadgeText}>GRATUIT</Text>
               </View>
             )}
-            <TouchableOpacity style={styles.avatarBtn} onPress={handleLogout}>
+            <TouchableOpacity style={styles.avatarBtn} onPress={() => setProfileVisible(true)}>
               <Text style={styles.avatarText}>
                 {(user?.displayName || 'U')[0].toUpperCase()}
               </Text>
@@ -225,6 +338,16 @@ export default function HomeScreen() {
             <Text style={styles.fabIcon}>+</Text>
           </LinearGradient>
         </TouchableOpacity>
+
+        {/* Profile modal */}
+        <ProfileModal
+          visible={profileVisible}
+          onClose={() => setProfileVisible(false)}
+          user={user}
+          onLogin={handleLogin}
+          onLogout={handleLogout}
+          loginLoading={loginLoading}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -431,5 +554,141 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '300',
     lineHeight: 32,
+  },
+});
+
+const modalStyles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24,
+    paddingBottom: 40,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 16,
+  },
+  avatarLarge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.accent,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarLargeText: {
+    color: Colors.white,
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  userDetails: {
+    flex: 1,
+    gap: 3,
+  },
+  userName: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  userEmail: {
+    fontSize: 12,
+    color: Colors.gray500,
+  },
+  planBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.gray100,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginTop: 2,
+  },
+  planBadgePremium: {
+    backgroundColor: Colors.gold + '22',
+  },
+  planBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: Colors.gray500,
+    letterSpacing: 0.5,
+  },
+  planBadgeTextPremium: {
+    color: Colors.gold,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.gray100,
+    marginVertical: 16,
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.primary,
+    marginBottom: 6,
+  },
+  sectionDesc: {
+    fontSize: 12,
+    color: Colors.gray500,
+    lineHeight: 17,
+    marginBottom: 14,
+  },
+  socialBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    gap: 12,
+  },
+  socialIcon: {
+    fontSize: 17,
+    fontWeight: '700',
+    width: 24,
+    textAlign: 'center',
+  },
+  socialLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 13,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: Colors.danger + '30',
+    marginBottom: 10,
+  },
+  logoutIcon: {
+    fontSize: 18,
+  },
+  logoutText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.danger,
+  },
+  cancelBtn: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  cancelText: {
+    fontSize: 14,
+    color: Colors.gray400,
+    fontWeight: '500',
   },
 });
