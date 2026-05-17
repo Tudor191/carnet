@@ -32,8 +32,8 @@ export default function Sidebar() {
 
   return (
     <View style={styles.sidebar}>
-      {/* ── Brand ── */}
-      <View style={styles.brand}>
+      {/* ── Brand — click navigates to home ── */}
+      <TouchableOpacity style={styles.brand} onPress={() => router.push('/home')} activeOpacity={0.75}>
         <Svg width={42} height={42} viewBox="0 0 120 120">
           {/* Notebook body */}
           <Rect x="20" y="12" width="76" height="92" rx="12" fill="#FFFFFF" />
@@ -72,7 +72,7 @@ export default function Sidebar() {
           <Text style={styles.brandName}>CarNet</Text>
           <Text style={styles.brandSub}>România</Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* ── New car button ── */}
       <TouchableOpacity

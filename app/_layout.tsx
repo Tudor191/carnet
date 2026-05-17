@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Stack, usePathname } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet, View } from 'react-native';
@@ -11,25 +11,16 @@ const LOADER_DURATION = 2000;
 
 export default function RootLayout() {
   const loadCars = useCarStore(s => s.loadCars);
-  const pathname = usePathname();
-
   const [showLoader, setShowLoader] = useState(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isFirst = useRef(true);
 
+  // Show loader only on initial page load / refresh — not on navigation
   useEffect(() => {
-    if (!isFirst.current) {
-      setShowLoader(true);
-    }
-    isFirst.current = false;
-
-    if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setShowLoader(false), LOADER_DURATION);
-
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [pathname]);
+  }, []);
 
   useEffect(() => {
     loadCars();
@@ -40,10 +31,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="light" />
         <View style={styles.appRow}>
-          {/* Left sidebar — renders null on auth pages / narrow screens */}
           <Sidebar />
-
-          {/* Main content */}
           <View style={styles.content}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
@@ -57,7 +45,6 @@ export default function RootLayout() {
         </View>
       </SafeAreaProvider>
 
-      {/* Loading overlay — on top of everything */}
       {showLoader && (
         <View style={StyleSheet.absoluteFill}>
           <LoadingScreen />
