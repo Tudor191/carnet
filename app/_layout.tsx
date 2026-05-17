@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 import { useCarStore } from '../store/useCarStore';
 
 export default function RootLayout() {
@@ -13,7 +13,7 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }}>
@@ -24,6 +24,6 @@ export default function RootLayout() {
           <Stack.Screen name="car/[id]" />
         </Stack>
       </SafeAreaProvider>
-    </GestureHandlerRootView>
+    </View>
   );
 }
