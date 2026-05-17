@@ -1,12 +1,16 @@
 import { initializeApp, getApps } from 'firebase/app';
 import {
+  initializeAuth,
   getAuth,
+  getReactNativePersistence,
   GoogleAuthProvider,
   FacebookAuthProvider,
   OAuthProvider,
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import type { User as FirebaseUser } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -22,12 +26,21 @@ const firebaseConfig = {
 export const FIREBASE_CONFIGURED = true;
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const auth = getAuth(app);
+
+// On native (iOS/Android), use AsyncStorage for auth persistence.
+// On web, use default browser persistence.
+export const auth = Platform.OS === 'web'
+  ? getAuth(app)
+  : initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
 
 // ─── Provider sign-in helpers ─────────────────────────────────────────────────
 
 export async function signInWithGoogle(): Promise<FirebaseUser> {
-  if (!auth) throw new Error('Firebase not configured');
+  if (Platform.OS !== 'web') {
+    throw new Error('Social login not supported on mobile yet. Use email/password.');
+  }
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   const result = await signInWithPopup(auth, provider);
@@ -35,14 +48,18 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
 }
 
 export async function signInWithFacebook(): Promise<FirebaseUser> {
-  if (!auth) throw new Error('Firebase not configured');
+  if (Platform.OS !== 'web') {
+    throw new Error('Social login not supported on mobile yet. Use email/password.');
+  }
   const provider = new FacebookAuthProvider();
   const result = await signInWithPopup(auth, provider);
   return result.user;
 }
 
 export async function signInWithApple(): Promise<FirebaseUser> {
-  if (!auth) throw new Error('Firebase not configured');
+  if (Platform.OS !== 'web') {
+    throw new Error('Social login not supported on mobile yet. Use email/password.');
+  }
   const provider = new OAuthProvider('apple.com');
   provider.addScope('email');
   provider.addScope('name');

@@ -116,6 +116,10 @@ export default function LoginScreen() {
       setError('Firebase nu este configurat încă. Vezi instrucțiunile de mai jos.');
       return;
     }
+    if (Platform.OS !== 'web') {
+      setError('Login cu ' + provider + ' funcționează doar pe web momentan. Folosește email și parolă.');
+      return;
+    }
     setSocialLoading(provider);
     setError('');
     try {
