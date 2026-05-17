@@ -9,6 +9,7 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -16,7 +17,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { Colors } from '../constants/colors';
 import { useCarStore } from '../store/useCarStore';
-import { loginWithEmail, loginWithProvider } from '../services/auth';
+import { loginWithEmail } from '../services/auth';
+import {
+  FIREBASE_CONFIGURED,
+  signInWithGoogle,
+  signInWithFacebook,
+  signInWithApple,
+  firebaseUserToAppUser,
+} from '../services/firebase';
 
 function CarNetLogoFull() {
   return (
@@ -90,11 +98,29 @@ export default function LoginScreen() {
   };
 
   const handleSocialLogin = async (provider: string) => {
+    if (!FIREBASE_CONFIGURED) {
+      setError('Firebase nu este configurat încă. Vezi instrucțiunile de mai jos.');
+      return;
+    }
     setSocialLoading(provider);
-    const user = await loginWithProvider(provider);
-    setUser(user);
-    setSocialLoading(null);
-    router.replace('/home');
+    setError('');
+    try {
+      let fbUser;
+      if (provider === 'Google') fbUser = await signInWithGoogle();
+      else if (provider === 'Facebook') fbUser = await signInWithFacebook();
+      else fbUser = await signInWithApple();
+
+      setUser(firebaseUserToAppUser(fbUser));
+      router.replace('/home');
+    } catch (e: any) {
+      if (e?.code === 'auth/popup-closed-by-user' || e?.code === 'auth/cancelled-popup-request') {
+        // user closed popup — no error needed
+      } else {
+        setError(`Eroare ${provider}: ${e?.message || 'Încearcă din nou.'}`);
+      }
+    } finally {
+      setSocialLoading(null);
+    }
   };
 
   const handleGuest = () => {
@@ -199,6 +225,21 @@ export default function LoginScreen() {
                 <Text style={styles.dividerText}>sau</Text>
                 <View style={styles.dividerLine} />
               </View>
+
+              {/* Firebase setup banner */}
+              {!FIREBASE_CONFIGURED && (
+                <TouchableOpacity
+                  style={styles.firebaseBanner}
+                  onPress={() => Linking.openURL('https://console.firebase.google.com/')}
+                >
+                  <Text style={styles.firebaseBannerTitle}>⚙️  Configurare necesară</Text>
+                  <Text style={styles.firebaseBannerText}>
+                    Pentru login cu Google/Facebook/Apple, creează un proiect Firebase gratuit și adaugă credențialele în{' '}
+                    <Text style={styles.firebaseBannerCode}>services/firebase.ts</Text>.
+                    Apasă aici pentru a deschide Firebase Console.
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               {/* Social login */}
               {[
@@ -344,4 +385,28 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   guestBtnText: { color: Colors.gray500, fontSize: 14, fontWeight: '600' },
+  firebaseBanner: {
+    backgroundColor: '#FFFBEB',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.gold + '60',
+  },
+  firebaseBannerTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#92400E',
+    marginBottom: 4,
+  },
+  firebaseBannerText: {
+    fontSize: 12,
+    color: '#78350F',
+    lineHeight: 17,
+  },
+  firebaseBannerCode: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    backgroundColor: '#FEF3C7',
+    fontSize: 11,
+  },
 });
