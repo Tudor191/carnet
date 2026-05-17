@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Dimensions,
   RefreshControl,
   Pressable,
 } from 'react-native';
@@ -152,25 +151,10 @@ export default function HomeScreen() {
     );
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setDropdownVisible(false);
-    setTimeout(() => {
-      Alert.alert(
-        'Deconectare',
-        'Ești sigur că vrei să te deconectezi?',
-        [
-          { text: 'Anulează', style: 'cancel' },
-          {
-            text: 'Deconectează',
-            style: 'destructive',
-            onPress: async () => {
-              await logout();
-              router.replace('/login');
-            },
-          },
-        ]
-      );
-    }, 300);
+    await logout();
+    router.replace('/login');
   };
 
   return (
