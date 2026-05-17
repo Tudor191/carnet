@@ -27,7 +27,7 @@ function Wheel({ cx, cy, r, rotation }: { cx: number; cy: number; r: number; rot
   return (
     <G>
       {/* Tire */}
-      <Circle cx={cx} cy={cy} r={r} fill="#1E293B" />
+      <Circle cx={cx} cy={cy} r={r} fill="#000000" />
       {/* Spokes */}
       {spokes.map((s, i) => (
         <Line
@@ -55,7 +55,7 @@ function RoadDashes({ offset, y, viewWidth }: { offset: number; y: number; viewW
   // Enough dashes to fill the view + one extra on each side for seamless loop
   for (let x = -step + (offset % step); x < viewWidth + step; x += step) {
     dashes.push(
-      <Rect key={x} x={x} y={y} width={dashW} height={3} rx={1.5} fill="#334155" opacity={0.8} />
+      <Rect key={x} x={x} y={y} width={dashW} height={3} rx={1.5} fill="#64748B" opacity={0.9} />
     );
   }
   return <G>{dashes}</G>;
@@ -178,7 +178,7 @@ export default function LoadingScreen() {
           <Rect
             x={NB.x + 1} y={WY + WR}
             width={NB.w - 2} height={18}
-            fill="#1E293B" opacity={0.9}
+            fill="#000000" opacity={0.9}
           />
           <RoadDashes offset={roadOffset} y={WY + WR + 6} viewWidth={VW} />
         </G>
