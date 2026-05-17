@@ -1,20 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Redirect } from 'expo-router';
+import { View, ActivityIndicator } from 'react-native';
 import { useCarStore } from '../store/useCarStore';
-import LoadingScreen from '../components/LoadingScreen';
+import { Colors } from '../constants/colors';
 
 export default function IndexScreen() {
-  const { user, isLoading, loadCars } = useCarStore();
-  // Show loading for at least 2s so the animation is visible
-  const [minTimePassed, setMinTimePassed] = useState(false);
+  const { user, isLoading } = useCarStore();
 
-  useEffect(() => {
-    const timer = setTimeout(() => setMinTimePassed(true), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!minTimePassed || isLoading) {
-    return <LoadingScreen />;
+  // Wait for the store to finish loading session from AsyncStorage
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: Colors.primary }} />
+    );
   }
 
   if (user) {
