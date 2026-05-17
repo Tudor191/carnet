@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { router, usePathname } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useCarStore } from '../store/useCarStore';
 import { Colors } from '../constants/colors';
 
@@ -34,9 +35,40 @@ export default function Sidebar() {
     <View style={styles.sidebar}>
       {/* ── Brand ── */}
       <View style={styles.brand}>
-        <View style={styles.brandIcon}>
-          <Text style={styles.brandIconText}>C</Text>
-        </View>
+        <Svg width={42} height={42} viewBox="0 0 120 120">
+          {/* Notebook body */}
+          <Rect x="20" y="12" width="76" height="92" rx="12" fill="#FFFFFF" />
+          {/* Notebook cover */}
+          <Rect x="20" y="12" width="76" height="20" rx="12" fill={Colors.secondary} />
+          <Rect x="20" y="24" width="76" height="8" fill={Colors.secondary} />
+          {/* Binding holes */}
+          {[22, 36, 50, 64, 78, 92].map((y, i) => (
+            <Circle key={i} cx="20" cy={y} r="4.5" fill={Colors.primary} />
+          ))}
+          {[22, 36, 50, 64, 78, 92].map((y, i) => (
+            <Circle key={`a${i}`} cx="20" cy={y} r="2.5" fill={Colors.accent} opacity={0.5} />
+          ))}
+          {/* Lines above car */}
+          <Path d="M32 38 H88" stroke={Colors.gray200} strokeWidth="1.5" />
+          <Path d="M32 44 H88" stroke={Colors.gray200} strokeWidth="1.5" />
+          {/* Lines below car */}
+          <Path d="M32 90 H88" stroke={Colors.gray200} strokeWidth="1.5" />
+          <Path d="M32 97 H88" stroke={Colors.gray200} strokeWidth="1.5" />
+          {/* Car body */}
+          <Path d="M28 77 L32 64 L42 56 L78 56 L88 64 L92 77 Z" fill={Colors.secondary} />
+          {/* Car roof */}
+          <Path d="M40 64 L46 50 H74 L82 64 Z" fill={Colors.primary} />
+          {/* Windows */}
+          <Path d="M42 64 L47 52 H61 V64 Z" fill={Colors.accent} opacity={0.6} />
+          <Path d="M63 52 H73 L79 64 H63 Z" fill={Colors.accent} opacity={0.6} />
+          {/* Wheels */}
+          <Circle cx="42" cy="78" r="7" fill={Colors.primary} />
+          <Circle cx="42" cy="78" r="3.5" fill={Colors.gray200} />
+          <Circle cx="78" cy="78" r="7" fill={Colors.primary} />
+          <Circle cx="78" cy="78" r="3.5" fill={Colors.gray200} />
+          {/* Bumper */}
+          <Path d="M24 77 H96" stroke={Colors.secondary} strokeWidth="2.5" strokeLinecap="round" />
+        </Svg>
         <View>
           <Text style={styles.brandName}>CarNet</Text>
           <Text style={styles.brandSub}>România</Text>
@@ -153,15 +185,6 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     paddingHorizontal: 4,
   },
-  brandIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 9,
-    backgroundColor: Colors.accent,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  brandIconText: { color: Colors.white, fontSize: 18, fontWeight: '900' },
   brandName: {
     color: Colors.white,
     fontSize: 15,
