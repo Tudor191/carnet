@@ -22,7 +22,7 @@
     "expo-web-browser": "^55.0.16",
     "firebase": "^10.14.1",
     "react": "19.1.1",
-    "react-dom": "^19.1.0",
+    "react-dom": "19.1.1",
     "react-native": "0.82.0",
     "react-native-gesture-handler": "^2.31.2",
     "react-native-safe-area-context": "^5.7.0",
