@@ -149,10 +149,9 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       const transmissionRaw = get('Transmission Style');
       const bodyType = get('Body Class') || 'Sedan';
 
-      // Use API make/model if available, fallback to WMI database
+      // Use API make/model if available; never use raw VDS characters as model
       const make = apiMake || wmiData?.make || '';
-      // For model: use API result, or derive from VIN characters 4-8 (VDS)
-      const model = apiModel || (wmiData ? `${cleanVin.slice(3, 9)}` : '');
+      const model = apiModel || '';
 
       const year = yearStr ? parseInt(yearStr, 10) : decodeYearFromVin(cleanVin);
 

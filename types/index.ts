@@ -16,6 +16,11 @@ export interface Car {
   rovinetaExpiry?: string;
   insuranceExpiry?: string;
   itpExpiry?: string;
+  // Service / oil change history
+  lastServiceDate?: string;
+  lastServiceKm?: string;
+  nextServiceKm?: string;
+  lastServiceNotes?: string;
   createdAt: number;
 }
 

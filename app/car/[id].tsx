@@ -87,6 +87,53 @@ function DateField({ label, value, onSave }: { label: string; value?: string; on
   );
 }
 
+function Field({ label, value, onSave, placeholder, keyboardType }: {
+  label: string;
+  value?: string;
+  onSave: (v: string) => void;
+  placeholder?: string;
+  keyboardType?: 'default' | 'numeric';
+}) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(value || '');
+
+  return (
+    <View style={detailStyles.dateField}>
+      <View style={detailStyles.dateFieldHeader}>
+        <Text style={detailStyles.dateLabel}>{label}</Text>
+        <TouchableOpacity
+          onPress={() => {
+            if (editing) { onSave(text); setEditing(false); }
+            else setEditing(true);
+          }}
+          style={detailStyles.editBtn}
+        >
+          <Text style={detailStyles.editBtnText}>{editing ? 'Salvează' : '✏️ Editează'}</Text>
+        </TouchableOpacity>
+      </View>
+      {editing ? (
+        <TextInput
+          style={detailStyles.dateInput}
+          value={text}
+          onChangeText={setText}
+          placeholder={placeholder || 'Completează...'}
+          placeholderTextColor={Colors.gray400}
+          keyboardType={keyboardType || 'default'}
+          autoFocus
+          onSubmitEditing={() => { onSave(text); setEditing(false); }}
+        />
+      ) : (
+        <View style={detailStyles.dateValue}>
+          <View style={[detailStyles.statusDot, { backgroundColor: value ? Colors.accent : Colors.gray400 }]} />
+          <Text style={[detailStyles.dateText, { color: value ? Colors.primary : Colors.gray400 }]}>
+            {value || 'Necompletat — apasă Editează'}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 function PlateField({
   value,
   onSave,
@@ -273,6 +320,41 @@ export default function CarDetailScreen() {
             <Text style={styles.rovinetaHint}>
               Dacă verificarea automată nu funcționează, introduceți data manual sau vizitați site-ul oficial.
             </Text>
+          </View>
+
+          {/* Oil change / service history */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Ultimul schimb de ulei</Text>
+            <View style={styles.expiryContainer}>
+              <DateField
+                label="Data schimbului"
+                value={car.lastServiceDate}
+                onSave={v => updateCar(car.id, { lastServiceDate: v || undefined })}
+              />
+              <View style={styles.expiryDivider} />
+              <Field
+                label="KM la schimb"
+                value={car.lastServiceKm}
+                onSave={v => updateCar(car.id, { lastServiceKm: v || undefined })}
+                placeholder="Ex: 150000"
+                keyboardType="numeric"
+              />
+              <View style={styles.expiryDivider} />
+              <Field
+                label="KM următor schimb"
+                value={car.nextServiceKm}
+                onSave={v => updateCar(car.id, { nextServiceKm: v || undefined })}
+                placeholder="Ex: 160000"
+                keyboardType="numeric"
+              />
+              <View style={styles.expiryDivider} />
+              <Field
+                label="Observații"
+                value={car.lastServiceNotes}
+                onSave={v => updateCar(car.id, { lastServiceNotes: v || undefined })}
+                placeholder="Ex: Ulei 5W-40, filtru schimbat"
+              />
+            </View>
           </View>
 
           <View style={{ height: 40 }} />
