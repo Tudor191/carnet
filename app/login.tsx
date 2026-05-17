@@ -30,27 +30,41 @@ function CarNetLogoFull() {
   return (
     <View style={styles.logoContainer}>
       <Svg width={100} height={100} viewBox="0 0 120 120">
+        {/* Notebook body */}
         <Rect x="20" y="12" width="76" height="92" rx="12" fill="#FFFFFF" />
+        {/* Notebook cover (top blue bar) */}
         <Rect x="20" y="12" width="76" height="20" rx="12" fill={Colors.secondary} />
         <Rect x="20" y="24" width="76" height="8" fill={Colors.secondary} />
+        {/* Spiral binding holes */}
         {[22, 36, 50, 64, 78, 92].map((y, i) => (
           <Circle key={i} cx="20" cy={y} r="4.5" fill={Colors.primary} />
         ))}
         {[22, 36, 50, 64, 78, 92].map((y, i) => (
           <Circle key={i} cx="20" cy={y} r="2.5" fill={Colors.accent} opacity={0.5} />
         ))}
-        <Path d="M32 52 H88" stroke={Colors.gray200} strokeWidth="1.5" />
-        <Path d="M32 60 H88" stroke={Colors.gray200} strokeWidth="1.5" />
-        <Path d="M32 68 H88" stroke={Colors.gray200} strokeWidth="1.5" />
-        <Path d="M28 95 L32 82 L42 74 L78 74 L88 82 L92 95 Z" fill={Colors.secondary} />
-        <Path d="M40 82 L46 68 H74 L82 82 Z" fill={Colors.primary} />
-        <Path d="M42 82 L47 70 H61 V82 Z" fill={Colors.accent} opacity={0.6} />
-        <Path d="M63 70 H73 L79 82 H63 Z" fill={Colors.accent} opacity={0.6} />
-        <Circle cx="42" cy="96" r="7" fill={Colors.primary} />
-        <Circle cx="42" cy="96" r="3.5" fill={Colors.gray200} />
-        <Circle cx="78" cy="96" r="7" fill={Colors.primary} />
-        <Circle cx="78" cy="96" r="3.5" fill={Colors.gray200} />
-        <Path d="M24 95 H96" stroke={Colors.secondary} strokeWidth="2.5" strokeLinecap="round" />
+        {/* Notebook lines — above the car */}
+        <Path d="M32 38 H88" stroke={Colors.gray200} strokeWidth="1.5" />
+        <Path d="M32 44 H88" stroke={Colors.gray200} strokeWidth="1.5" />
+        {/* Notebook lines — below the car */}
+        <Path d="M32 90 H88" stroke={Colors.gray200} strokeWidth="1.5" />
+        <Path d="M32 97 H88" stroke={Colors.gray200} strokeWidth="1.5" />
+        {/* ── Car centered in notebook (y shifted -18 from original) ── */}
+        {/* Car body */}
+        <Path d="M28 77 L32 64 L42 56 L78 56 L88 64 L92 77 Z" fill={Colors.secondary} />
+        {/* Car roof */}
+        <Path d="M40 64 L46 50 H74 L82 64 Z" fill={Colors.primary} />
+        {/* Left window */}
+        <Path d="M42 64 L47 52 H61 V64 Z" fill={Colors.accent} opacity={0.6} />
+        {/* Right window */}
+        <Path d="M63 52 H73 L79 64 H63 Z" fill={Colors.accent} opacity={0.6} />
+        {/* Left wheel */}
+        <Circle cx="42" cy="78" r="7" fill={Colors.primary} />
+        <Circle cx="42" cy="78" r="3.5" fill={Colors.gray200} />
+        {/* Right wheel */}
+        <Circle cx="78" cy="78" r="7" fill={Colors.primary} />
+        <Circle cx="78" cy="78" r="3.5" fill={Colors.gray200} />
+        {/* Bumper line */}
+        <Path d="M24 77 H96" stroke={Colors.secondary} strokeWidth="2.5" strokeLinecap="round" />
       </Svg>
       <Text style={styles.appName}>CarNet</Text>
       <Text style={styles.appTagline}>Carnetul tău auto digital</Text>
