@@ -33,7 +33,7 @@ export default function RootLayout() {
         <View style={styles.appRow}>
           <Sidebar />
           <View style={styles.content}>
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
               <Stack.Screen name="index" />
               <Stack.Screen name="login" />
               <Stack.Screen name="register" />

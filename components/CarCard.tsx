@@ -14,7 +14,6 @@ import { formatPlate } from '../services/rovinieta';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH - 32, 400);
-const CARD_HEIGHT = CARD_WIDTH * 0.76;
 
 interface Props {
   car: Car;
@@ -77,7 +76,6 @@ function ExpiryBadge({ label, date }: { label: string; date?: string }) {
 
 export default function CarCard({ car, onPress }: Props) {
   const hasPlate = !!car.registrationNumber;
-  const rovColor = statusColor(car.rovinetaExpiry);
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.92}>
@@ -85,7 +83,7 @@ export default function CarCard({ car, onPress }: Props) {
         colors={['#0F2027', '#203A43', '#2C5364']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }]}
+        style={[styles.card, { width: CARD_WIDTH }]}
       >
         <View style={styles.glowCircle1} />
         <View style={styles.glowCircle2} />
@@ -100,15 +98,13 @@ export default function CarCard({ car, onPress }: Props) {
             <Text style={styles.carMake}>{car.make}</Text>
             <Text style={styles.carModel}>{car.model}</Text>
             <Text style={styles.carYear}>{car.year}</Text>
-            {hasPlate ? (
+            {hasPlate && (
               <View style={styles.plateBadge}>
                 <View style={styles.plateRO}>
                   <Text style={styles.plateROText}>RO</Text>
                 </View>
                 <Text style={styles.plateText}>{formatPlate(car.registrationNumber!)}</Text>
               </View>
-            ) : (
-              <Text style={styles.addPlateHint}>+ Adaugă plăcuță</Text>
             )}
           </View>
         </View>
@@ -141,7 +137,10 @@ export default function CarCard({ car, onPress }: Props) {
           <ExpiryBadge label="RCA" date={car.insuranceExpiry} />
           <View style={styles.expiryRowDivider} />
           <ExpiryBadge label="ITP" date={car.itpExpiry} />
-          <View style={styles.expiryRowDivider} />
+        </View>
+
+        {/* ROVinieta row */}
+        <View style={styles.rovinetaRow}>
           <ExpiryBadge label="ROVinieta" date={car.rovinetaExpiry} />
         </View>
       </LinearGradient>
@@ -207,12 +206,6 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     backgroundColor: 'rgba(255,255,255,0.07)',
   },
-  addPlateHint: {
-    color: '#60A5FA',
-    fontSize: 9,
-    marginTop: 5,
-    opacity: 0.85,
-  },
   silhouetteArea: {
     alignItems: 'center',
     marginTop: 2,
@@ -239,12 +232,16 @@ const styles = StyleSheet.create({
   expiryRow: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    marginBottom: 5,
+    marginBottom: 6,
   },
   expiryRowDivider: {
     width: 1,
     backgroundColor: 'rgba(255,255,255,0.12)',
     marginHorizontal: 8,
+  },
+  rovinetaRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
   },
   expiryBadge: { flex: 1 },
   expiryLabel: {
@@ -261,5 +258,5 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   expiryDot: { width: 6, height: 6, borderRadius: 3 },
-  expiryDate: { fontSize: 10, fontWeight: '600', flex: 1 },
+  expiryDate: { fontSize: 11, fontWeight: '600', flex: 1 },
 });
