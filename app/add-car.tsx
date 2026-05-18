@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { lookupVin } from '../services/vinLookup';
+import { lookupVin, cacheVinResult } from '../services/vinLookup';
 import { useCarStore } from '../store/useCarStore';
 import { VinLookupResult } from '../types';
 import { Colors } from '../constants/colors';
@@ -102,10 +102,24 @@ export default function AddCarScreen() {
     if (!lookupResult) return;
     setSaving(true);
     try {
+      const finalModel = model.trim() || 'Necunoscut';
+      // If the user changed the model from what AI/NHTSA returned, save the correction
+      // so future lookups of the same VIN return the user-verified answer immediately.
+      const detectedModel = lookupResult.model;
+      if (finalModel !== 'Necunoscut' && finalModel !== detectedModel) {
+        cacheVinResult(vin.toUpperCase(), {
+          make: lookupResult.make,
+          model: finalModel,
+          year: lookupResult.year,
+          source: 'user',
+          confidence: 'high',
+        });
+      }
+
       await addCar({
         vin: vin.toUpperCase(),
         make: lookupResult.make,
-        model: model.trim() || 'Necunoscut',
+        model: finalModel,
         year: lookupResult.year,
         color: 'Necunoscut',
         engineType: lookupResult.engineType,

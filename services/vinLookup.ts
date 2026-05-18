@@ -1,5 +1,10 @@
 import { VinLookupResult } from '../types';
 import { lookupVinModel } from './vinModels';
+import { decodeVinWithAI } from './aiVinDecoder';
+import { getCachedVin, cacheVinResult } from './vinCache';
+
+// Re-export so screens can save user corrections directly
+export { cacheVinResult };
 
 // World Manufacturer Identifier (primele 3 caractere din VIN)
 const WMI_DATABASE: Record<string, { make: string; country: string }> = {
@@ -279,10 +284,21 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
     return buildError('Numărul de șasiu trebuie să aibă exact 17 caractere.');
   }
 
-  // WMI fallback from local database
   const wmi = cleanVin.slice(0, 3);
   const wmiData = WMI_DATABASE[wmi];
 
+  // ── Step 1: Firebase cache (user corrections + previous AI/NHTSA results) ──
+  const cached = await getCachedVin(cleanVin);
+  if (cached) {
+    // Always use cached make/model/year; supplement with richer data from NHTSA below
+    // if source is 'user', return immediately — user correction is authoritative
+    if (cached.source === 'user') {
+      return buildFromCache(cached, wmiData);
+    }
+  }
+
+  // ── Step 2: NHTSA API ──────────────────────────────────────────────────────
+  let nhtsaResult: VinLookupResult | null = null;
   try {
     const url = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${cleanVin}?format=json`;
     const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
@@ -302,17 +318,15 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       const transmissionRaw = get('Transmission Style');
       const bodyType = get('Body Class') || 'Sedan';
 
-      // Use API make/model if available; fall back to local VIN model database
       const make = apiMake || wmiData?.make || '';
-      const model = apiModel || lookupVinModel(cleanVin) || '';
+      // Prefer local model lookup for EU VINs where NHTSA returns generic names
+      const localModel = lookupVinModel(cleanVin);
+      const model = localModel || apiModel || '';
 
-      // Validate API year: NHTSA sometimes returns '0' for unknown VINs
       const apiYear = yearStr ? parseInt(yearStr, 10) : 0;
       const vinYear = decodeYearFromVin(cleanVin);
-      // For EU BMW VINs position 10 = '0' (European market marker, not a year).
-      // Fall back to known G-platform generation launch year.
       const isBMWEU = BMW_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
-      const bmwEU6 = cleanVin.slice(0, 5) + cleanVin[6]; // WMI+pos4+pos5+pos7
+      const bmwEU6 = cleanVin.slice(0, 5) + cleanVin[6];
       const generationYear = isBMWEU
         ? (BMW_EU_GENERATION_YEARS[bmwEU6] ?? BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
         : 0;
@@ -333,35 +347,45 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
         cylinders,
         fuelTypeRaw
       );
-      const engineCylindersLabel = cylinders ? `${cylinders} cilindri` : '';
-      const engineType = [fuelType, engineCylindersLabel].filter(Boolean).join(', ');
+      const engineType = [fuelType, cylinders ? `${cylinders} cilindri` : ''].filter(Boolean).join(', ');
 
-      if (!make) {
-        return buildError('VIN-ul nu a fost recunoscut. Verificați că ați introdus corect toate cele 17 caractere.');
+      if (make) {
+        nhtsaResult = {
+          make: formatMake(make),
+          model: model || 'Necunoscut',
+          year,
+          color: 'Necunoscut',
+          engineType: engineType || 'Necunoscut',
+          engineDisplacement: displacement,
+          horsepower: hp,
+          fuelType,
+          transmission,
+          bodyType: capitalizeFirst(bodyType),
+        };
+
+        // Cache NHTSA result if it has a real model (don't cache 'Necunoscut')
+        if (model && model !== 'Necunoscut' && year > 0 && !cached) {
+          cacheVinResult(cleanVin, { make: formatMake(make), model, year, source: 'nhtsa', confidence: 'high' });
+        }
+
+        // If model is unknown, try AI to fill in the gap
+        if (!model || model === 'Necunoscut') {
+          const ai = await decodeVinWithAI(cleanVin);
+          if (ai) {
+            nhtsaResult.model = ai.model;
+            if (year === 0 && ai.year > 0) nhtsaResult.year = ai.year;
+            cacheVinResult(cleanVin, { make: formatMake(make), model: ai.model, year: nhtsaResult.year, source: 'ai', confidence: ai.confidence });
+          }
+        }
+
+        return nhtsaResult;
       }
-
-      return {
-        make: formatMake(make),
-        model: model || 'Necunoscut',
-        year,
-        color: 'Necunoscut',
-        engineType: engineType || 'Necunoscut',
-        engineDisplacement: displacement,
-        horsepower: hp,
-        fuelType,
-        transmission,
-        bodyType: capitalizeFirst(bodyType),
-      };
     }
-  } catch (err: any) {
-    if (err.name === 'TimeoutError' || err.name === 'AbortError') {
-      // If offline/timeout, still try WMI fallback
-    } else {
-      // Network error — try WMI fallback
-    }
+  } catch {
+    // Network/timeout — continue to local fallback
   }
 
-  // WMI-only fallback (when API is unavailable or VIN not in NHTSA DB)
+  // ── Step 3: Local WMI + model DB fallback ─────────────────────────────────
   if (wmiData) {
     const vinYear = decodeYearFromVin(cleanVin);
     const isBMWEU = BMW_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
@@ -371,9 +395,45 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       : 0;
     const year = vinYear > 0 ? vinYear : generationYear;
     const localModel = lookupVinModel(cleanVin);
+
+    if (localModel) {
+      return {
+        make: wmiData.make,
+        model: localModel,
+        year,
+        color: 'Necunoscut',
+        engineType: 'Necunoscut',
+        engineDisplacement: 'Necunoscut',
+        horsepower: 0,
+        fuelType: 'Necunoscut',
+        transmission: 'Necunoscută',
+        bodyType: 'Necunoscut',
+      };
+    }
+
+    // ── Step 4: AI decoder — last resort ──────────────────────────────────
+    const ai = await decodeVinWithAI(cleanVin);
+    if (ai) {
+      const finalYear = year > 0 ? year : ai.year;
+      cacheVinResult(cleanVin, { make: formatMake(ai.make), model: ai.model, year: finalYear, source: 'ai', confidence: ai.confidence });
+      return {
+        make: formatMake(ai.make),
+        model: ai.model,
+        year: finalYear,
+        color: 'Necunoscut',
+        engineType: 'Necunoscut',
+        engineDisplacement: 'Necunoscut',
+        horsepower: 0,
+        fuelType: 'Necunoscut',
+        transmission: 'Necunoscută',
+        bodyType: 'Necunoscut',
+      };
+    }
+
+    // Known make, unknown model
     return {
       make: wmiData.make,
-      model: localModel || 'Necunoscut',
+      model: 'Necunoscut',
       year,
       color: 'Necunoscut',
       engineType: 'Necunoscut',
@@ -386,6 +446,24 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
   }
 
   return buildError('VIN-ul nu a fost găsit în baza de date. Verificați numărul și încercați din nou.');
+}
+
+function buildFromCache(
+  cached: import('./vinCache').VinCacheEntry,
+  wmiData: { make: string; country: string } | undefined
+): VinLookupResult {
+  return {
+    make: formatMake(cached.make || wmiData?.make || ''),
+    model: cached.model || 'Necunoscut',
+    year: cached.year,
+    color: 'Necunoscut',
+    engineType: 'Necunoscut',
+    engineDisplacement: 'Necunoscut',
+    horsepower: 0,
+    fuelType: 'Necunoscut',
+    transmission: 'Necunoscută',
+    bodyType: 'Necunoscut',
+  };
 }
 
 function formatMake(s: string): string {
