@@ -67,24 +67,21 @@ export const BMW_MODELS: Record<string, string> = {
   'WBABD': '8 Series Convertible',
   'WBABE': '8 Series Gran Coupé',
 
-  // ── WBA G-platform numeric VDS (2019+) ───────────────────────────────────
-  // Position 4 = series number, position 5 = body style digit
-  'WBA11': '1 Series',
-  'WBA21': '2 Series Active Tourer',
-  'WBA22': '2 Series Coupé',
-  'WBA31': '3 Series',
-  'WBA34': '3 Series Touring',
-  'WBA35': '3 Series GT',
-  'WBA41': '4 Series Coupé',
-  'WBA43': '4 Series Cabriolet',
-  'WBA46': '4 Series Gran Coupé',
-  'WBA51': '5 Series',
-  'WBA54': '5 Series Touring',
-  'WBA71': '7 Series',
-  'WBA72': '7 Series L',
-  'WBA81': '8 Series Coupé',
-  'WBA83': '8 Series Cabriolet',
-  'WBA86': '8 Series Gran Coupé',
+  // ── WBA G-platform codes (verified from real-world VINs) ─────────────────
+  // BMW G-platform VDS does NOT follow "digit = series number" logic.
+  // Codes differ between NA (SAE year at pos 10) and EU (pos 10 = '0') markets.
+  //
+  // NA market VINs (verified from public listings):
+  //   WBA23EH03PCN09717 = 2023 BMW 740i  → key WBA23
+  //   WBA53BH04PWY21975 = 2023 BMW 530i  → key WBA53
+  //   WBA13BK08PCL27322 = 2023 BMW M550i → key WBA13
+  //
+  // EU market VINs (user-confirmed, pos 10 = '0'):
+  //   WBA31EM0609R68792 = BMW 7 Series   → key WBA31
+  'WBA13': '5 Series',
+  'WBA23': '7 Series',
+  'WBA53': '5 Series',
+  'WBA31': '7 Series',
 
   // ── WBX = BMW SAV/SUV ────────────────────────────────────────────────────
   // X1 (F48/U11)
@@ -122,22 +119,7 @@ export const BMW_MODELS: Record<string, string> = {
   'WBXPG': 'X7',
   'WBXPH': 'X7 xDrive (G07)',
 
-  // ── WBX G-platform numeric VDS ───────────────────────────────────────────
-  'WBX11': 'X1',
-  'WBX21': 'X2',
-  'WBX31': 'X3',
-  'WBX41': 'X4',
-  'WBX51': 'X5',
-  'WBX61': 'X6',
-  'WBX71': 'X7',
-
   // ── WBY = BMW i (electric) ───────────────────────────────────────────────
-  // G-platform i numeric VDS
-  'WBY21': 'iX',
-  'WBY31': 'i4',
-  'WBY51': 'i5',
-  'WBY71': 'i7',
-
   'WBYYA': 'i3',
   'WBYYB': 'i8',
   'WBYB': 'i4',
@@ -147,13 +129,6 @@ export const BMW_MODELS: Record<string, string> = {
   'WBYF': 'i5',
 
   // ── WBS = BMW M GmbH ─────────────────────────────────────────────────────
-  // G-platform M numeric VDS
-  'WBS21': 'M2',
-  'WBS31': 'M3',
-  'WBS41': 'M4',
-  'WBS51': 'M5',
-  'WBS81': 'M8',
-
   'WBSAE': 'M3',
   'WBSAF': 'M3 Competition',
   'WBSAG': 'M4 Coupé',

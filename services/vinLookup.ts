@@ -229,6 +229,20 @@ function estimateHorsepower(displacementCC: number, cylinders: number, fuelType:
   return Math.round(base + cylinderBonus + fuelBonus);
 }
 
+// BMW EU VINs use '0' at position 10 as a European market marker — NOT a year code.
+// For these VINs we fall back to the known generation launch year for identified models.
+// Source: verified real-world VIN examples cross-referenced with BMW launch dates.
+const BMW_EU_GENERATION_YEARS: Record<string, number> = {
+  // Key = first 5 chars of VIN (WMI + 2 VDS chars)
+  'WBA31': 2023, // G70 7 Series EU  (WBA31EM0609R68792 user-confirmed)
+  'WBA23': 2023, // G70 7 Series NA  (WBA23EH03PCN09717 classic.com verified)
+  'WBA13': 2024, // G60 M550i NA     (WBA13BK08PCL27322 verified)
+  'WBA53': 2024, // G60 5 Series NA  (new gen; G30 530i used WBA53 up to 2023)
+};
+
+// BMW WMI prefixes that use '0' at position 10 for European market
+const BMW_WMI = new Set(['WBA', 'WBS', 'WBX', 'WBY', 'WMW', 'WBW']);
+
 function decodeYearFromVin(vin: string): number {
   const ch = vin[9]?.toUpperCase();
   if (!ch) return 0;
@@ -289,9 +303,14 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
 
       // Validate API year: NHTSA sometimes returns '0' for unknown VINs
       const apiYear = yearStr ? parseInt(yearStr, 10) : 0;
+      const vinYear = decodeYearFromVin(cleanVin);
+      // For EU BMW VINs position 10 = '0' (European market marker, not a year).
+      // Fall back to known G-platform generation launch year.
+      const isBMWEU = BMW_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
+      const generationYear = isBMWEU ? (BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0) : 0;
       const year = (apiYear >= 1900 && apiYear <= 2060)
         ? apiYear
-        : decodeYearFromVin(cleanVin);
+        : (vinYear > 0 ? vinYear : generationYear);
 
       const displacement = displacementL
         ? `${parseFloat(displacementL).toFixed(1)} L`
@@ -336,7 +355,10 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
 
   // WMI-only fallback (when API is unavailable or VIN not in NHTSA DB)
   if (wmiData) {
-    const year = decodeYearFromVin(cleanVin);
+    const vinYear = decodeYearFromVin(cleanVin);
+    const isBMWEU = BMW_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
+    const generationYear = isBMWEU ? (BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0) : 0;
+    const year = vinYear > 0 ? vinYear : generationYear;
     const localModel = lookupVinModel(cleanVin);
     return {
       make: wmiData.make,
