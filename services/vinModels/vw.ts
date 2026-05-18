@@ -17,8 +17,9 @@
 export const VW_MODELS: Record<string, string> = {
   // ── WVG = Volkswagen Touareg (Slovakia plant) ────────────────────────────
   // ZZZ-format: key = WVG + VIN[6] + VIN[7]
+  'WVG1T': 'Touran',           // 1T (gen 1/2, 2003-2015)
+  'WVG1K': 'Golf Plus',        // 1K platform Golf Plus
   'WVG7L': 'Touareg',          // 7L (gen 1, 2002-2010)
-  'WVG1T': 'Touareg',          // 7L variant
   'WVG7P': 'Touareg',          // 7P (gen 2, 2010-2018)
   'WVGCR': 'Touareg',          // CR (gen 3, 2018+)
   'WVG4M': 'Touareg',          // 4M (gen 3 facelift)
