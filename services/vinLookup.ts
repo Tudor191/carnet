@@ -314,7 +314,7 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       }
 
       return {
-        make: capitalizeFirst(make),
+        make: formatMake(make),
         model: model || 'Necunoscut',
         year,
         color: 'Necunoscut',
@@ -353,6 +353,19 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
   }
 
   return buildError('VIN-ul nu a fost găsit în baza de date. Verificați numărul și încercați din nou.');
+}
+
+function formatMake(s: string): string {
+  if (!s) return s;
+  const upper = s.toUpperCase().trim();
+  const ALL_CAPS_BRANDS = new Set([
+    'BMW', 'MINI', 'SEAT', 'DS', 'MG', 'GMC', 'BYD', 'KIA', 'RAM',
+    'FIAT', 'SAAB', 'JEEP',
+  ]);
+  if (ALL_CAPS_BRANDS.has(upper)) return upper;
+  return s.trim().split(/\s+/).map(word =>
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  ).join(' ');
 }
 
 function capitalizeFirst(s: string): string {
