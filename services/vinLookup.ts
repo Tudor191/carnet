@@ -237,9 +237,11 @@ const BMW_EU_GENERATION_YEARS: Record<string, number> = {
   // 6-char keys (WMI + pos4 + pos5 + pos7) — most specific, checked first.
   // Needed when two models share the same 5-char prefix (e.g. WBA31).
   'WBA31M': 2023, // G70 7 Series EU  (WBA31EM0609R68792 user-confirmed)
-  'WBA31X': 2024, // G06 X6 LCI EU    (WBA31EX0109V76203 user-confirmed)
+  'WBA31X': 2024, // G06 X6 EU 2024   (WBA31EX0109V76203 user-confirmed)
+  'WBA11Y': 2026, // G06 X6 EU 2026   (WBA11EY0909423106 user-confirmed)
   // 5-char fallback keys (WMI + pos4 + pos5)
   'WBA31': 2023,  // G70 7 Series EU fallback
+  'WBA11': 2025,  // G06 X6 EU fallback (2025 as conservative generation start)
   'WBA23': 2023,  // G70 7 Series NA  (WBA23EH03PCN09717 classic.com verified)
   'WBA13': 2024,  // G60 M550i NA     (WBA13BK08PCL27322 verified)
   'WBA53': 2024,  // G60 5 Series NA  (new gen; G30 530i used WBA53 up to 2023)

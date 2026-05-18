@@ -78,17 +78,20 @@ export const BMW_MODELS: Record<string, string> = {
   //
   // EU market VINs (user-confirmed, pos 10 = '0'):
   //   WBA31EM0609R68792 = BMW 7 Series   → 6-char key WBA31M (pos7='M')
-  //   WBA31EX0109V76203 = BMW X6         → 6-char key WBA31X (pos7='X')
+  //   WBA31EX0109V76203 = BMW X6 2024    → 6-char key WBA31X (pos7='X')
+  //   WBA11EY0909423106 = BMW X6 2026    → 6-char key WBA11Y (pos7='Y')
   //
   // 6-char keys (WMI+pos4+pos5+pos7) are checked first by lookupVinModel
   // to disambiguate models that share the same pos4+pos5 prefix.
-  'WBA31M': '7 Series',   // G70 7 Series EU  (pos7='M' = sedan body)
-  'WBA31X': 'X6',         // G06 X6 LCI EU    (pos7='X' = X-model SAC body)
+  'WBA31M': '7 Series',   // G70 7 Series EU (pos7='M' = sedan body)
+  'WBA31X': 'X6',         // G06 X6 EU 2024  (pos7='X')
+  'WBA11Y': 'X6',         // G06 X6 EU 2026  (WBA11EY0909423106 user-confirmed)
   // 5-char fallback keys (used when pos7 disambiguation key not found)
   'WBA13': '5 Series',
   'WBA23': '7 Series',
   'WBA53': '5 Series',
   'WBA31': '7 Series',
+  'WBA11': 'X6',          // G06 X6 EU fallback (WBA11EY prefix confirmed)
 
   // ── WBX = BMW SAV/SUV ────────────────────────────────────────────────────
   // X1 (F48/U11)
