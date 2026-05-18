@@ -526,6 +526,24 @@ export const OTHER_MODELS: Record<string, string> = {
   'ZAMFA': 'MC20',
 
   // ═══════════════════════════════════════════════════════════
+  // PORSCHE (WP0=sports/luxury/Cayenne, WP1=SUV/Macan)
+  // European VINs use ZZZ format (pos 4-6 = 'ZZZ'); lookup key = WMI + pos7 + pos8.
+  // Type codes: 911→99x, Panamera→97x, 718/Boxster/Cayman→98x, Cayenne→9Y, Macan→95, Taycan→J1
+  // ═══════════════════════════════════════════════════════════
+  // WP0 — sports cars, Panamera, Cayenne (EU ZZZ: key = WP0 + pos7 + pos8)
+  'WP099': '911',               // 992/991/997/996 type codes all start with 99
+  'WP097': 'Panamera',          // 970/971 type codes
+  'WP098': 'Boxster / Cayman',  // 986/987/981/982 → all map to pos7+pos8='98'
+  'WP09Y': 'Cayenne',           // 9Y0/9YA (Cayenne + Cayenne Coupé)
+  'WP0J1': 'Taycan',            // J1 type code (Taycan / Taycan Sport Turismo)
+  // WP1 — SUV (EU ZZZ: key = WP1 + pos7 + pos8)
+  'WP195': 'Macan',             // 95B type code (WP1ZZZ95ZNLB33489 user-confirmed)
+  'WP19J': 'Macan',             // J1 = second-gen electric Macan
+  // 4-char fallback keys (WMI + pos4) for non-ZZZ / unrecognised VDS
+  'WP09': '911',
+  'WP19': 'Macan',
+
+  // ═══════════════════════════════════════════════════════════
   // TESLA (5YJ=US Fremont, SFZ=UK Hethel/Roadster, LRW=Shanghai,
   //         7SA=Cybertruck, XP7=Giga Berlin)
   // Source: NHTSA VIN decoder docs (vpic.nhtsa.dot.gov)

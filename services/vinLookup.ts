@@ -320,7 +320,11 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       const generationYear = isBMWEU
         ? (BMW_EU_GENERATION_YEARS[bmwEU6] ?? BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
         : 0;
-      const year = (apiYear >= 1900 && apiYear <= 2060)
+      // For European ZZZ-format VINs (pos 4-6 = 'ZZZ') NHTSA uses the old 30-year
+      // cycle and returns e.g. 1992 instead of 2022 for pos10='N'. Our local
+      // decodeYearFromVin always picks the most-recent cycle, so prefer it here.
+      const isZZZFormat = cleanVin.slice(3, 6) === 'ZZZ';
+      const year = (apiYear >= 1900 && apiYear <= 2060 && !isZZZFormat)
         ? apiYear
         : (vinYear > 0 ? vinYear : generationYear);
 
@@ -376,7 +380,7 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
     const year = vinYear > 0 ? vinYear : generationYear;
     const localModel = lookupVinModel(cleanVin);
     return {
-      make: wmiData.make,
+      make: formatMake(wmiData.make),
       model: localModel || 'Necunoscut',
       year,
       color: 'Necunoscut',
