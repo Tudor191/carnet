@@ -138,23 +138,12 @@ export default function CarCard({ car, onPress }: Props) {
 
         {/* Expiry row: RCA + ITP */}
         <View style={styles.expiryRow}>
-          <ExpiryBadge label="RCA / Asigurare" date={car.insuranceExpiry} />
+          <ExpiryBadge label="RCA" date={car.insuranceExpiry} />
           <View style={styles.expiryRowDivider} />
           <ExpiryBadge label="ITP" date={car.itpExpiry} />
+          <View style={styles.expiryRowDivider} />
+          <ExpiryBadge label="ROVinieta" date={car.rovinetaExpiry} />
         </View>
-
-        {/* ROVinieta row — only when plate is set */}
-        {hasPlate && (
-          <View style={styles.rovinetaRow}>
-            <View style={[styles.rovinetaDot, { backgroundColor: rovColor }]} />
-            <Text style={styles.rovinetaLabel}>ROVinieta</Text>
-            <Text style={[styles.rovinetaValue, { color: rovColor }]} numberOfLines={1}>
-              {car.rovinetaExpiry
-                ? (isExpired(car.rovinetaExpiry) ? 'Expirată' : `Valabilă ${car.rovinetaExpiry}`)
-                : 'Necompletată — intră pentru detalii'}
-            </Text>
-          </View>
-        )}
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -272,17 +261,5 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   expiryDot: { width: 6, height: 6, borderRadius: 3 },
-  expiryDate: { fontSize: 11, fontWeight: '600', flex: 1 },
-  rovinetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  rovinetaDot: { width: 6, height: 6, borderRadius: 3 },
-  rovinetaLabel: { color: '#94A3B8', fontSize: 9, fontWeight: '600', letterSpacing: 0.5 },
-  rovinetaValue: { fontSize: 9, fontWeight: '600', flex: 1, textAlign: 'right' },
+  expiryDate: { fontSize: 10, fontWeight: '600', flex: 1 },
 });

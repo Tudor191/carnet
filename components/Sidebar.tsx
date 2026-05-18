@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
+  Modal,
+  Pressable,
   StyleSheet,
   Dimensions,
 } from 'react-native';
@@ -18,10 +20,16 @@ const AUTH_ROUTES = ['/', '/login', '/register'];
 export default function Sidebar() {
   const pathname = usePathname();
   const { width } = Dimensions.get('window');
-  const { user, logout } = useCarStore();
+  const { user, logout, canAddCar } = useCarStore();
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Only visible on wide screens and outside auth pages
   if (width < 640 || AUTH_ROUTES.includes(pathname)) return null;
+
+  const handleNewCar = () => {
+    if (!canAddCar()) { setShowLimitModal(true); return; }
+    router.push('/add-car');
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -74,10 +82,33 @@ export default function Sidebar() {
         </View>
       </TouchableOpacity>
 
+      {/* Premium limit modal */}
+      <Modal visible={showLimitModal} transparent animationType="fade">
+        <Pressable style={modalStyles.overlay} onPress={() => setShowLimitModal(false)}>
+          <Pressable style={modalStyles.box} onPress={() => {}}>
+            <Text style={modalStyles.icon}>🔒</Text>
+            <Text style={modalStyles.title}>Limită atinsă</Text>
+            <Text style={modalStyles.text}>
+              Contul gratuit permite o singură mașină.{'\n'}
+              Treci la <Text style={modalStyles.bold}>CarNet Premium</Text> pentru mașini nelimitate.
+            </Text>
+            <TouchableOpacity
+              style={modalStyles.upgradeBtn}
+              onPress={() => { setShowLimitModal(false); router.push('/premium'); }}
+            >
+              <Text style={modalStyles.upgradeBtnText}>👑  Upgrade Premium</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowLimitModal(false)}>
+              <Text style={modalStyles.cancelText}>Anulează</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       {/* ── New car button ── */}
       <TouchableOpacity
         style={styles.newBtn}
-        onPress={() => router.push('/add-car')}
+        onPress={handleNewCar}
         activeOpacity={0.75}
       >
         <Text style={styles.newBtnPlus}>+</Text>
@@ -281,4 +312,48 @@ const styles = StyleSheet.create({
   },
   authIcon: { fontSize: 15 },
   authLabel: { color: Colors.gray400, fontSize: 13, fontWeight: '500' },
+});
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  box: {
+    backgroundColor: Colors.primary,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: Colors.danger,
+    padding: 28,
+    width: 300,
+    alignItems: 'center',
+  },
+  icon: { fontSize: 40, marginBottom: 12 },
+  title: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 10,
+  },
+  text: {
+    color: Colors.gray400,
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  bold: { color: Colors.white, fontWeight: '700' },
+  upgradeBtn: {
+    backgroundColor: Colors.accent,
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginBottom: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  upgradeBtnText: { color: Colors.white, fontSize: 14, fontWeight: '700' },
+  cancelText: { color: Colors.gray400, fontSize: 13 },
 });
