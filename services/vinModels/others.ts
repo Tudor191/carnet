@@ -1,7 +1,19 @@
 /**
- * VIN model lookup for: Renault, Dacia, Peugeot, Citroën, DS, Opel,
- * Ford, Toyota, Lexus, Honda, Hyundai, Kia, Volvo, Jaguar, Land Rover,
- * Alfa Romeo, Fiat, Ferrari, Lamborghini, Nissan, Mazda, Subaru, Mitsubishi
+ * VIN model lookup for all other manufacturers:
+ * Renault (VF1/VF2/VF6/VNE/VR1), Dacia (UU1/UU3), Peugeot (VF3/VR3),
+ * Citroën (VF7/VF8/VR7/VS7), DS (VF9/VR8), Alpine (VFA),
+ * Opel (W0L/TMA), Ford Europe (WF0/WF1/SFA/VS6),
+ * Toyota (SB1/JTD/JTE/JTK/JTM/JTN/JT2/JT3/VNK),
+ * Lexus (JTJ/JTH/JTL), Honda (JHM/SHH), Nissan (JN1/JN6/JN8/VNV),
+ * Infiniti (JNK), Mazda (JM1/JM4/JMZ), Mitsubishi (JMB/JA3/JA4),
+ * Suzuki (JS1-JS4), Subaru (JF1/JF2),
+ * Hyundai (KMH/KMF/KMJ), Kia (KNA/KND/KNM/U5Y/U6Y), Genesis (KMT),
+ * SsangYong (KPT/KLA), Volvo (YV1/YV4/VSK), Saab (YS3),
+ * Jaguar (SAJ), Land Rover (SAL), Rolls-Royce (SCA), Bentley (SCB),
+ * Lotus (SCC), McLaren (SCE), Aston Martin (SCF),
+ * Alfa Romeo (ZAR), Fiat (ZFA), Lancia (ZLA),
+ * Ferrari (ZFF), Lamborghini (ZHW), Maserati (ZAM),
+ * Tesla (5YJ/SFZ/LRW), Genesis (KMT)
  *
  * Key = WMI (3) + VIN[3] + VIN[4]  →  positions 4-5 of VIN
  */
@@ -513,4 +525,195 @@ export const OTHER_MODELS: Record<string, string> = {
   'KMTEA': 'GV80',
   'KMTFA': 'GV60',
   'KMTGA': 'Electrified G80',
+
+  // ═══════════════════════════════════════════════════════════
+  // DS AUTOMOBILES additional plant (VR8)
+  // ═══════════════════════════════════════════════════════════
+  'VR8AA': 'DS3',         'VR8AB': 'DS3 Crossback',   'VR8AC': 'DS3 E-Tense',
+  'VR8BA': 'DS4',         'VR8BB': 'DS4 E-Tense',
+  'VR8CA': 'DS5',
+  'VR8DA': 'DS7',         'VR8DB': 'DS7 E-Tense',
+  'VR8EA': 'DS9',         'VR8EB': 'DS9 E-Tense',
+
+  // ═══════════════════════════════════════════════════════════
+  // ALPINE (VFA)
+  // ═══════════════════════════════════════════════════════════
+  'VFAAA': 'A110',
+  'VFAAB': 'A110 S',
+  'VFAAC': 'A110 R',
+  'VFABA': 'A290',
+  'VFACA': 'A310',
+
+  // ═══════════════════════════════════════════════════════════
+  // TOYOTA FRANCE (VNK) — mirrors SB1 codes
+  // ═══════════════════════════════════════════════════════════
+  'VNKAA': 'Yaris',       'VNKAB': 'Yaris GR',      'VNKAC': 'Yaris Cross',
+  'VNKBA': 'Corolla',     'VNKBB': 'Corolla Touring Sports',
+  'VNKCA': 'C-HR',        'VNKCB': 'C-HR PHEV',
+  'VNKDA': 'RAV4',        'VNKDB': 'RAV4 PHEV',
+  'VNKEA': 'Camry',
+  'VNKHA': 'bZ4X',
+  'VNKJA': 'Aygo X',
+  'VNKKA': 'Proace',      'VNKKB': 'Proace City',
+
+  // ═══════════════════════════════════════════════════════════
+  // TOYOTA JAPAN variants (JTE, JTK, JTM, JTN, JT2, JT3)
+  // ═══════════════════════════════════════════════════════════
+  'JTEBA': 'Corolla',     'JTECA': 'RAV4',      'JTEDA': 'Avensis',
+  'JTEFA': 'Yaris',       'JTEGA': 'C-HR',      'JTEHA': 'Land Cruiser',
+  'JTKBA': 'Corolla',     'JTKCA': 'Camry',     'JTKFA': 'Yaris',
+  'JTMBA': 'RAV4',        'JTMCA': 'Highlander','JTMDA': 'Land Cruiser',
+  'JTNBA': 'Corolla',     'JTNCA': 'Camry',     'JTNDA': 'RAV4',
+  'JT2BA': 'Corolla',     'JT3BA': 'Land Cruiser',
+
+  // ═══════════════════════════════════════════════════════════
+  // LEXUS variants (JTH, JTL)
+  // ═══════════════════════════════════════════════════════════
+  'JTHAA': 'UX',   'JTHBA': 'IS',   'JTHCA': 'ES',
+  'JTHDA': 'GS',   'JTHEA': 'LS',   'JTHFA': 'RC',
+  'JTHGA': 'LC',   'JTHHA': 'RZ',
+  'JTLAA': 'UX',   'JTLBA': 'NX',   'JTLCA': 'RX',
+  'JTLDA': 'GX',   'JTLEA': 'LX',   'JTLFA': 'IS',
+
+  // ═══════════════════════════════════════════════════════════
+  // HONDA UK (SHH) — mirrors JHM codes
+  // ═══════════════════════════════════════════════════════════
+  'SHHAA': 'Jazz',         'SHHAB': 'Jazz Crosstar',   'SHHAC': 'Jazz e:HEV',
+  'SHHBA': 'Civic',        'SHHBB': 'Civic Type R',    'SHHBC': 'Civic e:HEV',
+  'SHHCA': 'CR-V',         'SHHCB': 'CR-V e:PHEV',
+  'SHHDA': 'HR-V',
+  'SHHEA': 'ZR-V',
+  'SHHFA': 'e:Ny1',
+  'SHHHA': 'Accord',
+
+  // ═══════════════════════════════════════════════════════════
+  // NISSAN UK/FRANCE (VNV) — mirrors JN1 codes
+  // ═══════════════════════════════════════════════════════════
+  'VNVAA': 'Micra',        'VNVBA': 'Juke',         'VNVBB': 'Juke Hybrid',
+  'VNVCA': 'Qashqai',      'VNVCB': 'Qashqai e-Power',
+  'VNVDA': 'X-Trail',      'VNVDB': 'X-Trail e-Power',
+  'VNVEA': 'Leaf',         'VNVFA': 'Ariya',
+
+  // ═══════════════════════════════════════════════════════════
+  // INFINITI (JNK)
+  // ═══════════════════════════════════════════════════════════
+  'JNKAA': 'Q30',
+  'JNKBA': 'Q50',
+  'JNKCA': 'Q60',
+  'JNKDA': 'QX30',
+  'JNKEA': 'QX50',
+  'JNKFA': 'QX55',
+  'JNKGA': 'QX60',
+  'JNKHA': 'QX70',
+  'JNKJA': 'QX80',
+
+  // ═══════════════════════════════════════════════════════════
+  // MITSUBISHI comprehensive (JMB, JA3, JA4)
+  // ═══════════════════════════════════════════════════════════
+  'JMBAA': 'Colt',
+  'JMBBA': 'Lancer',       'JMBBB': 'Lancer Evolution',
+  'JMBCA': 'Galant',
+  'JMBDA': 'Eclipse',      'JMBDB': 'Eclipse Cross',   'JMBDC': 'Eclipse Cross PHEV',
+  'JMBEA': 'Outlander',    'JMBEB': 'Outlander PHEV',  'JMBEC': 'Outlander Sport',
+  'JMBFA': 'ASX',          'JMBFB': 'ASX PHEV',
+  'JMBGA': 'Pajero',       'JMBGB': 'Pajero Sport',
+  'JMBHA': 'L200',
+  'JMBJA': 'Space Star',
+  'JA3AA': 'Colt',         'JA3BA': 'Lancer',          'JA3CA': 'Eclipse',
+  'JA4AA': 'Outlander',    'JA4AB': 'Outlander PHEV',  'JA4BA': 'ASX',
+
+  // ═══════════════════════════════════════════════════════════
+  // SUZUKI comprehensive (JS1, JS2, JS3, JS4)
+  // ═══════════════════════════════════════════════════════════
+  'JS1AA': 'Swift',        'JS1AB': 'Swift Sport',
+  'JS1BA': 'Baleno',
+  'JS1CA': 'Vitara',       'JS1CB': 'Vitara SHVS',
+  'JS1DA': 'S-Cross',      'JS1DB': 'S-Cross Hybrid',
+  'JS1EA': 'Ignis',
+  'JS1FA': 'Jimny',
+  'JS1GA': 'Across',
+  'JS1HA': 'Swace',
+  'JS2AA': 'Swift',        'JS2CA': 'Vitara',          'JS2DA': 'S-Cross',
+  'JS3AA': 'Swift',        'JS3CA': 'Vitara',          'JS3FA': 'Jimny',
+  'JS4AA': 'Swift',        'JS4CA': 'Vitara',          'JS4FA': 'Jimny',
+
+  // ═══════════════════════════════════════════════════════════
+  // KIA Slovakia plants (U5Y, U6Y) — mirrors KNA codes
+  // ═══════════════════════════════════════════════════════════
+  'U5YAA': 'Picanto',      'U6YAA': 'Picanto',
+  'U5YCA': 'Ceed',         'U6YCA': 'Ceed',
+  'U5YCB': 'ProCeed',      'U6YCB': 'ProCeed',
+  'U5YDA': 'Stonic',       'U6YDA': 'Stonic',
+  'U5YFA': 'Sportage',     'U6YFA': 'Sportage',
+  'U5YJA': 'EV6',          'U6YJA': 'EV6',
+  'U5YKA': 'EV9',          'U6YKA': 'EV9',
+
+  // ═══════════════════════════════════════════════════════════
+  // SSANGYONG (KPT, KLA)
+  // ═══════════════════════════════════════════════════════════
+  'KPTAA': 'Tivoli',       'KPTAB': 'Tivoli Electric',
+  'KPTBA': 'Korando',      'KPTBB': 'Korando e-Motion',
+  'KPTCA': 'Rexton',       'KPTCB': 'Rexton Sport',
+  'KPTDA': 'Musso',
+  'KLAAA': 'Tivoli',       'KLABA': 'Korando',         'KLACA': 'Rexton',
+
+  // ═══════════════════════════════════════════════════════════
+  // MCLAREN (SCE)
+  // ═══════════════════════════════════════════════════════════
+  'SCEAA': '720S',
+  'SCEAB': '720S Spider',
+  'SCEBA': '765LT',
+  'SCEBB': '765LT Spider',
+  'SCECA': 'GT',
+  'SCEDA': 'Artura',
+  'SCEDB': 'Artura Spider',
+  'SCEEA': '570S',
+  'SCEEB': '570GT',
+  'SCEFA': '600LT',
+
+  // ═══════════════════════════════════════════════════════════
+  // ASTON MARTIN (SCF)
+  // ═══════════════════════════════════════════════════════════
+  'SCFAA': 'DB11',         'SCFAB': 'DB11 Volante',
+  'SCFBA': 'DB12',         'SCFBB': 'DB12 Volante',
+  'SCFCA': 'Vantage',      'SCFCB': 'Vantage Roadster',
+  'SCFDA': 'DBS',          'SCFDB': 'DBS Superleggera',
+  'SCFEA': 'DBX',          'SCFEB': 'DBX707',
+  'SCFFA': 'Valkyrie',
+  'SCFGA': 'Vanquish',
+
+  // ═══════════════════════════════════════════════════════════
+  // ROLLS-ROYCE (SCA) / BENTLEY (SCB) / LOTUS (SCC)
+  // ═══════════════════════════════════════════════════════════
+  'SCAAA': 'Phantom',      'SCAAB': 'Phantom EWB',
+  'SCABA': 'Ghost',        'SCABB': 'Ghost EWB',
+  'SCACA': 'Wraith',       'SCACB': 'Wraith Black Badge',
+  'SCADA': 'Dawn',
+  'SCAEA': 'Cullinan',     'SCAEB': 'Cullinan Black Badge',
+  'SCAFA': 'Spectre',
+  'SCBAA': 'Continental GT',  'SCBAB': 'Continental GT Convertible',
+  'SCBBA': 'Flying Spur',
+  'SCBCA': 'Bentayga',     'SCBCB': 'Bentayga EWB',
+  'SCBDA': 'Mulsanne',
+  'SCCAA': 'Emira',
+  'SCCBA': 'Evija',
+  'SCCCA': 'Elise',
+  'SCCDA': 'Exige',
+
+  // ═══════════════════════════════════════════════════════════
+  // FORD additional plants (WF1, SFA, VS6) — WF0 already above
+  // ═══════════════════════════════════════════════════════════
+  'WF1AA': 'Fiesta',       'WF1BA': 'Focus',          'WF1CA': 'Mondeo',
+  'WF1DA': 'Kuga',         'WF1EA': 'EcoSport',       'WF1FA': 'Puma',
+  'SFAAA': 'Fiesta',       'SFABA': 'Focus',          'SFACA': 'Mondeo',
+  'SFADA': 'Kuga',         'SFAFA': 'Puma',
+  'VS6AA': 'Fiesta',       'VS6BA': 'Focus',          'VS6FA': 'Puma',
+
+  // ═══════════════════════════════════════════════════════════
+  // RENAULT additional plants (VF2, VF6, VNE, VR1)
+  // ═══════════════════════════════════════════════════════════
+  'VF2AA': 'Clio',         'VF2BA': 'Megane',          'VF2CA': 'Laguna',
+  'VF6AA': 'Clio',         'VF6BA': 'Megane',          'VF6KA': 'Captur',
+  'VNEAA': 'Clio',         'VNEBA': 'Megane',          'VNEKA': 'Captur',
+  'VR1AA': 'Clio',         'VR1BA': 'Megane',          'VR1KA': 'Captur',
 };
