@@ -2,9 +2,11 @@
  * Volkswagen Group VIN model lookup
  * Covers: VW, Skoda, SEAT/Cupra, Porsche
  * Key = WMI (3) + VIN[3] + VIN[4]  →  positions 4-5 of VIN
+ * For ZZZ-format European VINs: Key = WMI (3) + VIN[6] + VIN[7]
  *
  * WMI codes:
  *   WVW = Volkswagen AG
+ *   WVG = Volkswagen AG (Touareg / Slovakia plant)
  *   WV1 = Volkswagen (vans)
  *   WV2 = Volkswagen (Transporter)
  *   TMB = Skoda Auto
@@ -13,6 +15,14 @@
  *   WP1 = Porsche AG (SUVs: Cayenne, Macan)
  */
 export const VW_MODELS: Record<string, string> = {
+  // ── WVG = Volkswagen Touareg (Slovakia plant) ────────────────────────────
+  // ZZZ-format: key = WVG + VIN[6] + VIN[7]
+  'WVG7L': 'Touareg',          // 7L (gen 1, 2002-2010)
+  'WVG1T': 'Touareg',          // 7L variant
+  'WVG7P': 'Touareg',          // 7P (gen 2, 2010-2018)
+  'WVGCR': 'Touareg',          // CR (gen 3, 2018+)
+  'WVG4M': 'Touareg',          // 4M (gen 3 facelift)
+
   // ── WVW = Volkswagen ─────────────────────────────────────────────────────
   // Polo (AW)
   'WVWAA': 'Polo',

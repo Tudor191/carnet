@@ -94,8 +94,8 @@ export default function AddCarScreen() {
       return;
     }
     setLookupResult(result);
-    // Pre-fill model only if API returned a real model name (not empty)
-    setModel(result.model || '');
+    // Pre-fill model only when a real name was resolved (not the generic fallback)
+    setModel(result.model && result.model !== 'Necunoscut' ? result.model : '');
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
   };
 
@@ -198,6 +198,7 @@ export default function AddCarScreen() {
                   <View style={styles.infoGrid}>
                     {[
                       { label: 'Marcă', value: lookupResult.make },
+                      { label: 'Model', value: lookupResult.model !== 'Necunoscut' ? lookupResult.model : '—' },
                       { label: 'An fabricație', value: String(lookupResult.year) },
                     ].map((item, i) => (
                       <View key={i} style={styles.infoItem}>
@@ -213,11 +214,11 @@ export default function AddCarScreen() {
                   <Text style={styles.manualFieldsTitle}>Completează manual</Text>
 
                   <Field
-                    label="Model *"
+                    label={lookupResult.model !== 'Necunoscut' ? 'Model (corectați dacă e necesar)' : 'Model *'}
                     value={model}
                     onChangeText={setModel}
-                    placeholder="Ex: RS Q8, Seria 5, Golf..."
-                    hint="Verificați și corectați dacă este necesar"
+                    placeholder="Ex: Touareg, Seria 5, Golf..."
+                    hint={lookupResult.model === 'Necunoscut' ? 'Modelul nu a putut fi detectat automat — introduceți manual' : undefined}
                   />
                   <Field
                     label="Număr de înmatriculare (opțional)"

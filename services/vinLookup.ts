@@ -11,6 +11,7 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
   WAU: { make: 'Audi', country: 'DE' },
   WA1: { make: 'Audi', country: 'DE' },
   WVW: { make: 'Volkswagen', country: 'DE' },
+  WVG: { make: 'Volkswagen', country: 'DE' },
   WV2: { make: 'Volkswagen', country: 'DE' },
   WV1: { make: 'Volkswagen', country: 'DE' },
   VSS: { make: 'SEAT', country: 'ES' },
