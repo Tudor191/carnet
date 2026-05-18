@@ -117,6 +117,9 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [premiumModalVisible, setPremiumModalVisible] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{ visible: boolean; carId: string; carName: string }>({
+    visible: false, carId: '', carName: '',
+  });
 
   const isGuest = user?.isGuest === true;
 
@@ -135,14 +138,12 @@ export default function HomeScreen() {
   };
 
   const handleDeleteCar = (carId: string, carName: string) => {
-    Alert.alert(
-      'Șterge mașina',
-      `Ești sigur că vrei să ștergi ${carName}?`,
-      [
-        { text: 'Anulează', style: 'cancel' },
-        { text: 'Șterge', style: 'destructive', onPress: () => deleteCar(carId) },
-      ]
-    );
+    setDeleteModal({ visible: true, carId, carName });
+  };
+
+  const confirmDelete = () => {
+    deleteCar(deleteModal.carId);
+    setDeleteModal({ visible: false, carId: '', carName: '' });
   };
 
   const handleLogout = async () => {
@@ -269,6 +270,27 @@ export default function HomeScreen() {
                 <Text style={styles.modalUpgradeBtnText}>👑  Upgrade Premium</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setPremiumModalVisible(false)}>
+                <Text style={styles.modalCancelText}>Anulează</Text>
+              </TouchableOpacity>
+            </Pressable>
+          </Pressable>
+        </Modal>
+
+        {/* Delete confirmation modal */}
+        <Modal visible={deleteModal.visible} transparent animationType="fade">
+          <Pressable style={styles.modalOverlay} onPress={() => setDeleteModal({ visible: false, carId: '', carName: '' })}>
+            <Pressable style={styles.modalBox} onPress={() => {}}>
+              <Text style={styles.modalIcon}>🗑️</Text>
+              <Text style={[styles.modalTitle, { color: Colors.danger }]}>Șterge mașina</Text>
+              <Text style={styles.modalText}>
+                Ești sigur că vrei să ștergi{'\n'}
+                <Text style={styles.modalBold}>{deleteModal.carName}</Text>?{'\n'}
+                Această acțiune este ireversibilă.
+              </Text>
+              <TouchableOpacity style={[styles.modalUpgradeBtn, { backgroundColor: Colors.danger }]} onPress={confirmDelete}>
+                <Text style={styles.modalUpgradeBtnText}>Șterge</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setDeleteModal({ visible: false, carId: '', carName: '' })}>
                 <Text style={styles.modalCancelText}>Anulează</Text>
               </TouchableOpacity>
             </Pressable>
