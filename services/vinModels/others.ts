@@ -1,19 +1,19 @@
 /**
  * VIN model lookup for all other manufacturers:
- * Renault (VF1/VF2/VF6/VNE/VR1), Dacia (UU1/UU3), Peugeot (VF3/VR3),
- * Citroën (VF7/VF8/VR7/VS7), DS (VF9/VR8), Alpine (VFA),
- * Opel (W0L/TMA), Ford Europe (WF0/WF1/SFA/VS6),
+ * Renault (VF1/VF2/VF6/VNE), Dacia (UU1/UU3), Peugeot (VF3/VR3),
+ * Citroën (VF7/VF8/VR7/VS7), DS (VF9/VR1/VR8), Alpine (VFA),
+ * Opel (W0L), Hyundai Czech (TMA), Ford Europe (WF0/WF1/SFA/VS6),
  * Toyota (SB1/JTD/JTE/JTK/JTM/JTN/JT2/JT3/VNK),
  * Lexus (JTJ/JTH/JTL), Honda (JHM/SHH), Nissan (JN1/JN6/JN8/VNV),
  * Infiniti (JNK), Mazda (JM1/JM4/JMZ), Mitsubishi (JMB/JA3/JA4),
  * Suzuki (JS1-JS4), Subaru (JF1/JF2),
  * Hyundai (KMH/KMF/KMJ), Kia (KNA/KND/KNM/U5Y/U6Y), Genesis (KMT),
- * SsangYong (KPT/KLA), Volvo (YV1/YV4/VSK), Saab (YS3),
+ * SsangYong (KPT/KLA), Volvo (YV1/YV4), Saab (YS3),
  * Jaguar (SAJ), Land Rover (SAL), Rolls-Royce (SCA), Bentley (SCB),
- * Lotus (SCC), McLaren (SCE), Aston Martin (SCF),
+ * Lotus (SCC), DeLorean (SCE), McLaren (SBM), Aston Martin (SCF),
  * Alfa Romeo (ZAR), Fiat (ZFA), Lancia (ZLA),
  * Ferrari (ZFF), Lamborghini (ZHW), Maserati (ZAM),
- * Tesla (5YJ/SFZ/LRW), Genesis (KMT)
+ * Tesla (5YJ/SFZ/LRW/XP7)
  *
  * Key = WMI (3) + VIN[3] + VIN[4]  →  positions 4-5 of VIN
  */
@@ -95,9 +95,10 @@ export const OTHER_MODELS: Record<string, string> = {
   'VF3MA': 'Expert',
 
   // ═══════════════════════════════════════════════════════════
-  // CITROËN (VF7, VF8, VR7=Spain Vigo plant) + DS (VF9, VR8)
-  // VR7 = PSA/Stellantis Vigo (Spain) → Citroën models, NOT DS
-  // VR8 = DS Automobiles (separate brand from Citroën)
+  // CITROËN (VF7, VF8, VR7) + DS (VF9, VR1, VR8)
+  // VR7 = PSA/Stellantis France WMI (cars may be assembled at Vigo, Spain)
+  // VF9 / VR1 = DS Automobiles (VR1 confirmed from PSA 2017 WMI assignment)
+  // VR8 = PSA-range WMI, likely DS or related brand (unconfirmed)
   // ═══════════════════════════════════════════════════════════
   'VF7AA': 'C1',
   'VF7BA': 'C3',
@@ -131,7 +132,8 @@ export const OTHER_MODELS: Record<string, string> = {
   'VR7CA': 'C4',
 
   // ═══════════════════════════════════════════════════════════
-  // OPEL / VAUXHALL (W0L, TMA, X0L)
+  // OPEL / VAUXHALL (W0L, X0L)
+  // TMA = Hyundai Motor Manufacturing Czech (Nošovice), NOT Opel Hungary
   // ═══════════════════════════════════════════════════════════
   'W0LAA': 'Corsa',
   'W0LAB': 'Corsa-e',
@@ -160,8 +162,10 @@ export const OTHER_MODELS: Record<string, string> = {
   'W0LMA': 'Cascada',
   'W0LNA': 'Adam',
   'W0LPA': 'Karl / Viva',
-  'TMAAA': 'Corsa',
-  'TMABA': 'Astra',
+  // TMA = Hyundai Motor Manufacturing Czech s.r.o. (Nošovice plant)
+  'TMAAA': 'i20',
+  'TMABA': 'i30',
+  'TMACA': 'Tucson',
 
   // ═══════════════════════════════════════════════════════════
   // FORD — European (WF0)
@@ -312,7 +316,9 @@ export const OTHER_MODELS: Record<string, string> = {
   'KNDHA': 'Sorento',
 
   // ═══════════════════════════════════════════════════════════
-  // VOLVO (YV1, YV2, YV4, VSK)
+  // VOLVO (YV1, YV4)
+  // YV1 = older/sedan models, YV4 = newer SUV/EV models (2019+)
+  // VSK = Nissan Motor Ibérica S.A., Spain — NOT Volvo
   // ═══════════════════════════════════════════════════════════
   'YV1AA': 'S40',
   'YV1BA': 'S60',
@@ -340,6 +346,24 @@ export const OTHER_MODELS: Record<string, string> = {
   'YV1PA': 'EX30',
   'YV1QA': 'EX40',
   'YV1RA': 'EX90',
+
+  // YV4 = newer SUV/electric platform (2019+)
+  // Confirmed: XC60 2023 = YV4L12DM8P1... (pos4='L'), XC90 2025 = YV4M12PJ1S... (pos4='M')
+  'YV4JA': 'XC40',
+  'YV4JB': 'XC40 Recharge',
+  'YV4KA': 'XC60',
+  'YV4KB': 'XC60 Recharge',
+  'YV4LA': 'XC90',
+  'YV4LB': 'XC90 Recharge',
+  'YV4MA': 'XC90',
+  'YV4NA': 'C40 Recharge',
+  'YV4PA': 'EX30',
+  'YV4RA': 'EX90',
+  // 4-char fallback keys for YV4 (when 5-char key doesn't match)
+  'YV4J': 'XC40',
+  'YV4K': 'XC60',
+  'YV4L': 'XC90',
+  'YV4M': 'XC90',
 
   // ═══════════════════════════════════════════════════════════
   // JAGUAR (SAJ) + LAND ROVER (SAL, SALJ, SALV, SALW)
@@ -502,8 +526,10 @@ export const OTHER_MODELS: Record<string, string> = {
   'ZAMFA': 'MC20',
 
   // ═══════════════════════════════════════════════════════════
-  // TESLA (5YJ=US, SFZ=UK/EU, LRW=Shanghai, 7SA=Cybertruck)
+  // TESLA (5YJ=US Fremont, SFZ=UK Hethel/Roadster, LRW=Shanghai,
+  //         7SA=Cybertruck, XP7=Giga Berlin)
   // Source: NHTSA VIN decoder docs (vpic.nhtsa.dot.gov)
+  // YY3 is NOT Tesla Germany — YY = Sweden range; Giga Berlin = XP7
   // Position 4: S=Model S, X=Model X, 3=Model 3, Y=Model Y, C=Cybertruck
   // Using 4-char keys (WMI + pos4) to cover all body-style variants.
   // ═══════════════════════════════════════════════════════════
@@ -527,6 +553,9 @@ export const OTHER_MODELS: Record<string, string> = {
   'LRWY': 'Model Y',
   'LRWS': 'Model S',
   'LRWX': 'Model X',
+  // Giga Berlin (XP7) — same pos4 model letters
+  'XP7Y': 'Model Y',
+  'XP73': 'Model 3',
 
   // ═══════════════════════════════════════════════════════════
   // GENESIS (KMT, MAL)
@@ -542,13 +571,14 @@ export const OTHER_MODELS: Record<string, string> = {
   'KMTGA': 'Electrified G80',
 
   // ═══════════════════════════════════════════════════════════
-  // DS AUTOMOBILES additional plant (VR8)
+  // DS AUTOMOBILES (VR8 — WMI unconfirmed but PSA-range; kept as best guess)
+  // Confirmed DS WMIs: VF9 (main) and VR1 (PSA 2017 reassignment)
   // ═══════════════════════════════════════════════════════════
-  'VR8AA': 'DS3',         'VR8AB': 'DS3 Crossback',   'VR8AC': 'DS3 E-Tense',
-  'VR8BA': 'DS4',         'VR8BB': 'DS4 E-Tense',
-  'VR8CA': 'DS5',
-  'VR8DA': 'DS7',         'VR8DB': 'DS7 E-Tense',
-  'VR8EA': 'DS9',         'VR8EB': 'DS9 E-Tense',
+  'VR8AA': 'DS 3',        'VR8AB': 'DS 3 Crossback',  'VR8AC': 'DS 3 E-Tense',
+  'VR8BA': 'DS 4',        'VR8BB': 'DS 4 E-Tense',
+  'VR8CA': 'DS 5',
+  'VR8DA': 'DS 7',        'VR8DB': 'DS 7 E-Tense',
+  'VR8EA': 'DS 9',        'VR8EB': 'DS 9 E-Tense',
 
   // ═══════════════════════════════════════════════════════════
   // ALPINE (VFA)
@@ -673,18 +703,23 @@ export const OTHER_MODELS: Record<string, string> = {
   'KLAAA': 'Tivoli',       'KLABA': 'Korando',         'KLACA': 'Rexton',
 
   // ═══════════════════════════════════════════════════════════
-  // MCLAREN (SCE)
+  // DELOREAN (SCE) + MCLAREN (SBM)
+  // SCE = DeLorean Motor Cars Ltd., Northern Ireland (NOT McLaren)
+  // SBM = McLaren Automotive Ltd., Woking, Surrey
+  // Source: Wikibooks WMI, dot.report
   // ═══════════════════════════════════════════════════════════
-  'SCEAA': '720S',
-  'SCEAB': '720S Spider',
-  'SCEBA': '765LT',
-  'SCEBB': '765LT Spider',
-  'SCECA': 'GT',
-  'SCEDA': 'Artura',
-  'SCEDB': 'Artura Spider',
-  'SCEEA': '570S',
-  'SCEEB': '570GT',
-  'SCEFA': '600LT',
+  'SCEAA': 'DMC-12',
+
+  'SBMAA': '720S',
+  'SBMAB': '720S Spider',
+  'SBMBA': '765LT',
+  'SBMBB': '765LT Spider',
+  'SBMCA': 'GT',
+  'SBMDA': 'Artura',
+  'SBMDB': 'Artura Spider',
+  'SBMEA': '570S',
+  'SBMEB': '570GT',
+  'SBMFA': '600LT',
 
   // ═══════════════════════════════════════════════════════════
   // ASTON MARTIN (SCF)
@@ -725,10 +760,16 @@ export const OTHER_MODELS: Record<string, string> = {
   'VS6AA': 'Fiesta',       'VS6BA': 'Focus',          'VS6FA': 'Puma',
 
   // ═══════════════════════════════════════════════════════════
-  // RENAULT additional plants (VF2, VF6, VNE, VR1)
+  // RENAULT additional plants (VF2, VF6, VNE)
+  // VR1 = DS Automobiles (PSA 2017 reassignment), NOT Renault
   // ═══════════════════════════════════════════════════════════
   'VF2AA': 'Clio',         'VF2BA': 'Megane',          'VF2CA': 'Laguna',
   'VF6AA': 'Clio',         'VF6BA': 'Megane',          'VF6KA': 'Captur',
   'VNEAA': 'Clio',         'VNEBA': 'Megane',          'VNEKA': 'Captur',
-  'VR1AA': 'Clio',         'VR1BA': 'Megane',          'VR1KA': 'Captur',
+  // VR1 = DS Automobiles (confirmed: PSA 2017 WMI assignment; DS VIN example VR1JJEHZRJY032632)
+  'VR1AA': 'DS 3',         'VR1AB': 'DS 3 Crossback',  'VR1AC': 'DS 3 E-Tense',
+  'VR1BA': 'DS 4',         'VR1BB': 'DS 4 E-Tense',
+  'VR1CA': 'DS 5',
+  'VR1DA': 'DS 7 Crossback', 'VR1DB': 'DS 7 E-Tense',
+  'VR1EA': 'DS 9',
 };

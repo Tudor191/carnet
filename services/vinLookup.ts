@@ -30,7 +30,7 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
   WP1: { make: 'Porsche', country: 'DE' },
   W0L: { make: 'Opel', country: 'DE' },
   W0V: { make: 'Opel', country: 'DE' },
-  TMA: { make: 'Opel', country: 'HU' },
+  TMA: { make: 'Hyundai', country: 'CZ' },
   WF0: { make: 'Ford', country: 'DE' },
   WF1: { make: 'Ford', country: 'DE' },
 
@@ -39,7 +39,7 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
   VF2: { make: 'Renault', country: 'FR' },
   VF6: { make: 'Renault', country: 'FR' },
   VNE: { make: 'Renault', country: 'FR' },
-  VR1: { make: 'Renault', country: 'FR' },
+  VR1: { make: 'DS', country: 'FR' },
   VF3: { make: 'Peugeot', country: 'FR' },
   VR3: { make: 'Peugeot', country: 'SK' },
   VF4: { make: 'Peugeot', country: 'FR' },
@@ -51,7 +51,7 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
   VR8: { make: 'DS', country: 'FR' },
   VFA: { make: 'Alpine', country: 'FR' },
   VNK: { make: 'Toyota', country: 'FR' },
-  VNV: { make: 'Nissan', country: 'GB' },
+  VNV: { make: 'Nissan', country: 'FR' },
 
   // ── ITALY ─────────────────────────────────────────────────────────────────
   ZAR: { make: 'Alfa Romeo', country: 'IT' },
@@ -69,7 +69,8 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
   SCA: { make: 'Rolls-Royce', country: 'GB' },
   SCB: { make: 'Bentley', country: 'GB' },
   SCC: { make: 'Lotus', country: 'GB' },
-  SCE: { make: 'McLaren', country: 'GB' },
+  SBM: { make: 'McLaren', country: 'GB' },
+  SCE: { make: 'DeLorean', country: 'GB' },
   SCF: { make: 'Aston Martin', country: 'GB' },
   SFA: { make: 'Ford', country: 'GB' },
   SFZ: { make: 'Tesla', country: 'GB' },
@@ -79,7 +80,7 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
   // ── SWEDEN ────────────────────────────────────────────────────────────────
   YV1: { make: 'Volvo', country: 'SE' },
   YV4: { make: 'Volvo', country: 'SE' },
-  VSK: { make: 'Volvo', country: 'BE' },
+  VSK: { make: 'Nissan', country: 'ES' },
   YS3: { make: 'Saab', country: 'SE' },
   YK1: { make: 'Saab', country: 'SE' },
 
@@ -89,8 +90,8 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
 
   // ── JAPAN ─────────────────────────────────────────────────────────────────
   JHM: { make: 'Honda', country: 'JP' },
-  JAA: { make: 'Honda', country: 'JP' },
-  JAB: { make: 'Honda', country: 'JP' },
+  JAA: { make: 'Isuzu', country: 'JP' },
+  JAB: { make: 'Isuzu', country: 'JP' },
   JTD: { make: 'Toyota', country: 'JP' },
   JTE: { make: 'Toyota', country: 'JP' },
   JTH: { make: 'Lexus', country: 'JP' },
@@ -139,7 +140,7 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
   // ── ROMÂNIA / EUROPA DE EST ───────────────────────────────────────────────
   UU1: { make: 'Dacia', country: 'RO' },
   UU3: { make: 'Dacia', country: 'RO' },
-  UU6: { make: 'Dacia', country: 'RO' },
+  UU6: { make: 'Daewoo', country: 'RO' },
 
   // ── STATELE UNITE ─────────────────────────────────────────────────────────
   '1HG': { make: 'Honda', country: 'US' },
@@ -183,7 +184,7 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
   '4F4': { make: 'Mazda', country: 'US' },
   '5YJ': { make: 'Tesla', country: 'US' },
   '7SA': { make: 'Tesla', country: 'US' },
-  YY3: { make: 'Tesla', country: 'DE' },
+  XP7: { make: 'Tesla', country: 'DE' },
   LRW: { make: 'Tesla', country: 'CN' },
   '5NP': { make: 'Hyundai', country: 'US' },
   '5XX': { make: 'Kia', country: 'US' },
