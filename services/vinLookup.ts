@@ -53,6 +53,8 @@ const WMI_DATABASE: Record<string, { make: string; country: string }> = {
   JN1: { make: 'Nissan', country: 'JP' },
   JN6: { make: 'Nissan', country: 'JP' },
   JM1: { make: 'Mazda', country: 'JP' },
+  JM4: { make: 'Mazda', country: 'JP' },
+  JMZ: { make: 'Mazda', country: 'JP' },
   JMB: { make: 'Mitsubishi', country: 'JP' },
   JS1: { make: 'Suzuki', country: 'JP' },
   JS2: { make: 'Suzuki', country: 'JP' },

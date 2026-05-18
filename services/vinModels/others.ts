@@ -404,25 +404,26 @@ export const OTHER_MODELS: Record<string, string> = {
   'JN6AA': 'Navara',
 
   // ═══════════════════════════════════════════════════════════
-  // MAZDA (JM1, JMZ)
+  // MAZDA (JM1, JM4, JMZ — same platform codes, different plants/markets)
   // ═══════════════════════════════════════════════════════════
-  'JM1AA': 'Mazda2',
-  'JM1AB': 'Mazda2 Hybrid',
-  'JM1BA': 'Mazda3',
-  'JM1BB': 'Mazda3 Fastback',
-  'JM1CA': 'Mazda6',
-  'JM1CB': 'Mazda6 SW',
-  'JM1DA': 'CX-3',
-  'JM1EA': 'CX-30',
-  'JM1FA': 'CX-5',
-  'JM1FB': 'CX-5 Skyactiv-X',
-  'JM1GA': 'CX-60',
-  'JM1GB': 'CX-60 PHEV',
-  'JM1HA': 'CX-80',
-  'JM1JA': 'CX-90',
-  'JM1KA': 'MX-5',
-  'JM1LA': 'MX-30',
-  'JM1MA': 'MX-30 R-EV',
+  'JM1AA': 'Mazda2',  'JM4AA': 'Mazda2',
+  'JM1AB': 'Mazda2 Hybrid',  'JM4AB': 'Mazda2 Hybrid',
+  'JM1BA': 'Mazda3',  'JM4BA': 'Mazda3',
+  'JM1BB': 'Mazda3 Fastback',  'JM4BB': 'Mazda3 Fastback',
+  'JM1BP': 'Mazda3',  'JM4BP': 'Mazda3',  // BP = 4th gen (2019+) platform
+  'JM1CA': 'Mazda6',  'JM4CA': 'Mazda6',
+  'JM1CB': 'Mazda6 SW',  'JM4CB': 'Mazda6 SW',
+  'JM1DA': 'CX-3',  'JM4DA': 'CX-3',
+  'JM1EA': 'CX-30',  'JM4EA': 'CX-30',
+  'JM1FA': 'CX-5',  'JM4FA': 'CX-5',
+  'JM1FB': 'CX-5 Skyactiv-X',  'JM4FB': 'CX-5 Skyactiv-X',
+  'JM1GA': 'CX-60',  'JM4GA': 'CX-60',
+  'JM1GB': 'CX-60 PHEV',  'JM4GB': 'CX-60 PHEV',
+  'JM1HA': 'CX-80',  'JM4HA': 'CX-80',
+  'JM1JA': 'CX-90',  'JM4JA': 'CX-90',
+  'JM1KA': 'MX-5',  'JM4KA': 'MX-5',
+  'JM1LA': 'MX-30',  'JM4LA': 'MX-30',
+  'JM1MA': 'MX-30 R-EV',  'JM4MA': 'MX-30 R-EV',
 
   // ═══════════════════════════════════════════════════════════
   // SUBARU (JF1, JF2)
