@@ -95,7 +95,9 @@ export const OTHER_MODELS: Record<string, string> = {
   'VF3MA': 'Expert',
 
   // ═══════════════════════════════════════════════════════════
-  // CITROËN (VF7, VF8) + DS (VF9, VR7)
+  // CITROËN (VF7, VF8, VR7=Spain Vigo plant) + DS (VF9, VR8)
+  // VR7 = PSA/Stellantis Vigo (Spain) → Citroën models, NOT DS
+  // VR8 = DS Automobiles (separate brand from Citroën)
   // ═══════════════════════════════════════════════════════════
   'VF7AA': 'C1',
   'VF7BA': 'C3',
@@ -121,8 +123,12 @@ export const OTHER_MODELS: Record<string, string> = {
   'VF9CA': 'DS 5',
   'VF9DA': 'DS 7 Crossback',
   'VF9EA': 'DS 9',
-  'VR7AA': 'DS 3',
-  'VR7BA': 'DS 7',
+  // VR7 = Citroën Vigo (Spain) — Berlingo, SpaceTourer, Jumpy produced here
+  'VR7FA': 'Berlingo',
+  'VR7GA': 'SpaceTourer',
+  'VR7HA': 'Jumpy',
+  'VR7BA': 'C3',
+  'VR7CA': 'C4',
 
   // ═══════════════════════════════════════════════════════════
   // OPEL / VAUXHALL (W0L, TMA, X0L)
@@ -396,7 +402,7 @@ export const OTHER_MODELS: Record<string, string> = {
   'ZLABB': 'Ypsilon Hybrid',
 
   // ═══════════════════════════════════════════════════════════
-  // NISSAN (JN1, JN6, VNK, VSK)
+  // NISSAN (JN1, JN6, JN8)
   // ═══════════════════════════════════════════════════════════
   'JN1AA': 'Micra',
   'JN1BA': 'Juke',
@@ -496,22 +502,31 @@ export const OTHER_MODELS: Record<string, string> = {
   'ZAMFA': 'MC20',
 
   // ═══════════════════════════════════════════════════════════
-  // TESLA (5YJ, SFZ, LRW, 7G2, XP7)
+  // TESLA (5YJ=US, SFZ=UK/EU, LRW=Shanghai, 7SA=Cybertruck)
+  // Source: NHTSA VIN decoder docs (vpic.nhtsa.dot.gov)
+  // Position 4: S=Model S, X=Model X, 3=Model 3, Y=Model Y, C=Cybertruck
+  // Using 4-char keys (WMI + pos4) to cover all body-style variants.
   // ═══════════════════════════════════════════════════════════
-  '5YJAA': 'Model S',
-  '5YJAB': 'Model S Plaid',
-  '5YJCA': 'Model X',
-  '5YJCB': 'Model X Plaid',
-  '5YJEAA': 'Model 3',
-  '5YJFA': 'Model 3 Performance',
-  '5YJGA': 'Model Y',
-  '5YJGB': 'Model Y Performance',
-  'SFZAA': 'Model 3',
-  'SFZBA': 'Model Y',
-  'LRWAA': 'Model 3',
-  'LRWBA': 'Model Y',
-  'LRWCA': 'Model S',
-  'LRWDA': 'Model X',
+  // US — Fremont, CA (5YJ)
+  '5YJS': 'Model S',
+  '5YJSA': 'Model S',        // pos5=A common variant
+  '5YJSE': 'Model S',        // pos5=E sedan
+  '5YJX': 'Model X',
+  '5YJXC': 'Model X',        // pos5=C common variant
+  '5YJ3': 'Model 3',
+  '5YJ3E': 'Model 3',        // pos5=E sedan LHD
+  '5YJY': 'Model Y',
+  '5YJYG': 'Model Y',        // pos5=G MPV LHD
+  '5YJYC': 'Model Y Performance',
+  // UK / EU legacy (SFZ) — same pos4 model letters
+  'SFZS': 'Model S',
+  'SFZ3': 'Model 3',
+  'SFZY': 'Model Y',
+  // Shanghai (LRW) — same pos4 model letters
+  'LRW3': 'Model 3',
+  'LRWY': 'Model Y',
+  'LRWS': 'Model S',
+  'LRWX': 'Model X',
 
   // ═══════════════════════════════════════════════════════════
   // GENESIS (KMT, MAL)
