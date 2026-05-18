@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, ActivityIndicator, Linking, Alert,
+  TouchableOpacity, ActivityIndicator, Linking, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -45,21 +45,32 @@ const FEATURES = [
 
 export default function PremiumScreen() {
   const { user, setUser } = useCarStore();
-  const [selectedPlan, setSelectedPlan] = useState<PremiumPlan>('yearly');
+  const [selectedPlan, setSelectedPlan] = useState<PremiumPlan>('monthly');
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [error, setError] = useState('');
+  const [verifyMsg, setVerifyMsg] = useState('');
+
+  const openURL = (url: string) => {
+    if (Platform.OS === 'web') {
+      window.location.href = url;
+    } else {
+      Linking.openURL(url);
+    }
+  };
 
   const handleBuy = async () => {
-    if (!user?.email || user.email === 'demo@guest.com') {
-      Alert.alert('Cont necesar', 'Trebuie să fii autentificat cu un email valid pentru a cumpăra Premium.');
+    setError('');
+    if (!user?.email) {
+      setError('Trebuie să fii autentificat cu un email valid pentru a cumpăra Premium.');
       return;
     }
     setLoading(true);
     try {
       const url = await createCheckoutSession(user.email, selectedPlan);
-      await Linking.openURL(url);
+      openURL(url);
     } catch (err: any) {
-      Alert.alert('Eroare', err.message || 'Nu s-a putut inițializa plata. Încearcă din nou.');
+      setError(err.message || 'Nu s-a putut inițializa plata. Încearcă din nou.');
     } finally {
       setLoading(false);
     }
@@ -68,14 +79,14 @@ export default function PremiumScreen() {
   const handleVerify = async () => {
     if (!user?.email) return;
     setChecking(true);
+    setVerifyMsg('');
     try {
       const status = await checkPremiumStatus(user.email);
       if (status.isPremium) {
         await setUser({ ...user, isPremium: true });
-        Alert.alert('Felicitări! 🎉', 'Contul tău Premium a fost activat.');
         router.replace('/home');
       } else {
-        Alert.alert('Premium inactiv', 'Nu am găsit un abonament activ pentru acest cont. Dacă tocmai ai plătit, mai așteaptă câteva secunde și încearcă din nou.');
+        setVerifyMsg('Nu am găsit un abonament activ. Dacă tocmai ai plătit, mai așteaptă câteva secunde și încearcă din nou.');
       }
     } finally {
       setChecking(false);
@@ -178,6 +189,13 @@ export default function PremiumScreen() {
             ))}
           </View>
 
+          {/* Error message */}
+          {!!error && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>⚠️  {error}</Text>
+            </View>
+          )}
+
           {/* CTA */}
           <TouchableOpacity
             style={[styles.ctaBtn, loading && { opacity: 0.7 }]}
@@ -211,6 +229,11 @@ export default function PremiumScreen() {
               : <Text style={styles.verifyBtnText}>Am plătit deja — verifică statusul</Text>
             }
           </TouchableOpacity>
+          {!!verifyMsg && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{verifyMsg}</Text>
+            </View>
+          )}
 
           <Text style={styles.legalText}>
             Plata este procesată securizat prin Stripe. Poți anula abonamentul oricând din contul tău Stripe.
@@ -306,6 +329,15 @@ const styles = StyleSheet.create({
   },
   verifyBtnText: { color: Colors.accent, fontSize: 13, fontWeight: '600' },
 
+  errorBox: {
+    backgroundColor: 'rgba(239,68,68,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.35)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  errorText: { color: Colors.danger, fontSize: 13, textAlign: 'center', lineHeight: 18 },
   legalText: { fontSize: 11, color: Colors.gray400, textAlign: 'center', lineHeight: 16 },
 
   // Already premium
