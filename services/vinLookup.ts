@@ -306,7 +306,9 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
 
       // Use API make/model if available; fall back to local VIN model database
       const make = apiMake || wmiData?.make || '';
-      const model = apiModel || lookupVinModel(cleanVin) || '';
+      const rawModel = apiModel || lookupVinModel(cleanVin) || '';
+      // Strip make prefix from model (e.g. NHTSA returns "Mazda3" → we show "3")
+      const model = cleanModel(rawModel, make);
 
       // Validate API year: NHTSA sometimes returns '0' for unknown VINs
       const apiYear = yearStr ? parseInt(yearStr, 10) : 0;
@@ -401,6 +403,18 @@ function formatMake(s: string): string {
   return s.trim().split(/\s+/).map(word =>
     word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
   ).join(' ');
+}
+
+// Remove the make name prefix from the model when NHTSA returns them combined.
+// e.g. make="Mazda" model="Mazda3" → "3"; make="Mazda" model="Mazda CX-5" → "CX-5"
+function cleanModel(model: string, make: string): string {
+  if (!model || !make) return model;
+  const m = model.trim();
+  const mk = make.trim();
+  // Escape special regex chars in make name, then strip it (with optional space) from start
+  const escaped = mk.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const cleaned = m.replace(new RegExp(`^${escaped}\\s*`, 'i'), '').trim();
+  return cleaned || m; // never return empty string
 }
 
 function capitalizeFirst(s: string): string {

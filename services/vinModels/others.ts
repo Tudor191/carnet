@@ -448,13 +448,13 @@ export const OTHER_MODELS: Record<string, string> = {
   // ═══════════════════════════════════════════════════════════
   // MAZDA (JM1, JM4, JMZ — same platform codes, different plants/markets)
   // ═══════════════════════════════════════════════════════════
-  'JM1AA': 'Mazda2',  'JM4AA': 'Mazda2',
-  'JM1AB': 'Mazda2 Hybrid',  'JM4AB': 'Mazda2 Hybrid',
-  'JM1BA': 'Mazda3',  'JM4BA': 'Mazda3',
-  'JM1BB': 'Mazda3 Fastback',  'JM4BB': 'Mazda3 Fastback',
-  'JM1BP': 'Mazda3',  'JM4BP': 'Mazda3',  // BP = 4th gen (2019+) platform
-  'JM1CA': 'Mazda6',  'JM4CA': 'Mazda6',
-  'JM1CB': 'Mazda6 SW',  'JM4CB': 'Mazda6 SW',
+  'JM1AA': '2',  'JM4AA': '2',
+  'JM1AB': '2 Hybrid',  'JM4AB': '2 Hybrid',
+  'JM1BA': '3',  'JM4BA': '3',
+  'JM1BB': '3 Fastback',  'JM4BB': '3 Fastback',
+  'JM1BP': '3',  'JM4BP': '3',  // BP = 4th gen (2019+) platform
+  'JM1CA': '6',  'JM4CA': '6',
+  'JM1CB': '6 SW',  'JM4CB': '6 SW',
   'JM1DA': 'CX-3',  'JM4DA': 'CX-3',
   'JM1EA': 'CX-30',  'JM4EA': 'CX-30',
   'JM1FA': 'CX-5',  'JM4FA': 'CX-5',
