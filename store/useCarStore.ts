@@ -40,7 +40,7 @@ async function saveCarsForUser(userId: string, cars: Car[]): Promise<void> {
 export const useCarStore = create<CarStore>((set, get) => ({
   user: null,
   cars: [],
-  isLoading: false,
+  isLoading: true,
 
   // Called on login/register — sets user and loads ONLY their cars
   setUser: async (user) => {

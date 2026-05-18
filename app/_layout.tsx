@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet, View } from 'react-native';
@@ -8,11 +8,16 @@ import LoadingScreen from '../components/LoadingScreen';
 import Sidebar from '../components/Sidebar';
 
 const LOADER_DURATION = 2000;
+const AUTH_SEGMENTS = ['', 'login', 'register', 'index'];
 
 export default function RootLayout() {
   const loadCars = useCarStore(s => s.loadCars);
+  const user = useCarStore(s => s.user);
+  const isLoading = useCarStore(s => s.isLoading);
   const [showLoader, setShowLoader] = useState(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const router = useRouter();
+  const segments = useSegments();
 
   // Show loader only on initial page load / refresh — not on navigation
   useEffect(() => {
@@ -25,6 +30,16 @@ export default function RootLayout() {
   useEffect(() => {
     loadCars();
   }, []);
+
+  // Redirect to login when session check completes and no user is found
+  useEffect(() => {
+    if (isLoading) return;
+    const currentSegment = (segments[0] as string) ?? '';
+    const onAuthScreen = AUTH_SEGMENTS.includes(currentSegment);
+    if (!user && !onAuthScreen) {
+      router.replace('/login');
+    }
+  }, [user, isLoading, segments]);
 
   return (
     <View style={styles.root}>
