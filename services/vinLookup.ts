@@ -287,7 +287,11 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       const make = apiMake || wmiData?.make || '';
       const model = apiModel || lookupVinModel(cleanVin) || '';
 
-      const year = yearStr ? parseInt(yearStr, 10) : decodeYearFromVin(cleanVin);
+      // Validate API year: NHTSA sometimes returns '0' for unknown VINs
+      const apiYear = yearStr ? parseInt(yearStr, 10) : 0;
+      const year = (apiYear >= 1900 && apiYear <= 2060)
+        ? apiYear
+        : decodeYearFromVin(cleanVin);
 
       const displacement = displacementL
         ? `${parseFloat(displacementL).toFixed(1)} L`
