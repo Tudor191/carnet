@@ -8,6 +8,8 @@ import {
   TextInput,
   Linking,
   ActivityIndicator,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -227,6 +229,7 @@ export default function CarDetailScreen() {
   const { cars, updateCar, deleteCar } = useCarStore();
   const car = cars.find(c => c.id === id);
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [rovinetaChecking, setRovinetaChecking] = useState(false);
   const [creds, setCreds] = useState<ErovinetaCreds | null>(null);
   const [showCredsForm, setShowCredsForm] = useState(false);
@@ -295,7 +298,10 @@ export default function CarDetailScreen() {
   const rovinetaStatus = getRovinetaStatus(car.registrationNumber, car.rovinetaExpiry, rovinetaChecking);
   const rovinetaInfo = ROVINIETA_LABELS[rovinetaStatus];
 
-  const handleDelete = async () => {
+  const handleDelete = () => setShowDeleteModal(true);
+
+  const confirmDelete = async () => {
+    setShowDeleteModal(false);
     await deleteCar(car.id);
     router.replace('/home');
   };
@@ -325,6 +331,27 @@ export default function CarDetailScreen() {
             <Text style={styles.deleteIcon}>🗑</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Delete confirmation modal */}
+        <Modal visible={showDeleteModal} transparent animationType="fade">
+          <Pressable style={styles.modalOverlay} onPress={() => setShowDeleteModal(false)}>
+            <Pressable style={styles.modalBox} onPress={() => {}}>
+              <Text style={styles.modalIcon}>🗑️</Text>
+              <Text style={styles.modalTitle}>Șterge mașina</Text>
+              <Text style={styles.modalText}>
+                Ești sigur că vrei să ștergi{'\n'}
+                <Text style={styles.modalBold}>{car.make} {car.model}</Text>?{'\n'}
+                Această acțiune este ireversibilă.
+              </Text>
+              <TouchableOpacity style={styles.modalDeleteBtn} onPress={confirmDelete}>
+                <Text style={styles.modalDeleteBtnText}>Da, șterge</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowDeleteModal(false)}>
+                <Text style={styles.modalCancelText}>Nu, anulează</Text>
+              </TouchableOpacity>
+            </Pressable>
+          </Pressable>
+        </Modal>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
           {/* Car Card */}
@@ -678,6 +705,49 @@ const styles = StyleSheet.create({
     color: Colors.danger,
     fontWeight: '600',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  modalBox: {
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    borderWidth: 2.5,
+    borderColor: Colors.danger,
+    padding: 28,
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 340,
+  },
+  modalIcon: { fontSize: 48, marginBottom: 12 },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: Colors.danger,
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 14,
+    color: Colors.gray700,
+    textAlign: 'center',
+    lineHeight: 21,
+    marginBottom: 20,
+  },
+  modalBold: { fontWeight: '800', color: Colors.primary },
+  modalDeleteBtn: {
+    backgroundColor: Colors.danger,
+    borderRadius: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 28,
+    marginBottom: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalDeleteBtnText: { color: Colors.white, fontSize: 15, fontWeight: '800' },
+  modalCancelText: { color: Colors.gray400, fontSize: 13, fontWeight: '500' },
 });
 
 const detailStyles = StyleSheet.create({
