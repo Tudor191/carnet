@@ -139,9 +139,11 @@ export default function CarCard({ car, onPress }: Props) {
           <ExpiryBadge label="ITP" date={car.itpExpiry} />
         </View>
 
-        {/* ROVinieta row */}
+        {/* ROVinieta row — centered */}
         <View style={styles.rovinetaRow}>
-          <ExpiryBadge label="ROVinieta" date={car.rovinetaExpiry} />
+          <View style={styles.rovinetaBadgeWrapper}>
+            <ExpiryBadge label="ROVinieta" date={car.rovinetaExpiry} />
+          </View>
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -241,7 +243,11 @@ const styles = StyleSheet.create({
   },
   rovinetaRow: {
     flexDirection: 'row',
+    justifyContent: 'center',
     marginBottom: 4,
+  },
+  rovinetaBadgeWrapper: {
+    width: '50%',
   },
   expiryBadge: { flex: 1 },
   expiryLabel: {
