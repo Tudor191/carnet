@@ -1,4 +1,5 @@
 import { VinLookupResult } from '../types';
+import { lookupVinModel } from './vinModels';
 
 // World Manufacturer Identifier (primele 3 caractere din VIN)
 const WMI_DATABASE: Record<string, { make: string; country: string }> = {
@@ -149,9 +150,9 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       const transmissionRaw = get('Transmission Style');
       const bodyType = get('Body Class') || 'Sedan';
 
-      // Use API make/model if available; never use raw VDS characters as model
+      // Use API make/model if available; fall back to local VIN model database
       const make = apiMake || wmiData?.make || '';
-      const model = apiModel || '';
+      const model = apiModel || lookupVinModel(cleanVin) || '';
 
       const year = yearStr ? parseInt(yearStr, 10) : decodeYearFromVin(cleanVin);
 
@@ -199,9 +200,10 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
   // WMI-only fallback (when API is unavailable or VIN not in NHTSA DB)
   if (wmiData) {
     const year = decodeYearFromVin(cleanVin);
+    const localModel = lookupVinModel(cleanVin);
     return {
       make: wmiData.make,
-      model: 'Necunoscut (date parțiale)',
+      model: localModel || 'Necunoscut',
       year: year || new Date().getFullYear(),
       color: 'Necunoscut',
       engineType: 'Necunoscut',
