@@ -230,21 +230,27 @@ function estimateHorsepower(displacementCC: number, cylinders: number, fuelType:
 }
 
 function decodeYearFromVin(vin: string): number {
-  const yearChar = vin[9];
-  const yearMap: Record<string, number> = {
-    A: 1980, B: 1981, C: 1982, D: 1983, E: 1984, F: 1985, G: 1986, H: 1987,
-    J: 1988, K: 1989, L: 1990, M: 1991, N: 1992, P: 1993, R: 1994, S: 1995,
-    T: 1996, V: 1997, W: 1998, X: 1999, Y: 2000,
-    '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005, '6': 2006,
-    '7': 2007, '8': 2008, '9': 2009, A2: 2010,
-  };
-  // Post-2010: cycle repeats
-  const post2010: Record<string, number> = {
+  const ch = vin[9]?.toUpperCase();
+  if (!ch) return 0;
+
+  // Standard SAE J17255 VIN year cycle (30-year repeating, excludes I O Q U Z 0)
+  // First cycle: 1980–2009   Second cycle: 2010–2039
+  // Characters that are ambiguous (same letter used in both cycles) are resolved
+  // by assuming post-2010 for any vehicle with an otherwise modern WMI/VDS.
+  // For digits 1-9, the SECOND cycle (2031-2039) only begins after 2030,
+  // so currently 1-9 unambiguously means 2001-2009.
+  const YEAR: Record<string, number> = {
+    // Digits — unambiguous in current era (2001-2009 first, 2031-2039 second)
+    '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005,
+    '6': 2006, '7': 2007, '8': 2008, '9': 2009,
+    // Letters — we always pick the LATEST (post-2010) cycle, which is correct
+    // for any vehicle registered in the last decade. A 1980 car showing 2010
+    // is acceptable; a 2020 car showing 1990 is not.
     A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016,
     H: 2017, J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023,
-    R: 2024, S: 2025, T: 2026,
+    R: 2024, S: 2025, T: 2026, V: 2027, W: 2028, X: 2029, Y: 2030,
   };
-  return post2010[yearChar] || yearMap[yearChar] || 0;
+  return YEAR[ch] ?? 0;
 }
 
 export async function lookupVin(vin: string): Promise<VinLookupResult> {
@@ -306,7 +312,7 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       return {
         make: capitalizeFirst(make),
         model: model || 'Necunoscut',
-        year: year || new Date().getFullYear(),
+        year,
         color: 'Necunoscut',
         engineType: engineType || 'Necunoscut',
         engineDisplacement: displacement,
@@ -331,7 +337,7 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
     return {
       make: wmiData.make,
       model: localModel || 'Necunoscut',
-      year: year || new Date().getFullYear(),
+      year,
       color: 'Necunoscut',
       engineType: 'Necunoscut',
       engineDisplacement: 'Necunoscut',

@@ -65,6 +65,7 @@ export default function AddCarScreen() {
 
   // Editable / manual fields
   const [model, setModel] = useState('');
+  const [year, setYear] = useState('');
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [insuranceExpiry, setInsuranceExpiry] = useState('');
   const [itpExpiry, setItpExpiry] = useState('');
@@ -94,8 +95,8 @@ export default function AddCarScreen() {
       return;
     }
     setLookupResult(result);
-    // Pre-fill model only when a real name was resolved (not the generic fallback)
     setModel(result.model && result.model !== 'Necunoscut' ? result.model : '');
+    setYear(result.year > 0 ? String(result.year) : '');
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
   };
 
@@ -107,7 +108,7 @@ export default function AddCarScreen() {
         vin: vin.toUpperCase(),
         make: lookupResult.make,
         model: model.trim() || 'Necunoscut',
-        year: lookupResult.year,
+        year: parseInt(year, 10) || lookupResult.year || 0,
         color: 'Necunoscut',
         engineType: lookupResult.engineType,
         engineDisplacement: lookupResult.engineDisplacement,
@@ -188,7 +189,7 @@ export default function AddCarScreen() {
                 <View style={styles.resultsBanner}>
                   <Text style={styles.resultsBannerIcon}>✓</Text>
                   <Text style={styles.resultsBannerText}>
-                    Vehicul identificat: {lookupResult.make} {model || '—'} ({lookupResult.year})
+                    Vehicul identificat: {lookupResult.make} {model || '—'} ({year || '?'})
                   </Text>
                 </View>
 
@@ -199,7 +200,7 @@ export default function AddCarScreen() {
                     {[
                       { label: 'Marcă', value: lookupResult.make },
                       { label: 'Model', value: lookupResult.model !== 'Necunoscut' ? lookupResult.model : '—' },
-                      { label: 'An fabricație', value: String(lookupResult.year) },
+                      { label: 'An fabricație', value: lookupResult.year > 0 ? String(lookupResult.year) : '—' },
                     ].map((item, i) => (
                       <View key={i} style={styles.infoItem}>
                         <Text style={styles.infoLabel}>{item.label}</Text>
@@ -219,6 +220,14 @@ export default function AddCarScreen() {
                     onChangeText={setModel}
                     placeholder="Ex: Touareg, Seria 5, Golf..."
                     hint={lookupResult.model === 'Necunoscut' ? 'Modelul nu a putut fi detectat automat — introduceți manual' : undefined}
+                  />
+                  <Field
+                    label={lookupResult.year > 0 ? 'An fabricație (corectați dacă e necesar)' : 'An fabricație *'}
+                    value={year}
+                    onChangeText={(v: string) => setYear(v.replace(/\D/g, '').slice(0, 4))}
+                    placeholder="Ex: 2020"
+                    keyboardType="numeric"
+                    hint={lookupResult.year === 0 ? 'Anul nu a putut fi detectat automat — introduceți manual' : undefined}
                   />
                   <Field
                     label="Număr de înmatriculare (opțional)"
