@@ -5,7 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
+  Modal,
   RefreshControl,
   Pressable,
 } from 'react-native';
@@ -116,6 +116,7 @@ export default function HomeScreen() {
   const { user, cars, canAddCar, deleteCar, logout } = useCarStore();
   const [refreshing, setRefreshing] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [premiumModalVisible, setPremiumModalVisible] = useState(false);
 
   const isGuest = user?.isGuest === true;
 
@@ -127,14 +128,7 @@ export default function HomeScreen() {
 
   const handleAddCar = () => {
     if (!canAddCar()) {
-      Alert.alert(
-        'Limită atinsă',
-        'Contul gratuit permite o singură mașină. Treci la Premium pentru a adăuga mai multe.',
-        [
-          { text: 'Anulează', style: 'cancel' },
-          { text: 'Upgrade Premium', style: 'default' },
-        ]
-      );
+      setPremiumModalVisible(true);
       return;
     }
     router.push('/add-car');
@@ -258,6 +252,29 @@ export default function HomeScreen() {
           <View style={{ height: 100 }} />
         </ScrollView>
 
+        {/* Premium limit modal */}
+        <Modal visible={premiumModalVisible} transparent animationType="fade">
+          <Pressable style={styles.modalOverlay} onPress={() => setPremiumModalVisible(false)}>
+            <Pressable style={styles.modalBox} onPress={() => {}}>
+              <Text style={styles.modalIcon}>🔒</Text>
+              <Text style={styles.modalTitle}>Limită atinsă</Text>
+              <Text style={styles.modalText}>
+                Contul gratuit permite o singură mașină.{'\n'}
+                Treci la <Text style={styles.modalBold}>CarNet Premium</Text> pentru mașini nelimitate.
+              </Text>
+              <TouchableOpacity
+                style={styles.modalUpgradeBtn}
+                onPress={() => { setPremiumModalVisible(false); router.push('/premium'); }}
+              >
+                <Text style={styles.modalUpgradeBtnText}>👑  Upgrade Premium</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setPremiumModalVisible(false)}>
+                <Text style={styles.modalCancelText}>Anulează</Text>
+              </TouchableOpacity>
+            </Pressable>
+          </Pressable>
+        </Modal>
+
         {/* FAB */}
         <TouchableOpacity style={styles.fab} onPress={handleAddCar} activeOpacity={0.85}>
           <LinearGradient colors={[Colors.accent, '#1D4ED8']} style={styles.fabGradient}>
@@ -356,6 +373,49 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.3)',
   },
   premiumBtnText: { color: Colors.white, fontSize: 13, fontWeight: '700' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  modalBox: {
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    borderWidth: 2.5,
+    borderColor: Colors.danger,
+    padding: 28,
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 340,
+  },
+  modalIcon: { fontSize: 48, marginBottom: 12 },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: Colors.danger,
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 14,
+    color: Colors.gray700,
+    textAlign: 'center',
+    lineHeight: 21,
+    marginBottom: 20,
+  },
+  modalBold: { fontWeight: '800', color: Colors.primary },
+  modalUpgradeBtn: {
+    backgroundColor: Colors.primary,
+    borderRadius: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 28,
+    marginBottom: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalUpgradeBtnText: { color: Colors.white, fontSize: 15, fontWeight: '800' },
+  modalCancelText: { color: Colors.gray400, fontSize: 13, fontWeight: '500' },
   fab: {
     position: 'absolute',
     bottom: 32,

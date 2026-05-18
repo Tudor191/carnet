@@ -136,24 +136,6 @@ export default function CarCard({ car, onPress }: Props) {
           </View>
         </View>
 
-        {/* Details row */}
-        <View style={styles.detailsRow}>
-          {[
-            { label: 'Culoare', value: car.color },
-            { label: 'Motor', value: car.engineDisplacement },
-            { label: 'Putere', value: car.horsepower > 0 ? `${car.horsepower} CP` : '—' },
-            { label: 'Combustibil', value: car.fuelType },
-          ].map((item, i, arr) => (
-            <React.Fragment key={i}>
-              <View style={styles.detail}>
-                <Text style={styles.detailLabel}>{item.label}</Text>
-                <Text style={styles.detailValue} numberOfLines={1}>{item.value}</Text>
-              </View>
-              {i < arr.length - 1 && <View style={styles.detailDivider} />}
-            </React.Fragment>
-          ))}
-        </View>
-
         {/* Expiry row: RCA + ITP */}
         <View style={styles.expiryRow}>
           <ExpiryBadge label="RCA / Asigurare" date={car.insuranceExpiry} />
@@ -265,21 +247,6 @@ const styles = StyleSheet.create({
     color: '#E2E8F0', fontSize: 11, fontWeight: '600',
     letterSpacing: 1.5, fontFamily: 'monospace',
   },
-  detailsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 8,
-    padding: 6,
-    marginBottom: 6,
-  },
-  detail: { flex: 1, alignItems: 'center' },
-  detailDivider: { width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.12)' },
-  detailLabel: {
-    color: '#64748B', fontSize: 8, letterSpacing: 0.5,
-    textTransform: 'uppercase', marginBottom: 2,
-  },
-  detailValue: { color: '#E2E8F0', fontSize: 10, fontWeight: '600' },
   expiryRow: {
     flexDirection: 'row',
     alignItems: 'stretch',
