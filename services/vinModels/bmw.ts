@@ -77,7 +77,14 @@ export const BMW_MODELS: Record<string, string> = {
   //   WBA13BK08PCL27322 = 2023 BMW M550i → key WBA13
   //
   // EU market VINs (user-confirmed, pos 10 = '0'):
-  //   WBA31EM0609R68792 = BMW 7 Series   → key WBA31
+  //   WBA31EM0609R68792 = BMW 7 Series   → 6-char key WBA31M (pos7='M')
+  //   WBA31EX0109V76203 = BMW X6         → 6-char key WBA31X (pos7='X')
+  //
+  // 6-char keys (WMI+pos4+pos5+pos7) are checked first by lookupVinModel
+  // to disambiguate models that share the same pos4+pos5 prefix.
+  'WBA31M': '7 Series',   // G70 7 Series EU  (pos7='M' = sedan body)
+  'WBA31X': 'X6',         // G06 X6 LCI EU    (pos7='X' = X-model SAC body)
+  // 5-char fallback keys (used when pos7 disambiguation key not found)
   'WBA13': '5 Series',
   'WBA23': '7 Series',
   'WBA53': '5 Series',

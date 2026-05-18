@@ -20,6 +20,10 @@ const ALL_MODELS: Record<string, string> = {
  * positions 7-8 (indices 6-7).  For all other VINs the model codes are at
  * positions 4-5 (indices 3-4).
  *
+ * For G-platform BMW EU VINs, position 7 (index 6) further differentiates
+ * models that share the same position 4-5 code (e.g. WBA31EM=7 Series vs
+ * WBA31EX=X6). We try a 6-char key (WMI+pos4+pos5+pos7) first.
+ *
  * Returns the model string, or null if not found.
  */
 export function lookupVinModel(vin: string): string | null {
@@ -33,8 +37,15 @@ export function lookupVinModel(vin: string): string | null {
     ? upper[6] + upper[7]
     : upper[3] + upper[4];
 
-  const fiveCharKey = wmi + twoCharSuffix;       // e.g. "WUAF1"
-  const fourCharKey = wmi + twoCharSuffix[0];    // e.g. "WUAF"  (fallback)
+  const fiveCharKey = wmi + twoCharSuffix;       // e.g. "WBA31"
+  const fourCharKey = wmi + twoCharSuffix[0];    // e.g. "WBA3"  (fallback)
 
-  return ALL_MODELS[fiveCharKey] ?? ALL_MODELS[fourCharKey] ?? null;
+  // 6-char key: WMI + pos4 + pos5 + pos7 (skips pos6) — disambiguates G-platform BMW
+  // e.g. WBA31EX... → "WBA31X" (X6) vs WBA31EM... → "WBA31M" (7 Series)
+  const sixCharKey = !isZZZFormat ? wmi + upper[3] + upper[4] + upper[6] : null;
+
+  return (sixCharKey ? ALL_MODELS[sixCharKey] ?? null : null)
+    ?? ALL_MODELS[fiveCharKey]
+    ?? ALL_MODELS[fourCharKey]
+    ?? null;
 }

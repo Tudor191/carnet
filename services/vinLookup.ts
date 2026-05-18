@@ -234,11 +234,15 @@ function estimateHorsepower(displacementCC: number, cylinders: number, fuelType:
 // For these VINs we fall back to the known generation launch year for identified models.
 // Source: verified real-world VIN examples cross-referenced with BMW launch dates.
 const BMW_EU_GENERATION_YEARS: Record<string, number> = {
-  // Key = first 5 chars of VIN (WMI + 2 VDS chars)
-  'WBA31': 2023, // G70 7 Series EU  (WBA31EM0609R68792 user-confirmed)
-  'WBA23': 2023, // G70 7 Series NA  (WBA23EH03PCN09717 classic.com verified)
-  'WBA13': 2024, // G60 M550i NA     (WBA13BK08PCL27322 verified)
-  'WBA53': 2024, // G60 5 Series NA  (new gen; G30 530i used WBA53 up to 2023)
+  // 6-char keys (WMI + pos4 + pos5 + pos7) — most specific, checked first.
+  // Needed when two models share the same 5-char prefix (e.g. WBA31).
+  'WBA31M': 2023, // G70 7 Series EU  (WBA31EM0609R68792 user-confirmed)
+  'WBA31X': 2024, // G06 X6 LCI EU    (WBA31EX0109V76203 user-confirmed)
+  // 5-char fallback keys (WMI + pos4 + pos5)
+  'WBA31': 2023,  // G70 7 Series EU fallback
+  'WBA23': 2023,  // G70 7 Series NA  (WBA23EH03PCN09717 classic.com verified)
+  'WBA13': 2024,  // G60 M550i NA     (WBA13BK08PCL27322 verified)
+  'WBA53': 2024,  // G60 5 Series NA  (new gen; G30 530i used WBA53 up to 2023)
 };
 
 // BMW WMI prefixes that use '0' at position 10 for European market
@@ -308,7 +312,10 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       // For EU BMW VINs position 10 = '0' (European market marker, not a year).
       // Fall back to known G-platform generation launch year.
       const isBMWEU = BMW_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
-      const generationYear = isBMWEU ? (BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0) : 0;
+      const bmwEU6 = cleanVin.slice(0, 5) + cleanVin[6]; // WMI+pos4+pos5+pos7
+      const generationYear = isBMWEU
+        ? (BMW_EU_GENERATION_YEARS[bmwEU6] ?? BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
+        : 0;
       const year = (apiYear >= 1900 && apiYear <= 2060)
         ? apiYear
         : (vinYear > 0 ? vinYear : generationYear);
@@ -358,7 +365,10 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
   if (wmiData) {
     const vinYear = decodeYearFromVin(cleanVin);
     const isBMWEU = BMW_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
-    const generationYear = isBMWEU ? (BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0) : 0;
+    const bmwEU6fb = cleanVin.slice(0, 5) + cleanVin[6];
+    const generationYear = isBMWEU
+      ? (BMW_EU_GENERATION_YEARS[bmwEU6fb] ?? BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
+      : 0;
     const year = vinYear > 0 ? vinYear : generationYear;
     const localModel = lookupVinModel(cleanVin);
     return {
