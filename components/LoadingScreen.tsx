@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { G, Rect, Circle, Path, Line } from 'react-native-svg';
+import Svg, { G, Rect, Circle, Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/colors';
 
@@ -30,10 +30,9 @@ function Wheel({ cx, cy, r, rotation }: { cx: number; cy: number; r: number; rot
       <Circle cx={cx} cy={cy} r={r} fill="#000000" />
       {/* Spokes */}
       {spokes.map((s, i) => (
-        <Line
+        <Path
           key={i}
-          x1={s.x1} y1={s.y1}
-          x2={s.x2} y2={s.y2}
+          d={`M${s.x1} ${s.y1} L${s.x2} ${s.y2}`}
           stroke="#94A3B8"
           strokeWidth={1.5}
         />
@@ -208,9 +207,8 @@ export default function LoadingScreen() {
             opacity={0.5}
           />
           {/* Window divider */}
-          <Line
-            x1={100} y1={WY - 36}
-            x2={100} y2={WY - 22}
+          <Path
+            d={`M100 ${WY - 36} L100 ${WY - 22}`}
             stroke={Colors.primary} strokeWidth={1.5}
           />
           {/* Headlight */}
