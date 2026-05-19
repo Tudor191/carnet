@@ -64,7 +64,7 @@ function CarNetLogoFull() {
         <Circle cx="78" cy="78" r="7" fill={Colors.primary} />
         <Circle cx="78" cy="78" r="3.5" fill={Colors.gray200} />
         {/* Bumper line */}
-        <Path d="M24 77 H96" stroke={Colors.secondary} strokeWidth="2.5" strokeLinecap="round" />
+        <Path d="M24 77 H96" stroke={Colors.secondary} strokeWidth="2.5" />
       </Svg>
       <Text style={styles.appName}>CarNet</Text>
       <Text style={styles.appTagline}>Carnetul tău auto digital</Text>
