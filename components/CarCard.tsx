@@ -20,6 +20,56 @@ interface Props {
   onPress?: () => void;
 }
 
+function OriginBadge({ origin }: { origin?: string }) {
+  if (!origin || origin === 'OTHER') return null;
+  const SIZE = 22;
+  const R = SIZE / 2;
+
+  let svgContent: React.ReactNode = null;
+
+  if (origin === 'EU') {
+    const starPoints = Array.from({ length: 12 }, (_, i) => {
+      const angle = (i * 30 - 90) * (Math.PI / 180);
+      return { cx: R + R * 0.6 * Math.cos(angle), cy: R + R * 0.6 * Math.sin(angle) };
+    });
+    svgContent = (
+      <Svg width={SIZE} height={SIZE}>
+        <Circle cx={R} cy={R} r={R} fill="#003399" />
+        {starPoints.map((p, i) => (
+          <Circle key={i} cx={p.cx} cy={p.cy} r={1.5} fill="#FFDD00" />
+        ))}
+      </Svg>
+    );
+  } else if (origin === 'NA') {
+    svgContent = (
+      <Svg width={SIZE} height={SIZE}>
+        {/* Red background = stripes */}
+        <Path d={`M0 0 H${SIZE} V${SIZE} H0Z`} fill="#B22234" />
+        {/* White stripes */}
+        <Path d={`M0 ${SIZE * 0.27} H${SIZE} V${SIZE * 0.42} H0Z`} fill="#FFFFFF" />
+        <Path d={`M0 ${SIZE * 0.57} H${SIZE} V${SIZE * 0.72} H0Z`} fill="#FFFFFF" />
+        <Path d={`M0 ${SIZE * 0.87} H${SIZE} V${SIZE} H0Z`} fill="#FFFFFF" />
+        {/* Blue canton */}
+        <Path d={`M0 0 H${SIZE * 0.45} V${SIZE * 0.57} H0Z`} fill="#3C3B6E" />
+      </Svg>
+    );
+  } else if (origin === 'JP') {
+    svgContent = (
+      <Svg width={SIZE} height={SIZE}>
+        <Path d={`M0 0 H${SIZE} V${SIZE} H0Z`} fill="#FFFFFF" />
+        <Circle cx={R} cy={R} r={R * 0.42} fill="#BC002D" />
+      </Svg>
+    );
+  }
+
+  if (!svgContent) return null;
+  return (
+    <View style={{ width: SIZE, height: SIZE, borderRadius: R, overflow: 'hidden', marginTop: 6 }}>
+      {svgContent}
+    </View>
+  );
+}
+
 function CarSilhouette({ color }: { color: string }) {
   return (
     <Svg width={120} height={58} viewBox="0 0 140 70">
@@ -93,9 +143,7 @@ export default function CarCard({ car, onPress }: Props) {
           <View>
             <Text style={styles.logoText}>CarNet</Text>
             <Text style={styles.logoSubText}>România</Text>
-            {car.origin === 'EU' && <Text style={styles.originFlag}>🇪🇺</Text>}
-            {car.origin === 'NA' && <Text style={styles.originFlag}>🇺🇸</Text>}
-            {car.origin === 'JP' && <Text style={styles.originFlag}>🇯🇵</Text>}
+            <OriginBadge origin={car.origin} />
           </View>
           <View style={styles.carNameArea}>
             <Text style={styles.carMake}>{car.make}</Text>
@@ -191,7 +239,6 @@ const styles = StyleSheet.create({
   carModel: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   carYear: { color: '#60A5FA', fontSize: 11, fontWeight: '500' },
   carGeneration: { color: '#94A3B8', fontSize: 9, marginTop: 1, letterSpacing: 0.3 },
-  originFlag: { fontSize: 16, marginTop: 4 },
   plateBadge: {
     flexDirection: 'row',
     alignItems: 'center',
