@@ -21,54 +21,51 @@ interface Props {
   onPress?: () => void;
 }
 
+// Pure View-based flag badges — avoids react-native-svg Fabric prop-type conflicts on iOS
 function OriginBadge({ origin }: { origin?: string }) {
   if (!origin || origin === 'OTHER') return null;
   const SIZE = 22;
   const R = SIZE / 2;
-
-  let svgContent: React.ReactNode = null;
+  const DOT = 1.5; // star dot radius
 
   if (origin === 'EU') {
-    const starPoints = Array.from({ length: 12 }, (_, i) => {
+    const dots = Array.from({ length: 12 }, (_, i) => {
       const angle = (i * 30 - 90) * (Math.PI / 180);
-      return { cx: R + R * 0.6 * Math.cos(angle), cy: R + R * 0.6 * Math.sin(angle) };
+      return {
+        left: R + R * 0.6 * Math.cos(angle) - DOT,
+        top:  R + R * 0.6 * Math.sin(angle) - DOT,
+      };
     });
-    svgContent = (
-      <Svg width={SIZE} height={SIZE}>
-        <Circle cx={R} cy={R} r={R} fill="#003399" />
-        {starPoints.map((p, i) => (
-          <Circle key={i} cx={p.cx} cy={p.cy} r={1.5} fill="#FFDD00" />
+    return (
+      <View style={{ width: SIZE, height: SIZE, borderRadius: R, backgroundColor: '#003399', marginTop: 6, overflow: 'hidden' }}>
+        {dots.map((d, i) => (
+          <View key={i} style={{ position: 'absolute', width: DOT * 2, height: DOT * 2, borderRadius: DOT, backgroundColor: '#FFDD00', left: d.left, top: d.top }} />
         ))}
-      </Svg>
-    );
-  } else if (origin === 'NA') {
-    svgContent = (
-      <Svg width={SIZE} height={SIZE}>
-        {/* Red background = stripes */}
-        <Path d={`M0 0 H${SIZE} V${SIZE} H0Z`} fill="#B22234" />
-        {/* White stripes */}
-        <Path d={`M0 ${SIZE * 0.27} H${SIZE} V${SIZE * 0.42} H0Z`} fill="#FFFFFF" />
-        <Path d={`M0 ${SIZE * 0.57} H${SIZE} V${SIZE * 0.72} H0Z`} fill="#FFFFFF" />
-        <Path d={`M0 ${SIZE * 0.87} H${SIZE} V${SIZE} H0Z`} fill="#FFFFFF" />
-        {/* Blue canton */}
-        <Path d={`M0 0 H${SIZE * 0.45} V${SIZE * 0.57} H0Z`} fill="#3C3B6E" />
-      </Svg>
-    );
-  } else if (origin === 'JP') {
-    svgContent = (
-      <Svg width={SIZE} height={SIZE}>
-        <Path d={`M0 0 H${SIZE} V${SIZE} H0Z`} fill="#FFFFFF" />
-        <Circle cx={R} cy={R} r={R * 0.42} fill="#BC002D" />
-      </Svg>
+      </View>
     );
   }
 
-  if (!svgContent) return null;
-  return (
-    <View style={{ width: SIZE, height: SIZE, borderRadius: R, overflow: 'hidden', marginTop: 6 }}>
-      {svgContent}
-    </View>
-  );
+  if (origin === 'NA') {
+    const s = SIZE;
+    return (
+      <View style={{ width: s, height: s, borderRadius: R, backgroundColor: '#B22234', marginTop: 6, overflow: 'hidden' }}>
+        <View style={{ position: 'absolute', left: 0, right: 0, top: s * 0.27, height: s * 0.15, backgroundColor: '#FFFFFF' }} />
+        <View style={{ position: 'absolute', left: 0, right: 0, top: s * 0.57, height: s * 0.15, backgroundColor: '#FFFFFF' }} />
+        <View style={{ position: 'absolute', left: 0, right: 0, top: s * 0.85, height: s * 0.15, backgroundColor: '#FFFFFF' }} />
+        <View style={{ position: 'absolute', left: 0, top: 0, width: s * 0.45, height: s * 0.57, backgroundColor: '#3C3B6E' }} />
+      </View>
+    );
+  }
+
+  if (origin === 'JP') {
+    return (
+      <View style={{ width: SIZE, height: SIZE, borderRadius: R, backgroundColor: '#FFFFFF', marginTop: 6, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', borderWidth: 0.5, borderColor: '#DDD' }}>
+        <View style={{ width: SIZE * 0.48, height: SIZE * 0.48, borderRadius: SIZE * 0.24, backgroundColor: '#BC002D' }} />
+      </View>
+    );
+  }
+
+  return null;
 }
 
 function CarSilhouette({ color }: { color: string }) {
@@ -77,15 +74,15 @@ function CarSilhouette({ color }: { color: string }) {
       <Path d="M10 48 L15 32 L28 22 L88 22 L102 32 L118 48 Z" fill={color} opacity={0.25} />
       <Path d="M30 32 L38 14 H88 L98 32 Z" fill={color} opacity={0.3} />
       <Path d="M34 32 L41 17 H85 L92 32 Z" fill={color} opacity={0.15} />
-      <Path d="M8 48 H122" stroke={color} strokeWidth="2.5" strokeLinecap="round" opacity={0.4} />
-      <Circle cx="32" cy="49" r="11" fill={color} opacity={0.35} />
-      <Circle cx="32" cy="49" r="6" fill={color} opacity={0.15} />
-      <Circle cx="32" cy="49" r="2" fill={color} opacity={0.3} />
-      <Circle cx="97" cy="49" r="11" fill={color} opacity={0.35} />
-      <Circle cx="97" cy="49" r="6" fill={color} opacity={0.15} />
-      <Circle cx="97" cy="49" r="2" fill={color} opacity={0.3} />
-      <Ellipse cx="112" cy="42" rx="6" ry="4" fill={color} opacity={0.4} />
-      <Ellipse cx="16" cy="42" rx="5" ry="3.5" fill={color} opacity={0.25} />
+      <Path d="M8 48 H122" stroke={color} strokeWidth={2.5} strokeLinecap="round" opacity={0.4} />
+      <Circle cx={32} cy={49} r={11} fill={color} opacity={0.35} />
+      <Circle cx={32} cy={49} r={6} fill={color} opacity={0.15} />
+      <Circle cx={32} cy={49} r={2} fill={color} opacity={0.3} />
+      <Circle cx={97} cy={49} r={11} fill={color} opacity={0.35} />
+      <Circle cx={97} cy={49} r={6} fill={color} opacity={0.15} />
+      <Circle cx={97} cy={49} r={2} fill={color} opacity={0.3} />
+      <Ellipse cx={112} cy={42} rx={6} ry={4} fill={color} opacity={0.4} />
+      <Ellipse cx={16} cy={42} rx={5} ry={3.5} fill={color} opacity={0.25} />
     </Svg>
   );
 }
