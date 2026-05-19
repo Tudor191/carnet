@@ -14,6 +14,7 @@ import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useCarStore } from '../store/useCarStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { Colors } from '../constants/colors';
+import ThemeSwitch from './ThemeSwitch';
 
 const SIDEBAR_W = 215;
 const AUTH_ROUTES = ['/', '/login', '/register'];
@@ -132,12 +133,15 @@ export default function Sidebar() {
             Mașinile mele
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={toggleTheme}>
-          <Text style={styles.navIcon}>{isLight ? '🌙' : '☀️'}</Text>
-          <Text style={[styles.navLabel, isLight && { color: '#475569' }]}>
-            {isLight ? 'Mod întunecat' : 'Mod luminos'}
-          </Text>
-        </TouchableOpacity>
+        <View style={[styles.navItem, { justifyContent: 'space-between' }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Text style={styles.navIcon}>{isLight ? '🌙' : '☀️'}</Text>
+            <Text style={[styles.navLabel, isLight && { color: '#475569' }]}>
+              {isLight ? 'Mod întunecat' : 'Mod luminos'}
+            </Text>
+          </View>
+          <ThemeSwitch isDark={!isLight} onToggle={toggleTheme} />
+        </View>
       </View>
 
       <View style={{ flex: 1 }} />

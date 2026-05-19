@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { useCarStore } from '../store/useCarStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { DARK, LIGHT } from '../constants/themes';
@@ -10,7 +10,6 @@ import LoadingScreen from '../components/LoadingScreen';
 import Sidebar from '../components/Sidebar';
 
 const LOADER_DURATION = 2000;
-// Screens accessible without authentication (home = landing page for new visitors)
 const PUBLIC_SEGMENTS = ['', 'login', 'register', 'index', 'home'];
 
 export default function RootLayout() {
@@ -24,12 +23,24 @@ export default function RootLayout() {
   const { theme, loadTheme } = useThemeStore();
   const colors = theme === 'dark' ? DARK : LIGHT;
 
-  // Show loader only on initial page load / refresh — not on navigation
+  // Smooth fade transition when theme changes
+  const appOpacity = useRef(new Animated.Value(1)).current;
+  const isFirstMount = useRef(true);
+  const prevTheme = useRef(theme);
+
+  useEffect(() => {
+    if (isFirstMount.current) { isFirstMount.current = false; return; }
+    if (prevTheme.current === theme) return;
+    prevTheme.current = theme;
+    Animated.sequence([
+      Animated.timing(appOpacity, { toValue: 0.1, duration: 130, useNativeDriver: true }),
+      Animated.timing(appOpacity, { toValue: 1, duration: 420, useNativeDriver: true }),
+    ]).start();
+  }, [theme]);
+
   useEffect(() => {
     timerRef.current = setTimeout(() => setShowLoader(false), LOADER_DURATION);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, []);
 
   useEffect(() => {
@@ -37,21 +48,18 @@ export default function RootLayout() {
     loadTheme();
   }, []);
 
-  // Protect private screens — redirect unauthenticated users to landing page
   useEffect(() => {
     if (isLoading) return;
     const currentSegment = (segments[0] as string) ?? '';
     const isPublic = PUBLIC_SEGMENTS.includes(currentSegment);
-    if (!user && !isPublic) {
-      router.replace('/home');
-    }
+    if (!user && !isPublic) router.replace('/home');
   }, [user, isLoading, segments]);
 
   return (
     <View style={[styles.root, { backgroundColor: colors.bg }]}>
       <SafeAreaProvider>
         <StatusBar style={colors.statusBar} />
-        <View style={styles.appRow}>
+        <Animated.View style={[styles.appRow, { opacity: appOpacity }]}>
           {segments[0] !== 'home' && <Sidebar />}
           <View style={styles.content}>
             <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
@@ -65,7 +73,7 @@ export default function RootLayout() {
               <Stack.Screen name="car/[id]" />
             </Stack>
           </View>
-        </View>
+        </Animated.View>
       </SafeAreaProvider>
 
       {showLoader && (
