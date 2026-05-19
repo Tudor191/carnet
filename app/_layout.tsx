@@ -47,7 +47,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="light" />
         <View style={styles.appRow}>
-          <Sidebar />
+          {segments[0] !== 'home' && <Sidebar />}
           <View style={styles.content}>
             <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
               <Stack.Screen name="index" />

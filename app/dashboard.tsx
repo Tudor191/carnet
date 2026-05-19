@@ -8,7 +8,6 @@ import {
   Modal,
   RefreshControl,
   Pressable,
-  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -16,8 +15,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useCarStore } from '../store/useCarStore';
 import CarCard from '../components/CarCard';
 import { Colors } from '../constants/colors';
-
-const { width: SW } = Dimensions.get('window');
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -119,20 +116,6 @@ function AlertCard({ carName, docType, dateStr }: {
       </View>
       <Text style={[s.alertArrow, { color }]}>›</Text>
     </TouchableOpacity>
-  );
-}
-
-// ─── Feature Card ─────────────────────────────────────────────────────────────
-
-function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc: string }) {
-  return (
-    <View style={s.featureCard}>
-      <View style={s.featureIconWrap}>
-        <Text style={s.featureIcon}>{icon}</Text>
-      </View>
-      <Text style={s.featureTitle}>{title}</Text>
-      <Text style={s.featureDesc}>{desc}</Text>
-    </View>
   );
 }
 
@@ -375,56 +358,6 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* ── Features ── */}
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>De ce CarNet?</Text>
-            <Text style={s.sectionSub}>Tot ce ai nevoie pentru a-ți gestiona parcul auto</Text>
-            <View style={s.featuresGrid}>
-              <FeatureCard
-                icon="🔍"
-                title="Verificare VIN"
-                desc="Decodifică orice serie de șasiu și obține date complete despre vehicul"
-              />
-              <FeatureCard
-                icon="📅"
-                title="Urmărire documente"
-                desc="RCA, ITP și Rovinieta — știi mereu când expiră"
-              />
-              <FeatureCard
-                icon="💳"
-                title="Card digital"
-                desc="Un card elegant cu toate datele mașinii tale, mereu la îndemână"
-              />
-              <FeatureCard
-                icon="🔒"
-                title="Date securizate"
-                desc="Informațiile tale sunt stocate local, în siguranță pe dispozitivul tău"
-              />
-            </View>
-          </View>
-
-          {/* ── How it works ── */}
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>Cum funcționează</Text>
-            <View style={s.steps}>
-              {[
-                { n: '1', title: 'Introdu seria de șasiu', desc: 'Scanează sau tastează VIN-ul mașinii tale (17 caractere)' },
-                { n: '2', title: 'Verificăm datele', desc: 'Sistemul identifică automat marca, modelul, generația și anul' },
-                { n: '3', title: 'Primești cardul digital', desc: 'Un card complet cu RCA, ITP, Rovinieta și toate detaliile tehnice' },
-              ].map(step => (
-                <View key={step.n} style={s.step}>
-                  <View style={s.stepNum}>
-                    <Text style={s.stepNumText}>{step.n}</Text>
-                  </View>
-                  <View style={s.stepContent}>
-                    <Text style={s.stepTitle}>{step.title}</Text>
-                    <Text style={s.stepDesc}>{step.desc}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-
           {/* ── Premium Banner ── */}
           {!user?.isPremium && (
             <TouchableOpacity
@@ -460,18 +393,8 @@ export default function HomeScreen() {
             </TouchableOpacity>
           )}
 
-          <View style={{ height: 110 }} />
+          <View style={{ height: 40 }} />
         </ScrollView>
-
-        {/* ── FAB ── */}
-        <TouchableOpacity style={s.fab} onPress={handleAddCar} activeOpacity={0.85}>
-          <LinearGradient
-            colors={[Colors.accent, '#1D4ED8']}
-            style={s.fabInner}
-          >
-            <Text style={s.fabPlus}>+</Text>
-          </LinearGradient>
-        </TouchableOpacity>
 
         {/* ── Premium modal ── */}
         <Modal visible={premiumModalVisible} transparent animationType="fade">
@@ -694,46 +617,6 @@ const s = StyleSheet.create({
   },
   deleteBtnText: { fontSize: 14 },
 
-  // Features
-  featuresGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  featureCard: {
-    width: (SW - 32 - 12) / 2,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
-    borderRadius: 18,
-    padding: 18,
-  },
-  featureIconWrap: {
-    width: 44, height: 44, borderRadius: 14,
-    backgroundColor: 'rgba(59,130,246,0.12)',
-    justifyContent: 'center', alignItems: 'center',
-    marginBottom: 12,
-  },
-  featureIcon: { fontSize: 22 },
-  featureTitle: { color: '#E2E8F0', fontSize: 13, fontWeight: '700', marginBottom: 6 },
-  featureDesc: { color: '#475569', fontSize: 11, lineHeight: 16 },
-
-  // Steps
-  steps: { gap: 0 },
-  step: {
-    flexDirection: 'row',
-    gap: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
-  },
-  stepNum: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: Colors.accent + '20',
-    borderWidth: 1, borderColor: Colors.accent + '55',
-    justifyContent: 'center', alignItems: 'center',
-    flexShrink: 0,
-  },
-  stepNumText: { color: Colors.accent, fontSize: 15, fontWeight: '800' },
-  stepContent: { flex: 1, paddingTop: 4 },
-  stepTitle: { color: '#E2E8F0', fontSize: 14, fontWeight: '700', marginBottom: 4 },
-  stepDesc: { color: '#475569', fontSize: 12, lineHeight: 18 },
-
   // Premium banner
   premiumBanner: {
     marginHorizontal: 16,
@@ -775,22 +658,6 @@ const s = StyleSheet.create({
   },
   premiumCTAText: { color: Colors.gold, fontSize: 13, fontWeight: '800' },
   premiumArrow: { color: Colors.gold, fontSize: 18 },
-
-  // FAB
-  fab: {
-    position: 'absolute', bottom: 32, right: 20,
-    borderRadius: 28,
-    shadowColor: Colors.accent,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  fabInner: {
-    width: 56, height: 56, borderRadius: 28,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  fabPlus: { color: '#fff', fontSize: 28, fontWeight: '300', lineHeight: 32 },
 
   // Modals
   overlay: {
