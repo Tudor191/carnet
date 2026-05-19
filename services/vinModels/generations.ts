@@ -49,7 +49,7 @@ export const GENERATION_DB: Record<string, GenerationInfo> = {
   'WP09Y':  { name: '9YA',  start: 2018 },             // Cayenne
   'WP097':  { name: '971',  start: 2016, end: 2023 },  // Panamera
   'WP0J1':  { name: 'J1',   start: 2019 },             // Taycan
-  'WP195':  { name: '95B',  start: 2014, end: 2018 },  // Macan (1st gen)
+  'WP195':  { name: '95B',  start: 2014, end: 2022 },  // Macan
 
   // ── Ferrari (ZFF) ────────────────────────────────────────────────────────
   'ZFF47':  { name: 'F142',     start: 2009, end: 2015 }, // 458

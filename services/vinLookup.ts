@@ -320,36 +320,40 @@ const EU_YEAR_WMI = new Set([
 // For these VINs we always skip vinYear and rely on NHTSA year or EU_GENERATION_YEARS.
 const UNRELIABLE_YEAR_WMI = new Set(['WDB', 'WDC', 'WDD', 'WDF']);
 
-function decodeYearFromVin(vin: string): number {
+function decodeYearFromVin(vin: string, minYear?: number): number {
   const ch = vin[9]?.toUpperCase(); // position 10 (0-indexed: 9)
   if (!ch) return 0;
+
+  const FIRST: Record<string, number> = {
+    A: 1980, B: 1981, C: 1982, D: 1983, E: 1984, F: 1985, G: 1986,
+    H: 1987, J: 1988, K: 1989, L: 1990, M: 1991, N: 1992, P: 1993,
+    R: 1994, S: 1995, T: 1996, V: 1997, W: 1998, X: 1999, Y: 2000,
+    '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005,
+    '6': 2006, '7': 2007, '8': 2008, '9': 2009,
+  };
+  const SECOND: Record<string, number> = {
+    A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016,
+    H: 2017, J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023,
+    R: 2024, S: 2025, T: 2026, V: 2027, W: 2028, X: 2029, Y: 2030,
+    '1': 2031, '2': 2032, '3': 2033, '4': 2034, '5': 2035,
+    '6': 2036, '7': 2037, '8': 2038, '9': 2039,
+  };
+
+  if (minYear !== undefined) {
+    // ZZZ-format: pos7 is model code, not a cycle indicator.
+    // Pick whichever cycle gives a year >= the generation launch year.
+    const y1 = FIRST[ch] ?? 0;
+    const y2 = SECOND[ch] ?? 0;
+    if (y1 > 0 && y1 >= minYear) return y1;
+    return y2 || y1;
+  }
 
   // SAE J1725 disambiguation: position 7 (0-indexed: 6) determines the 30-year cycle.
   //   pos7 = digit  →  first cycle  (1980–2009)
   //   pos7 = letter →  second cycle (2010–2039)
-  // This resolves ambiguous letters: e.g. L = 1990 (first) or 2020 (second).
   const pos7 = vin[6];
   const firstCycle = !!pos7 && /\d/.test(pos7);
-
-  if (firstCycle) {
-    const YEAR: Record<string, number> = {
-      A: 1980, B: 1981, C: 1982, D: 1983, E: 1984, F: 1985, G: 1986,
-      H: 1987, J: 1988, K: 1989, L: 1990, M: 1991, N: 1992, P: 1993,
-      R: 1994, S: 1995, T: 1996, V: 1997, W: 1998, X: 1999, Y: 2000,
-      '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005,
-      '6': 2006, '7': 2007, '8': 2008, '9': 2009,
-    };
-    return YEAR[ch] ?? 0;
-  } else {
-    const YEAR: Record<string, number> = {
-      A: 2010, B: 2011, C: 2012, D: 2013, E: 2014, F: 2015, G: 2016,
-      H: 2017, J: 2018, K: 2019, L: 2020, M: 2021, N: 2022, P: 2023,
-      R: 2024, S: 2025, T: 2026, V: 2027, W: 2028, X: 2029, Y: 2030,
-      '1': 2031, '2': 2032, '3': 2033, '4': 2034, '5': 2035,
-      '6': 2036, '7': 2037, '8': 2038, '9': 2039,
-    };
-    return YEAR[ch] ?? 0;
-  }
+  return firstCycle ? (FIRST[ch] ?? 0) : (SECOND[ch] ?? 0);
 }
 
 export async function lookupVin(vin: string): Promise<VinLookupResult> {
@@ -365,16 +369,27 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
 
   // Pre-compute year helpers (independent of API result)
   const isZZZFormat = cleanVin.slice(3, 6) === 'ZZZ';
-  // German Mercedes VINs: pos10 is not a SAE year code; zero-out vinYear for them
   const isUnreliablePos10 = UNRELIABLE_YEAR_WMI.has(wmi);
-  const vinYear = isUnreliablePos10 ? 0 : decodeYearFromVin(cleanVin);
-  // isEUVin: generation year table applies when pos10='0' (EU market marker) OR WMI has unreliable pos10
-  const isEUVin = EU_YEAR_WMI.has(wmi) && (cleanVin[9] === '0' || isUnreliablePos10);
-  const eu6Key = cleanVin.slice(0, 5) + cleanVin[6]; // WMI+pos4+pos5+pos7
-  const eu5Key = cleanVin.slice(0, 5);                // WMI+pos4+pos5
+
+  // For ZZZ-format VINs, pos4-6 are literal 'ZZZ' fill — real model code is at pos7-8.
+  const eu5Key = isZZZFormat
+    ? cleanVin.slice(0, 3) + cleanVin.slice(6, 8)  // WMI + pos7 + pos8  (e.g. 'WP195')
+    : cleanVin.slice(0, 5);                          // WMI + pos4 + pos5
+  const eu6Key = isZZZFormat
+    ? eu5Key                                         // no further disambiguation for ZZZ
+    : cleanVin.slice(0, 5) + cleanVin[6];            // WMI + pos4 + pos5 + pos7
+
+  // isEUVin: generation year table applies for EU VINs with non-standard pos10
+  const isEUVin = EU_YEAR_WMI.has(wmi) && (cleanVin[9] === '0' || isUnreliablePos10 || isZZZFormat);
   const generationYear = isEUVin
     ? (EU_GENERATION_YEARS[eu6Key] ?? EU_GENERATION_YEARS[eu5Key] ?? 0)
     : 0;
+
+  // For ZZZ-format: pos7 is model code (not SAE cycle indicator) → pass generationYear as cycle hint
+  // For UNRELIABLE_YEAR_WMI: skip year decode entirely
+  const vinYear = isUnreliablePos10
+    ? 0
+    : decodeYearFromVin(cleanVin, isZZZFormat ? (generationYear || 2010) : undefined);
 
   const origin: VehicleOrigin = getOrigin(wmiData?.country);
   const generationInfo = lookupGeneration(eu5Key, eu6Key);
@@ -514,4 +529,20 @@ function buildError(error: string): VinLookupResult {
     engineType: '', engineDisplacement: '', horsepower: 0,
     fuelType: '', transmission: '', bodyType: '',
   };
+}
+
+/** Compute origin + generation from local tables only — no API calls. Used to backfill existing cars. */
+export function computeVinLocalData(vin: string): { origin: VehicleOrigin; generation?: string } {
+  const cleanVin = vin.trim().toUpperCase();
+  if (cleanVin.length < 8) return { origin: 'OTHER' };
+  const wmi = cleanVin.slice(0, 3);
+  const origin = getOrigin(WMI_DATABASE[wmi]?.country);
+  const isZZZFormat = cleanVin.slice(3, 6) === 'ZZZ';
+  const eu5Key = isZZZFormat
+    ? cleanVin.slice(0, 3) + cleanVin.slice(6, 8)
+    : cleanVin.slice(0, 5);
+  const eu6Key = isZZZFormat ? eu5Key : cleanVin.slice(0, 5) + cleanVin[6];
+  const generationInfo = lookupGeneration(eu5Key, eu6Key);
+  const generation = generationInfo ? formatGeneration(generationInfo) : undefined;
+  return { origin, generation };
 }

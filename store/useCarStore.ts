@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Car, User } from '../types';
 import { loadPersistedSession, clearSession } from '../services/auth';
+import { computeVinLocalData } from '../services/vinLookup';
 
 // Each user gets their own storage key — prevents data leaking between accounts
 const storageKey = (userId: string) => `@carnet_data_${userId}`;
@@ -67,7 +68,15 @@ export const useCarStore = create<CarStore>((set, get) => ({
       if (persistedUser) {
         set({ user: persistedUser });
         const cars = await loadCarsForUser(persistedUser.id);
-        set({ cars });
+        // Backfill origin + generation for cars saved before these fields existed
+        const enriched = cars.map(car => {
+          if (car.origin !== undefined) return car;
+          const local = computeVinLocalData(car.vin);
+          return { ...car, origin: local.origin, generation: car.generation ?? local.generation };
+        });
+        const needsSave = enriched.some((c, i) => c !== cars[i]);
+        if (needsSave) await saveCarsForUser(persistedUser.id, enriched);
+        set({ cars: enriched });
       }
     } catch {
       // ignore
