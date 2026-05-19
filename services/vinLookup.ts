@@ -230,25 +230,60 @@ function estimateHorsepower(displacementCC: number, cylinders: number, fuelType:
   return Math.round(base + cylinderBonus + fuelBonus);
 }
 
-// BMW EU VINs use '0' at position 10 as a European market marker — NOT a year code.
-// For these VINs we fall back to the known generation launch year for identified models.
-// Source: verified real-world VIN examples cross-referenced with BMW launch dates.
-const BMW_EU_GENERATION_YEARS: Record<string, number> = {
-  // 6-char keys (WMI + pos4 + pos5 + pos7) — most specific, checked first.
-  // Needed when two models share the same 5-char prefix (e.g. WBA31).
+// Many European VINs use '0' at position 10 as a market marker — NOT a year code.
+// For these VINs we fall back to the known model generation launch year.
+// Key = WMI+pos4+pos5 (5-char) or WMI+pos4+pos5+pos7 (6-char, most specific).
+const EU_GENERATION_YEARS: Record<string, number> = {
+  // ── BMW G-platform ────────────────────────────────────────────────────────
+  // 6-char keys (WMI + pos4 + pos5 + pos7) — needed when models share pos4+pos5
   'WBA31M': 2023, // G70 7 Series EU  (WBA31EM0609R68792 user-confirmed)
   'WBA31X': 2024, // G06 X6 EU 2024   (WBA31EX0109V76203 user-confirmed)
   'WBA11Y': 2026, // G06 X6 EU 2026   (WBA11EY0909423106 user-confirmed)
-  // 5-char fallback keys (WMI + pos4 + pos5)
-  'WBA31': 2023,  // G70 7 Series EU fallback
-  'WBA11': 2025,  // G06 X6 EU fallback (2025 as conservative generation start)
-  'WBA23': 2023,  // G70 7 Series NA  (WBA23EH03PCN09717 classic.com verified)
-  'WBA13': 2024,  // G60 M550i NA     (WBA13BK08PCL27322 verified)
-  'WBA53': 2024,  // G60 5 Series NA  (new gen; G30 530i used WBA53 up to 2023)
+  // 5-char fallback keys
+  'WBA31': 2023, 'WBA11': 2025, 'WBA23': 2023, 'WBA13': 2024, 'WBA53': 2024,
+
+  // ── Ferrari (ZFF) ─────────────────────────────────────────────────────────
+  'ZFF77': 2014, // California T (2014–2017) — ZFF77XJB user-confirmed
+  'ZFF67': 2015, // 488 GTB / Spider (2015–2019)
+  'ZFF47': 2009, // 458 Italia / Spider (2009–2015)
+  'ZFFAA': 2020, // Roma (2020+)
+  'ZFFAC': 2022, // 296 GTB (2022+)
+  'ZFFBA': 2017, // Portofino (2017+)
+  'ZFFCA': 2020, // SF90 Stradale (2020+)
+  'ZFFDA': 2017, // 812 Superfast (2017+)
+  'ZFFEA': 2019, // F8 Tributo (2019+)
+  'ZFFFA': 2023, // Purosangue (2023+)
+  'ZFFGA': 2016, // GTC4 Lusso (2016+)
+  'ZFFHA': 2015, // 488 GTB (2015+)
+
+  // ── Lamborghini (ZHW) ─────────────────────────────────────────────────────
+  'ZHWAA': 2018, // Urus (2018+)
+  'ZHWBA': 2014, // Huracán (2014+)
+  'ZHWCA': 2011, // Aventador (2011+)
+  'ZHWCC': 2023, // Revuelto (2023+)
+
+  // ── Maserati (ZAM) ────────────────────────────────────────────────────────
+  'ZAMAA': 2013, // Ghibli (2013+)
+  'ZAMBA': 2016, // Levante (2016+)
+  'ZAMCA': 2004, // Quattroporte (2004+)
+  'ZAMDA': 2022, // Grecale (2022+)
+  'ZAMEA': 2023, // GranTurismo (2023+)
+  'ZAMFA': 2020, // MC20 (2020+)
+
+  // ── Porsche (WP0/WP1) ─────────────────────────────────────────────────────
+  'WP099': 2019, // 911 (992 gen, 2019+)
+  'WP09Y': 2018, // Cayenne (9Y0, 2018+)
+  'WP097': 2016, // Panamera (971, 2016+)
+  'WP0J1': 2019, // Taycan (2019+)
+  'WP195': 2014, // Macan (95B, 2014+) — WP1ZZZ95Z user-confirmed
 };
 
-// BMW WMI prefixes that use '0' at position 10 for European market
-const BMW_WMI = new Set(['WBA', 'WBS', 'WBX', 'WBY', 'WMW', 'WBW']);
+// European manufacturer WMIs where pos 10 = '0' is a market marker, not a year
+const EU_YEAR_WMI = new Set([
+  'WBA', 'WBS', 'WBX', 'WBY', 'WMW', 'WBW', // BMW group
+  'ZFF', 'ZHW', 'ZAM', 'ZAR', 'ZFA', 'ZLA', // Italian
+  'WP0', 'WP1',                               // Porsche
+]);
 
 function decodeYearFromVin(vin: string): number {
   const ch = vin[9]?.toUpperCase();
@@ -313,12 +348,12 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       // Validate API year: NHTSA sometimes returns '0' for unknown VINs
       const apiYear = yearStr ? parseInt(yearStr, 10) : 0;
       const vinYear = decodeYearFromVin(cleanVin);
-      // For EU BMW VINs position 10 = '0' (European market marker, not a year).
-      // Fall back to known G-platform generation launch year.
-      const isBMWEU = BMW_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
-      const bmwEU6 = cleanVin.slice(0, 5) + cleanVin[6]; // WMI+pos4+pos5+pos7
-      const generationYear = isBMWEU
-        ? (BMW_EU_GENERATION_YEARS[bmwEU6] ?? BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
+      // Many European VINs use '0' at position 10 as a market marker (not a year code).
+      // Fall back to known model generation launch year for those VINs.
+      const isEUVin = EU_YEAR_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
+      const eu6Key = cleanVin.slice(0, 5) + cleanVin[6]; // WMI+pos4+pos5+pos7
+      const generationYear = isEUVin
+        ? (EU_GENERATION_YEARS[eu6Key] ?? EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
         : 0;
       // For European ZZZ-format VINs (pos 4-6 = 'ZZZ') NHTSA uses the old 30-year
       // cycle and returns e.g. 1992 instead of 2022 for pos10='N'. Our local
@@ -372,10 +407,10 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
   // WMI-only fallback (when API is unavailable or VIN not in NHTSA DB)
   if (wmiData) {
     const vinYear = decodeYearFromVin(cleanVin);
-    const isBMWEU = BMW_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
-    const bmwEU6fb = cleanVin.slice(0, 5) + cleanVin[6];
-    const generationYear = isBMWEU
-      ? (BMW_EU_GENERATION_YEARS[bmwEU6fb] ?? BMW_EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
+    const isEUVinFb = EU_YEAR_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
+    const eu6KeyFb = cleanVin.slice(0, 5) + cleanVin[6];
+    const generationYear = isEUVinFb
+      ? (EU_GENERATION_YEARS[eu6KeyFb] ?? EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
       : 0;
     const year = vinYear > 0 ? vinYear : generationYear;
     const localModel = lookupVinModel(cleanVin);

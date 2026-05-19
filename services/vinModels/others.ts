@@ -489,6 +489,9 @@ export const OTHER_MODELS: Record<string, string> = {
   // ═══════════════════════════════════════════════════════════
   // FERRARI (ZFF) + LAMBORGHINI (ZHW) + MASERATI (ZAM)
   // ═══════════════════════════════════════════════════════════
+  'ZFF77': 'California T',  // ZFF77XJB user-confirmed
+  'ZFF67': '488',           // 488 GTB / Spider (2015–2019)
+  'ZFF47': '458',           // 458 Italia / Spider (2009–2015)
   'ZFFAA': 'Roma',
   'ZFFAB': 'Roma Spider',
   'ZFFAC': '296 GTB',
