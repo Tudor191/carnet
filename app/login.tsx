@@ -108,7 +108,7 @@ export default function LoginScreen() {
       return;
     }
     await setUser(result.user);
-    router.replace('/home');
+    router.replace('/dashboard');
   };
 
   const handleSocialLogin = async (provider: string) => {
@@ -129,7 +129,7 @@ export default function LoginScreen() {
       else fbUser = await signInWithApple();
 
       await setUser(firebaseUserToAppUser(fbUser));
-      router.replace('/home');
+      router.replace('/dashboard');
     } catch (e: any) {
       const code = e?.code || '';
       if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
@@ -157,7 +157,7 @@ export default function LoginScreen() {
       carCount: 0,
       isGuest: true,
     });
-    router.replace('/home');
+    router.replace('/dashboard');
   };
 
   return (
