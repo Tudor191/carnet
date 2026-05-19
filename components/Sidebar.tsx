@@ -74,7 +74,7 @@ export default function Sidebar() {
           <Circle cx="78" cy="78" r="7" fill={Colors.primary} />
           <Circle cx="78" cy="78" r="3.5" fill={Colors.gray200} />
           {/* Bumper */}
-          <Path d="M24 77 H96" stroke={Colors.secondary} strokeWidth="2.5" strokeLinecap="round" />
+          <Path d="M24 77 H96" stroke={Colors.secondary} strokeWidth="2.5" />
         </Svg>
         <View>
           <Text style={styles.brandName}>CarNet</Text>
