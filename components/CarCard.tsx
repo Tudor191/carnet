@@ -74,7 +74,7 @@ function CarSilhouette({ color }: { color: string }) {
       <Path d="M10 48 L15 32 L28 22 L88 22 L102 32 L118 48 Z" fill={color} opacity={0.25} />
       <Path d="M30 32 L38 14 H88 L98 32 Z" fill={color} opacity={0.3} />
       <Path d="M34 32 L41 17 H85 L92 32 Z" fill={color} opacity={0.15} />
-      <Path d="M8 48 H122" stroke={color} strokeWidth={2.5} strokeLinecap="round" opacity={0.4} />
+      <Path d="M8 48 H122" stroke={color} strokeWidth={2.5} opacity={0.4} />
       <Circle cx={32} cy={49} r={11} fill={color} opacity={0.35} />
       <Circle cx={32} cy={49} r={6} fill={color} opacity={0.15} />
       <Circle cx={32} cy={49} r={2} fill={color} opacity={0.3} />

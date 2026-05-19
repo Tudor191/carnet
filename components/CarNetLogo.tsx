@@ -53,7 +53,7 @@ export default function CarNetLogo({ size = 80, color = '#FFFFFF' }: Props) {
       <Circle cx="61" cy="59" r="6" fill={color === '#FFFFFF' ? '#1E3A5F' : '#333'} opacity={0.9} />
       <Circle cx="61" cy="59" r="3" fill={color} opacity={0.5} />
       {/* Bumper */}
-      <Path d="M19 58 H75" stroke={color} strokeWidth="2" strokeLinecap="round" opacity={0.6} />
+      <Path d="M19 58 H75" stroke={color} strokeWidth="2" opacity={0.6} />
 
       {/* Notebook lines — below car */}
       <Path d="M24 72 H70" stroke={color} strokeWidth="1.5" opacity={0.25} />

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { G, Rect, Circle, Path, Line, Defs, ClipPath } from 'react-native-svg';
+import Svg, { G, Rect, Circle, Path, Line } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/colors';
 
@@ -36,7 +36,6 @@ function Wheel({ cx, cy, r, rotation }: { cx: number; cy: number; r: number; rot
           x2={s.x2} y2={s.y2}
           stroke="#94A3B8"
           strokeWidth={1.5}
-          strokeLinecap="round"
         />
       ))}
       {/* Hub */}
@@ -47,16 +46,19 @@ function Wheel({ cx, cy, r, rotation }: { cx: number; cy: number; r: number; rot
 }
 
 // ── Road dash component ───────────────────────────────────────────────────────
-function RoadDashes({ offset, y, viewWidth }: { offset: number; y: number; viewWidth: number }) {
+function RoadDashes({ offset, y, xStart, xEnd }: { offset: number; y: number; xStart: number; xEnd: number }) {
   const dashW = 28;
   const gap = 18;
   const step = dashW + gap;
   const dashes = [];
-  // Enough dashes to fill the view + one extra on each side for seamless loop
-  for (let x = -step + (offset % step); x < viewWidth + step; x += step) {
-    dashes.push(
-      <Rect key={x} x={x} y={y} width={dashW} height={3} rx={1.5} fill="#64748B" opacity={0.9} />
-    );
+  for (let x = xStart + (offset % step) - step; x < xEnd + dashW; x += step) {
+    const cx = Math.max(x, xStart);
+    const ce = Math.min(x + dashW, xEnd);
+    if (ce > cx) {
+      dashes.push(
+        <Rect key={x} x={cx} y={y} width={ce - cx} height={3} rx={1.5} fill="#64748B" opacity={0.9} />
+      );
+    }
   }
   return <G>{dashes}</G>;
 }
@@ -166,21 +168,14 @@ export default function LoadingScreen() {
         <Rect x={NB.x + 14} y={42} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
         <Rect x={NB.x + 14} y={49} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
 
-        {/* ── Clip path: road stays inside notebook ── */}
-        <Defs>
-          <ClipPath id="nbRoad">
-            <Rect x={NB.x + 1} y={WY + WR - 1} width={NB.w - 2} height={20} />
-          </ClipPath>
-        </Defs>
-
         {/* ── Road surface + dashes clipped to notebook width ── */}
-        <G clipPath="url(#nbRoad)">
+        <G>
           <Rect
             x={NB.x + 1} y={WY + WR}
             width={NB.w - 2} height={18}
             fill="#000000" opacity={0.9}
           />
-          <RoadDashes offset={roadOffset} y={WY + WR + 6} viewWidth={VW} />
+          <RoadDashes offset={roadOffset} y={WY + WR + 6} xStart={NB.x + 1} xEnd={NB.x + NB.w - 1} />
         </G>
 
         {/* ── Notebook lines — below road ── */}
