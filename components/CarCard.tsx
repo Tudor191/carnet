@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
@@ -129,6 +130,9 @@ export default function CarCard({ car, onPress }: Props) {
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.92}>
+      {/* Shadow wrapper is separate from the overflow:hidden LinearGradient.
+          On iOS, overflow:hidden clips shadows — so shadow must live on a parent View. */}
+      <View style={[styles.cardShadow, { width: CARD_WIDTH }]}>
       <LinearGradient
         colors={['#0F2027', '#203A43', '#2C5364']}
         start={{ x: 0, y: 0 }}
@@ -200,20 +204,26 @@ export default function CarCard({ car, onPress }: Props) {
           </View>
         </View>
       </LinearGradient>
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
+  // iOS: shadow must be on a parent that does NOT have overflow:hidden
+  cardShadow: {
     borderRadius: 20,
-    padding: 16,
-    overflow: 'hidden',
-    elevation: 12,
+    backgroundColor: '#0F2027', // matches gradient start — required for iOS shadow rendering
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
+  },
+  card: {
+    borderRadius: 20,
+    padding: 16,
+    overflow: 'hidden', // clips glow circles and child content to the card shape
+    elevation: 12,      // Android shadow
   },
   glowCircle1: {
     position: 'absolute',
@@ -284,7 +294,7 @@ const styles = StyleSheet.create({
   vinLabel: { color: '#64748B', fontSize: 8, letterSpacing: 1.5, textTransform: 'uppercase' },
   vinNumber: {
     color: '#E2E8F0', fontSize: 11, fontWeight: '600',
-    letterSpacing: 1.5, fontFamily: 'monospace',
+    letterSpacing: 1.5, fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
   },
   expiryRow: {
     flexDirection: 'row',

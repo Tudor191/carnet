@@ -379,11 +379,11 @@ const styles = StyleSheet.create({
   fieldInputReadOnly: { backgroundColor: Colors.gray200, color: Colors.gray500 },
   fieldHint: { fontSize: 11, color: Colors.gray400, fontStyle: 'italic' },
   saveBtn: {
-    borderRadius: 16, overflow: 'hidden',
+    borderRadius: 16,
     shadowColor: Colors.accent, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
   },
+  saveBtnGradient: { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
   saveBtnDisabled: { opacity: 0.6 },
-  saveBtnGradient: { paddingVertical: 16, alignItems: 'center' },
   saveBtnText: { color: Colors.white, fontSize: 16, fontWeight: '700' },
 });
