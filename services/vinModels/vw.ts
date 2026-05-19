@@ -1,6 +1,6 @@
 /**
  * Volkswagen Group VIN model lookup
- * Covers: VW, Skoda, SEAT/Cupra, Porsche
+ * Covers: VW, Skoda, SEAT/Cupra
  * Key = WMI (3) + VIN[3] + VIN[4]  →  positions 4-5 of VIN
  * For ZZZ-format European VINs: Key = WMI (3) + VIN[6] + VIN[7]
  *
@@ -11,211 +11,156 @@
  *   WV2 = Volkswagen (Transporter)
  *   TMB = Skoda Auto
  *   VSS = SEAT / Cupra
- *   WP0 = Porsche AG (cars)
- *   WP1 = Porsche AG (SUVs: Cayenne, Macan)
  */
-export const VW_MODELS: Record<string, string> = {
+import { ModelInfo } from './types';
+
+export const VW_DB: Record<string, ModelInfo> = {
   // ── WVG = Volkswagen Touareg (Slovakia plant) ────────────────────────────
   // ZZZ-format: key = WVG + VIN[6] + VIN[7]
-  'WVG1T': 'Touran',           // 1T (gen 1/2, 2003-2015)
-  'WVG1K': 'Golf Plus',        // 1K platform Golf Plus
-  'WVG7L': 'Touareg',          // 7L (gen 1, 2002-2010)
-  'WVG7P': 'Touareg',          // 7P (gen 2, 2010-2018)
-  'WVGCR': 'Touareg',          // CR (gen 3, 2018+)
-  'WVG4M': 'Touareg',          // 4M (gen 3 facelift)
+  'WVG1T': { model: 'Touran', generation: '1T', start: 2003, end: 2015 },
+  'WVG1K': { model: 'Golf Plus', generation: '1K', start: 2004, end: 2014 },
+  'WVG7L': { model: 'Touareg', generation: '7L', start: 2002, end: 2010 },
+  'WVG7P': { model: 'Touareg', generation: '7P', start: 2010, end: 2018 },
+  'WVGCR': { model: 'Touareg', generation: 'CR', start: 2018 },
+  'WVG4M': { model: 'Touareg', generation: 'CR', start: 2018 },         // gen 3 facelift
 
   // ── WVW = Volkswagen ─────────────────────────────────────────────────────
-  // Polo (AW)
-  'WVWAA': 'Polo',
-  'WVWAB': 'Polo GTI',
-  'WVWZZ': 'Polo',
+  // Polo (AW, MK6, 2017–present)
+  'WVWAA': { model: 'Polo', generation: 'AW', start: 2017 },
+  'WVWAB': { model: 'Polo GTI', generation: 'AW', start: 2017 },
+  'WVWZZ': { model: 'Polo', generation: 'AW', start: 2017 },
 
-  // Golf (Mk7/8)
-  'WVWBA': 'Golf',
-  'WVWBB': 'Golf Plus',
-  'WVWBC': 'Golf Sportsvan',
-  'WVWBD': 'Golf Variant',
-  'WVWBE': 'Golf R',
-  'WVWBF': 'Golf GTI',
-  'WVWBG': 'Golf GTE',
-  'WVWBH': 'Golf eGolf',
-  'WVWHA': 'Golf',
-  'WVWHB': 'Golf GTI',
-  'WVWHC': 'Golf R',
+  // Golf (MK7 2012–2019, MK8 2019–present)
+  'WVWBA': { model: 'Golf', generation: 'MK8', start: 2019 },
+  'WVWBB': { model: 'Golf Plus', generation: 'MK7', start: 2012, end: 2019 },
+  'WVWBC': { model: 'Golf Sportsvan', generation: 'MK7', start: 2014, end: 2020 },
+  'WVWBD': { model: 'Golf Variant', generation: 'MK8', start: 2020 },
+  'WVWBE': { model: 'Golf R', generation: 'MK8', start: 2021 },
+  'WVWBF': { model: 'Golf GTI', generation: 'MK8', start: 2020 },
+  'WVWBG': { model: 'Golf GTE', generation: 'MK8', start: 2020 },
+  'WVWBH': { model: 'Golf eGolf', generation: 'MK7', start: 2014, end: 2020 },
+  'WVWHA': { model: 'Golf', generation: 'MK7', start: 2012, end: 2019 },
+  'WVWHB': { model: 'Golf GTI', generation: 'MK7', start: 2012, end: 2019 },
+  'WVWHC': { model: 'Golf R', generation: 'MK7', start: 2013, end: 2019 },
 
-  // ID. (electric)
-  'WVWEA': 'ID.3',
-  'WVWFA': 'ID.4',
-  'WVWFB': 'ID.4 GTX',
-  'WVWFC': 'ID.5',
-  'WVWFD': 'ID.5 GTX',
-  'WVWFE': 'ID.7',
-  'WVWFF': 'ID.7 Tourer',
-  'WVWFG': 'ID.2',
+  // ID. (electric, MEB platform, 2020–present)
+  'WVWEA': { model: 'ID.3', generation: 'MEB', start: 2020 },
+  'WVWFA': { model: 'ID.4', generation: 'MEB', start: 2020 },
+  'WVWFB': { model: 'ID.4 GTX', generation: 'MEB', start: 2021 },
+  'WVWFC': { model: 'ID.5', generation: 'MEB', start: 2021 },
+  'WVWFD': { model: 'ID.5 GTX', generation: 'MEB', start: 2021 },
+  'WVWFE': { model: 'ID.7', generation: 'MEB', start: 2023 },
+  'WVWFF': { model: 'ID.7 Tourer', generation: 'MEB', start: 2023 },
+  'WVWFG': { model: 'ID.2', generation: 'MEB', start: 2025 },
 
-  // Passat (B8/B9)
-  'WVWCA': 'Passat',
-  'WVWCB': 'Passat Variant',
-  'WVWCC': 'Passat Alltrack',
-  'WVWCD': 'Passat GTE',
+  // Passat (B8 2014–present, B9 2023–present)
+  'WVWCA': { model: 'Passat', generation: 'B9', start: 2023 },
+  'WVWCB': { model: 'Passat Variant', generation: 'B9', start: 2023 },
+  'WVWCC': { model: 'Passat Alltrack', generation: 'B8', start: 2015, end: 2023 },
+  'WVWCD': { model: 'Passat GTE', generation: 'B8', start: 2015, end: 2023 },
 
-  // Arteon / Phaeton
-  'WVWDA': 'Arteon',
-  'WVWDB': 'Arteon Shooting Brake',
+  // Arteon
+  'WVWDA': { model: 'Arteon', generation: '3H', start: 2017 },
+  'WVWDB': { model: 'Arteon Shooting Brake', generation: '3H', start: 2020 },
 
-  // Tiguan (AD/BW)
-  'WVWNA': 'Tiguan',
-  'WVWNB': 'Tiguan R',
+  // Tiguan (AD MK2 2016–2023, BW MK3 2023–present)
+  'WVWNA': { model: 'Tiguan', generation: 'BW', start: 2023 },
+  'WVWNB': { model: 'Tiguan R', generation: 'AD', start: 2021, end: 2023 },
 
-  // Touareg (CR)
-  'WVWGA': 'Touareg',
-  'WVWGB': 'Touareg eHybrid',
-  'WVWGC': 'Touareg R',
+  // Touareg (CR gen 3, 2018–present)
+  'WVWGA': { model: 'Touareg', generation: 'CR', start: 2018 },
+  'WVWGB': { model: 'Touareg eHybrid', generation: 'CR', start: 2019 },
+  'WVWGC': { model: 'Touareg R', generation: 'CR', start: 2021 },
 
   // T-Cross / T-Roc
-  'WVWPA': 'T-Roc',
-  'WVWPB': 'T-Roc R',
-  'WVWQA': 'T-Cross',
+  'WVWPA': { model: 'T-Roc', generation: 'A1', start: 2017 },
+  'WVWPB': { model: 'T-Roc R', generation: 'A1', start: 2019 },
+  'WVWQA': { model: 'T-Cross', generation: 'C11', start: 2018 },
+
+  // Taigo
+  'WVWRA': { model: 'Taigo', generation: 'CS', start: 2021 },
 
   // Touran / Sharan
-  'WVWIA': 'Touran',
-  'WVWJA': 'Sharan',
-
-  // Up! / e-Up (shares WMI+pos4 with Polo; Polo takes priority)
+  'WVWIA': { model: 'Touran', generation: '5T', start: 2015 },
+  'WVWJA': { model: 'Sharan', generation: '7N', start: 2010, end: 2022 },
 
   // Beetle
-  'WVWLA': 'Beetle',
-  'WVWLB': 'Beetle Cabriolet',
+  'WVWLA': { model: 'Beetle', generation: '5C', start: 2011, end: 2019 },
+  'WVWLB': { model: 'Beetle Cabriolet', generation: '5C', start: 2012, end: 2019 },
 
   // Caddy / Transporter
-  'WV1ZZ': 'Caddy',
-  'WV2ZZ': 'Transporter T6',
+  'WV1ZZ': { model: 'Caddy', start: 2015 },
+  'WV2ZZ': { model: 'Transporter T6', generation: 'T6', start: 2015 },
 
   // ── TMB = Skoda Auto ────────────────────────────────────────────────────
-  // Fabia (MK3/MK4)
-  'TMBAA': 'Fabia',
-  'TMBAB': 'Fabia Combi',
+  // Fabia (MK3 2014–2021, MK4 2021–present)
+  'TMBAA': { model: 'Fabia', generation: 'MK4', start: 2021 },
+  'TMBAB': { model: 'Fabia Combi', generation: 'MK4', start: 2021 },
 
   // Rapid / Scala
-  'TMBBA': 'Rapid',
-  'TMBCA': 'Scala',
+  'TMBBA': { model: 'Rapid', generation: 'NH', start: 2012, end: 2019 },
+  'TMBCA': { model: 'Scala', generation: 'NW', start: 2019 },
 
-  // Octavia (MK3/MK4)
-  'TMBDA': 'Octavia',
-  'TMBDB': 'Octavia Combi',
-  'TMBDC': 'Octavia RS',
-  'TMBDD': 'Octavia Scout',
-  'TMBHA': 'Octavia',
+  // Octavia (MK3 2012–2019, MK4 2020–present)
+  'TMBDA': { model: 'Octavia', generation: 'MK4', start: 2020 },
+  'TMBDB': { model: 'Octavia Combi', generation: 'MK4', start: 2020 },
+  'TMBDC': { model: 'Octavia RS', generation: 'MK4', start: 2021 },
+  'TMBDD': { model: 'Octavia Scout', generation: 'MK4', start: 2020 },
+  'TMBHA': { model: 'Octavia', generation: 'MK3', start: 2012, end: 2019 },
 
-  // Superb (B8)
-  'TMBEA': 'Superb',
-  'TMBEB': 'Superb Combi',
-  'TMBEC': 'Superb SportLine',
+  // Superb (B8 2015–present)
+  'TMBEA': { model: 'Superb', generation: 'B9', start: 2023 },
+  'TMBEB': { model: 'Superb Combi', generation: 'B9', start: 2023 },
+  'TMBEC': { model: 'Superb SportLine', generation: 'B8', start: 2015, end: 2023 },
 
   // Kamiq / Karoq / Kodiaq
-  'TMBFA': 'Kamiq',
-  'TMBGA': 'Karoq',
-  'TMBGB': 'Karoq Scout',
-  'TMBHB': 'Kodiaq RS',
-  'TMBHC': 'Kodiaq SportLine',
+  'TMBFA': { model: 'Kamiq', generation: 'NW', start: 2019 },
+  'TMBGA': { model: 'Karoq', generation: 'NU', start: 2017 },
+  'TMBGB': { model: 'Karoq Scout', generation: 'NU', start: 2017 },
+  'TMBHB': { model: 'Kodiaq RS', generation: 'NS', start: 2019 },
+  'TMBHC': { model: 'Kodiaq SportLine', generation: 'NS', start: 2017 },
 
-  // Enyaq (iV / RS)
-  'TMBJA': 'Enyaq iV',
-  'TMBJB': 'Enyaq Coupé iV',
-  'TMBJC': 'Enyaq RS',
+  // Enyaq (iV / RS, MEB platform, 2021–present)
+  'TMBJA': { model: 'Enyaq iV', generation: 'MEB', start: 2021 },
+  'TMBJB': { model: 'Enyaq Coupé iV', generation: 'MEB', start: 2021 },
+  'TMBJC': { model: 'Enyaq RS', generation: 'MEB', start: 2022 },
 
   // Citigo
-  'TMBKA': 'Citigo',
-  'TMBKB': 'e-Citigo',
+  'TMBKA': { model: 'Citigo', generation: 'AA', start: 2012, end: 2020 },
+  'TMBKB': { model: 'e-Citigo', generation: 'AA', start: 2019, end: 2020 },
 
   // ── VSS = SEAT / Cupra ──────────────────────────────────────────────────
-  // Ibiza (KJ)
-  'VSSAA': 'Ibiza',
-  'VSSAB': 'Ibiza FR',
+  // Ibiza (KJ MK5, 2017–present)
+  'VSSAA': { model: 'Ibiza', generation: 'KJ', start: 2017 },
+  'VSSAB': { model: 'Ibiza FR', generation: 'KJ', start: 2017 },
 
-  // Arona
-  'VSSBA': 'Arona',
-  'VSSBB': 'Arona FR',
+  // Arona (KJ platform, 2017–present)
+  'VSSBA': { model: 'Arona', generation: 'KJ', start: 2017 },
+  'VSSBB': { model: 'Arona FR', generation: 'KJ', start: 2017 },
 
-  // Leon (KL)
-  'VSSCA': 'Leon',
-  'VSSCB': 'Leon ST',
-  'VSSCC': 'Leon Cupra (pre-brand)',
+  // Leon (KL MK4, 2020–present)
+  'VSSCA': { model: 'Leon', generation: 'KL', start: 2020 },
+  'VSSCB': { model: 'Leon ST', generation: 'KL', start: 2020 },
+  'VSSCC': { model: 'Leon Cupra (pre-brand)', generation: 'KL', start: 2020 },
 
   // Ateca / Tarraco
-  'VSSDA': 'Ateca',
-  'VSSDB': 'Ateca Cupra',
-  'VSSEA': 'Tarraco',
+  'VSSDA': { model: 'Ateca', generation: 'KH', start: 2016 },
+  'VSSDB': { model: 'Ateca Cupra', generation: 'KH', start: 2018 },
+  'VSSEA': { model: 'Tarraco', generation: 'KN', start: 2018 },
 
   // Cupra Born / Formentor / Leon Cupra
-  'VSSFA': 'Cupra Born',
-  'VSSFB': 'Cupra Formentor',
-  'VSSGA': 'Cupra Leon',
-  'VSSGB': 'Cupra Leon Sportstourer',
-  'VSSLA': 'Cupra Ateca',
-  'VSSLB': 'Cupra Terramar',
+  'VSSFA': { model: 'Cupra Born', generation: 'MEB', start: 2021 },
+  'VSSFB': { model: 'Cupra Formentor', generation: 'KH', start: 2020 },
+  'VSSGA': { model: 'Cupra Leon', generation: 'KL', start: 2020 },
+  'VSSGB': { model: 'Cupra Leon Sportstourer', generation: 'KL', start: 2020 },
+  'VSSLA': { model: 'Cupra Ateca', generation: 'KH', start: 2018 },
+  'VSSLB': { model: 'Cupra Terramar', generation: 'KH', start: 2024 },
 
   // Alhambra
-  'VSSHA': 'Alhambra',
-
-  // ── WP0 / WP1 = Porsche ────────────────────────────────────────────────
-  // 911 (992)
-  'WP0AA': '911 Carrera',
-  'WP0AB': '911 Carrera S',
-  'WP0AC': '911 Carrera 4',
-  'WP0AD': '911 Carrera 4S',
-  'WP0AE': '911 Targa',
-  'WP0AF': '911 Turbo',
-  'WP0AG': '911 Turbo S',
-  'WP0AH': '911 GT3',
-  'WP0AJ': '911 GT3 RS',
-  'WP0AK': '911 GT2 RS',
-  'WP0AL': '911 Speedster',
-  'WP0AM': '911 Sport Classic',
-  'WP0AN': '911 Dakar',
-
-  // Panamera (G2)
-  'WP0BA': 'Panamera',
-  'WP0BB': 'Panamera 4',
-  'WP0BC': 'Panamera Turbo',
-  'WP0BD': 'Panamera Sport Turismo',
-  'WP0BE': 'Panamera GTS',
-
-  // Taycan
-  'WP0CA': 'Taycan',
-  'WP0CB': 'Taycan 4S',
-  'WP0CC': 'Taycan Turbo',
-  'WP0CD': 'Taycan Turbo S',
-  'WP0CE': 'Taycan Cross Turismo',
-  'WP0CF': 'Taycan Sport Turismo',
-  'WP0CG': 'Taycan GTS',
-
-  // Boxster / Cayman (982) — use WP0D prefix
-  'WP0DA': 'Boxster',
-  'WP0DB': 'Boxster S',
-  'WP0DC': 'Boxster GTS',
-  'WP0DD': 'Boxster Spyder',
-  'WP0DE': 'Cayman',
-  'WP0DF': 'Cayman S',
-  'WP0DG': 'Cayman GTS',
-  'WP0DH': 'Cayman GT4',
-  'WP0DJ': 'Cayman GT4 RS',
-
-  // Cayenne (9YA)
-  'WP1AA': 'Cayenne',
-  'WP1AB': 'Cayenne S',
-  'WP1AC': 'Cayenne GTS',
-  'WP1AD': 'Cayenne Turbo',
-  'WP1AE': 'Cayenne Turbo S',
-  'WP1AF': 'Cayenne E-Hybrid',
-  'WP1AG': 'Cayenne Turbo S E-Hybrid',
-  'WP1AH': 'Cayenne Coupé',
-  'WP1AJ': 'Cayenne Coupé GTS',
-
-  // Macan (J1)
-  'WP1BA': 'Macan',
-  'WP1BB': 'Macan S',
-  'WP1BC': 'Macan GTS',
-  'WP1BD': 'Macan Turbo',
-  'WP1BE': 'Macan Electric',
+  'VSSHA': { model: 'Alhambra', generation: '7N', start: 2010, end: 2022 },
 };
+
+/** @deprecated Use VW_DB instead */
+export const VW_MODELS: Record<string, string> = Object.fromEntries(
+  Object.entries(VW_DB).map(([k, v]) => [k, v.model])
+);

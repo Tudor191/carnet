@@ -1,6 +1,5 @@
 import { VinLookupResult, VehicleOrigin } from '../types';
-import { lookupVinModel } from './vinModels';
-import { lookupGeneration, formatGeneration } from './vinModels/generations';
+import { lookupVinModel, lookupVinModelInfo } from './vinModels';
 
 // World Manufacturer Identifier (primele 3 caractere din VIN)
 const WMI_DATABASE: Record<string, { make: string; country: string }> = {
@@ -382,7 +381,7 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
   // isEUVin: generation year table applies for EU VINs with non-standard pos10
   const isEUVin = EU_YEAR_WMI.has(wmi) && (cleanVin[9] === '0' || isUnreliablePos10 || isZZZFormat);
   const generationYear = isEUVin
-    ? (EU_GENERATION_YEARS[eu6Key] ?? EU_GENERATION_YEARS[eu5Key] ?? 0)
+    ? (EU_GENERATION_YEARS[eu6Key] ?? EU_GENERATION_YEARS[eu5Key] ?? lookupVinModelInfo(cleanVin)?.start ?? 0)
     : 0;
 
   // For ZZZ-format: pos7 is model code (not SAE cycle indicator) → pass generationYear as cycle hint
@@ -392,8 +391,10 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
     : decodeYearFromVin(cleanVin, isZZZFormat ? (generationYear || 2010) : undefined);
 
   const origin: VehicleOrigin = getOrigin(wmiData?.country);
-  const generationInfo = lookupGeneration(eu5Key, eu6Key);
-  const generation = generationInfo ? formatGeneration(generationInfo) : undefined;
+  const modelInfo = lookupVinModelInfo(cleanVin);
+  const generation = modelInfo?.generation
+    ? `${modelInfo.generation} [${modelInfo.start ?? '?'}${modelInfo.end ? ' - ' + modelInfo.end : ' - prezent'}]`
+    : undefined;
 
   try {
     const url = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${cleanVin}?format=json`;
@@ -542,7 +543,9 @@ export function computeVinLocalData(vin: string): { origin: VehicleOrigin; gener
     ? cleanVin.slice(0, 3) + cleanVin.slice(6, 8)
     : cleanVin.slice(0, 5);
   const eu6Key = isZZZFormat ? eu5Key : cleanVin.slice(0, 5) + cleanVin[6];
-  const generationInfo = lookupGeneration(eu5Key, eu6Key);
-  const generation = generationInfo ? formatGeneration(generationInfo) : undefined;
+  const modelInfo = lookupVinModelInfo(cleanVin);
+  const generation = modelInfo?.generation
+    ? `${modelInfo.generation} [${modelInfo.start ?? '?'}${modelInfo.end ? ' - ' + modelInfo.end : ' - prezent'}]`
+    : undefined;
   return { origin, generation };
 }

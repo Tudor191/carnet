@@ -1,51 +1,73 @@
-import { AUDI_MODELS } from './audi';
-import { BMW_MODELS } from './bmw';
-import { MERCEDES_MODELS } from './mercedes';
-import { VW_MODELS } from './vw';
-import { OTHER_MODELS } from './others';
+import { ModelInfo } from './types';
+import { AUDI_DB } from './audi';
+import { BMW_DB } from './bmw';
+import { MERCEDES_DB } from './mercedes';
+import { VW_DB } from './vw';
+import { PORSCHE_DB } from './porsche';
+import { FERRARI_DB } from './ferrari';
+import { LAMBORGHINI_DB } from './lamborghini';
+import { MASERATI_DB } from './maserati';
+import { TOYOTA_DB } from './toyota';
+import { HONDA_DB } from './honda';
+import { HYUNDAI_DB } from './hyundai';
+import { RENAULT_DB } from './renault';
+import { OPEL_DB } from './opel';
+import { PEUGEOT_DB } from './peugeot';
+import { OTHER_DB } from './others';
 
-const ALL_MODELS: Record<string, string> = {
-  ...OTHER_MODELS,
-  ...VW_MODELS,
-  ...MERCEDES_MODELS,
-  ...BMW_MODELS,
-  ...AUDI_MODELS, // last wins for any rare overlaps
+// Merged DB — brand-specific files win over others (last write wins for any rare overlaps)
+const ALL_DB: Record<string, ModelInfo> = {
+  ...OTHER_DB,
+  ...RENAULT_DB,
+  ...PEUGEOT_DB,
+  ...OPEL_DB,
+  ...TOYOTA_DB,
+  ...HONDA_DB,
+  ...HYUNDAI_DB,
+  ...VW_DB,
+  ...MERCEDES_DB,
+  ...BMW_DB,
+  ...AUDI_DB,
+  ...PORSCHE_DB,
+  ...FERRARI_DB,
+  ...LAMBORGHINI_DB,
+  ...MASERATI_DB,
 };
 
 /**
- * Look up a car model name from a VIN.
+ * Compute the lookup key for a VIN.
  *
- * European VINs often have "ZZZ" in positions 4-6 (indices 3-5) as a
- * placeholder.  When that pattern is present the real model codes sit at
- * positions 7-8 (indices 6-7).  For all other VINs the model codes are at
- * positions 4-5 (indices 3-4).
+ * European VINs often have "ZZZ" in positions 4-6 (indices 3-5).
+ * When that pattern is present the real model codes are at positions 7-8 (indices 6-7).
+ * For all other VINs model codes are at positions 4-5 (indices 3-4).
  *
- * For G-platform BMW EU VINs, position 7 (index 6) further differentiates
- * models that share the same position 4-5 code (e.g. WBA31EM=7 Series vs
- * WBA31EX=X6). We try a 6-char key (WMI+pos4+pos5+pos7) first.
- *
- * Returns the model string, or null if not found.
+ * G-platform BMW EU VINs use position 7 (index 6) to disambiguate models that share
+ * the same pos4+pos5 prefix — we try a 6-char key (WMI+pos4+pos5+pos7) first.
  */
-export function lookupVinModel(vin: string): string | null {
-  if (!vin || vin.length < 8) return null;
-
+function resolveKeys(vin: string): { six: string | null; five: string; four: string } {
   const upper = vin.toUpperCase();
   const wmi = upper.slice(0, 3);
   const isZZZFormat = upper.slice(3, 6) === 'ZZZ';
 
-  const twoCharSuffix = isZZZFormat
-    ? upper[6] + upper[7]
-    : upper[3] + upper[4];
+  const suffix = isZZZFormat ? upper[6] + upper[7] : upper[3] + upper[4];
+  const five = wmi + suffix;
+  const four = wmi + suffix[0];
+  const six = !isZZZFormat ? wmi + upper[3] + upper[4] + upper[6] : null;
 
-  const fiveCharKey = wmi + twoCharSuffix;       // e.g. "WBA31"
-  const fourCharKey = wmi + twoCharSuffix[0];    // e.g. "WBA3"  (fallback)
+  return { six, five, four };
+}
 
-  // 6-char key: WMI + pos4 + pos5 + pos7 (skips pos6) — disambiguates G-platform BMW
-  // e.g. WBA31EX... → "WBA31X" (X6) vs WBA31EM... → "WBA31M" (7 Series)
-  const sixCharKey = !isZZZFormat ? wmi + upper[3] + upper[4] + upper[6] : null;
-
-  return (sixCharKey ? ALL_MODELS[sixCharKey] ?? null : null)
-    ?? ALL_MODELS[fiveCharKey]
-    ?? ALL_MODELS[fourCharKey]
+/** Returns the full ModelInfo for a VIN, or null if not found. */
+export function lookupVinModelInfo(vin: string): ModelInfo | null {
+  if (!vin || vin.length < 8) return null;
+  const { six, five, four } = resolveKeys(vin);
+  return (six ? ALL_DB[six] ?? null : null)
+    ?? ALL_DB[five]
+    ?? ALL_DB[four]
     ?? null;
+}
+
+/** Returns just the model name string, or null if not found. Preserves backward compatibility. */
+export function lookupVinModel(vin: string): string | null {
+  return lookupVinModelInfo(vin)?.model ?? null;
 }

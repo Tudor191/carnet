@@ -1,814 +1,414 @@
 /**
- * VIN model lookup for all other manufacturers:
- * Renault (VF1/VF2/VF6/VNE), Dacia (UU1/UU3), Peugeot (VF3/VR3),
- * Citroën (VF7/VF8/VR7/VS7), DS (VF9/VR1/VR8), Alpine (VFA),
- * Mercedes-Benz (WDD/WDC/WDB/WDF), Opel (W0L), Hyundai Czech (TMA), Ford Europe (WF0/WF1/SFA/VS6),
- * Toyota (SB1/JTD/JTE/JTK/JTM/JTN/JT2/JT3/VNK),
- * Lexus (JTJ/JTH/JTL), Honda (JHM/SHH), Nissan (JN1/JN6/JN8/VNV),
- * Infiniti (JNK), Mazda (JM1/JM4/JMZ), Mitsubishi (JMB/JA3/JA4),
- * Suzuki (JS1-JS4), Subaru (JF1/JF2),
- * Hyundai (KMH/KMF/KMJ), Kia (KNA/KND/KNM/U5Y/U6Y), Genesis (KMT),
- * SsangYong (KPT/KLA), Volvo (YV1/YV4), Saab (YS3),
- * Jaguar (SAJ), Land Rover (SAL), Rolls-Royce (SCA), Bentley (SCB),
- * Lotus (SCC), DeLorean (SCE), McLaren (SBM), Aston Martin (SCF),
+ * VIN model lookup — remaining manufacturers without dedicated files:
+ * Volvo (YV1/YV4), Jaguar (SAJ), Land Rover (SAL),
  * Alfa Romeo (ZAR), Fiat (ZFA), Lancia (ZLA),
- * Ferrari (ZFF), Lamborghini (ZHW), Maserati (ZAM),
- * Tesla (5YJ/SFZ/LRW/XP7)
+ * Nissan (JN1/JN6/JN8/VNV), Infiniti (JNK),
+ * Mazda (JM1/JM4/JMZ), Subaru (JF1/JF2),
+ * Mitsubishi (JMB/JA3/JA4), Suzuki (JS1-JS4),
+ * Tesla (5YJ/SFZ/LRW/XP7), SsangYong (KPT/KLA),
+ * McLaren (SBM), Aston Martin (SCF), Rolls-Royce (SCA),
+ * Bentley (SCB), Lotus (SCC), DeLorean (SCE),
+ * Ford EU additional plants (WF1/SFA/VS6),
+ * Alpine (VFA), DS additional (VR1/VR8)
  *
  * Key = WMI (3) + VIN[3] + VIN[4]  →  positions 4-5 of VIN
  */
-export const OTHER_MODELS: Record<string, string> = {
+import { ModelInfo } from './types';
 
-  // ═══════════════════════════════════════════════════════════
-  // RENAULT (VF1)
-  // ═══════════════════════════════════════════════════════════
-  'VF1AA': 'Clio',
-  'VF1AB': 'Clio RS',
-  'VF1AC': 'Clio E-Tech',
-  'VF1BA': 'Megane',
-  'VF1BB': 'Megane RS',
-  'VF1BC': 'Megane E-Tech',
-  'VF1CA': 'Laguna',
-  'VF1CB': 'Laguna Coupé',
-  'VF1DA': 'Espace',
-  'VF1EA': 'Scenic',
-  'VF1EB': 'Grand Scenic',
-  'VF1EC': 'Scenic E-Tech',
-  'VF1FA': 'Trafic',
-  'VF1GA': 'Kangoo',
-  'VF1GB': 'Kangoo E-Tech',
-  'VF1HA': 'Kadjar',
-  'VF1JA': 'Koleos',
-  'VF1KA': 'Captur',
-  'VF1KB': 'Captur E-Tech',
-  'VF1LA': 'Twingo',
-  'VF1LB': 'Twingo Electric',
-  'VF1MA': 'Zoe',
-  'VF1NA': 'Arkana',
-  'VF1PA': 'Austral',
-  'VF1QA': 'Rafale',
-  'VF1RA': 'Talisman',
-  'VF1SA': 'Safrane',
-
-  // ═══════════════════════════════════════════════════════════
-  // DACIA (UU1, UU3)
-  // ═══════════════════════════════════════════════════════════
-  'UU1AA': 'Duster',
-  'UU1AB': 'Duster 4WD',
-  'UU1BA': 'Logan',
-  'UU1BB': 'Logan MCV',
-  'UU1CA': 'Sandero',
-  'UU1CB': 'Sandero Stepway',
-  'UU1DA': 'Lodgy',
-  'UU1EA': 'Dokker',
-  'UU1FA': 'Spring',
-  'UU1GA': 'Jogger',
-  'UU1HA': 'Bigster',
-  'UU3AA': 'Duster',
-  'UU3BA': 'Logan',
-  'UU3CA': 'Sandero',
-
-  // ═══════════════════════════════════════════════════════════
-  // PEUGEOT (VF3)
-  // ═══════════════════════════════════════════════════════════
-  'VF3AA': '108',
-  'VF3BA': '208',
-  'VF3BB': '208 GT',
-  'VF3BC': 'e-208',
-  'VF3CA': '308',
-  'VF3CB': '308 SW',
-  'VF3CC': '308 GT',
-  'VF3DA': '408',
-  'VF3EA': '508',
-  'VF3EB': '508 SW',
-  'VF3EC': '508 PSE',
-  'VF3FA': '2008',
-  'VF3FB': 'e-2008',
-  'VF3GA': '3008',
-  'VF3GB': '3008 GT',
-  'VF3GC': 'e-3008',
-  'VF3HA': '5008',
-  'VF3HB': 'e-5008',
-  'VF3JA': 'Rifter',
-  'VF3KA': 'Traveller',
-  'VF3LA': 'Partner',
-  'VF3MA': 'Expert',
-
-  // ═══════════════════════════════════════════════════════════
-  // CITROËN (VF7, VF8, VR7) + DS (VF9, VR1, VR8)
-  // VR7 = PSA/Stellantis France WMI (cars may be assembled at Vigo, Spain)
-  // VF9 / VR1 = DS Automobiles (VR1 confirmed from PSA 2017 WMI assignment)
-  // VR8 = PSA-range WMI, likely DS or related brand (unconfirmed)
-  // ═══════════════════════════════════════════════════════════
-  'VF7AA': 'C1',
-  'VF7BA': 'C3',
-  'VF7BB': 'C3 Aircross',
-  'VF7BC': 'ë-C3',
-  'VF7CA': 'C4',
-  'VF7CB': 'ë-C4',
-  'VF7CC': 'C4 X',
-  'VF7DA': 'C5',
-  'VF7DB': 'C5 X',
-  'VF7DC': 'C5 Aircross',
-  'VF7EA': 'C3 Picasso',
-  'VF7EB': 'C4 Picasso',
-  'VF7EC': 'Grand C4 Picasso',
-  'VF7FA': 'Berlingo',
-  'VF7GA': 'SpaceTourer',
-  'VF7HA': 'Jumpy',
-  'VF8AA': 'C-Elysée',
-  'VF9AA': 'DS 3',
-  'VF9AB': 'DS 3 Crossback',
-  'VF9BA': 'DS 4',
-  'VF9BB': 'DS 4 Crossback',
-  'VF9CA': 'DS 5',
-  'VF9DA': 'DS 7 Crossback',
-  'VF9EA': 'DS 9',
-  // VR7 = Citroën Vigo (Spain) — Berlingo, SpaceTourer, Jumpy produced here
-  'VR7FA': 'Berlingo',
-  'VR7GA': 'SpaceTourer',
-  'VR7HA': 'Jumpy',
-  'VR7BA': 'C3',
-  'VR7CA': 'C4',
-
-  // ═══════════════════════════════════════════════════════════
-  // MERCEDES-BENZ (WDD=passenger cars, WDC=SUVs, WDB=older/vans, WDF=Sprinter)
-  // European ZZZ format NOT used; key = WMI + pos4 + pos5 (often encodes chassis gen)
-  // e.g. WDD176... → WDD17 = A-Class W176 (user-confirmed VIN WDD1760121J564419)
-  // ═══════════════════════════════════════════════════════════
-  'WDD17': 'A-Class',      // W176 / W177
-  'WDD24': 'B-Class',      // W246 / W247
-  'WDD20': 'C-Class',      // W205 / W206
-  'WDD21': 'E-Class',      // W213 / W214
-  'WDD22': 'S-Class',      // W222 / W223
-  'WDD11': 'CLA',          // C117 / C118
-  'WDD23': 'CLS',          // C257
-  'WDC16': 'GLE',          // W166 / V167
-  'WDC25': 'GLC',          // X253 / X254
-  'WDC29': 'GLS',          // X166 / X167
-  'WDC19': 'GLA',          // H247
-  'WDC18': 'GLB',          // X247
-
-  // ═══════════════════════════════════════════════════════════
-  // OPEL / VAUXHALL (W0L, X0L)
-  // TMA = Hyundai Motor Manufacturing Czech (Nošovice), NOT Opel Hungary
-  // ═══════════════════════════════════════════════════════════
-  'W0LAA': 'Corsa',
-  'W0LAB': 'Corsa-e',
-  'W0LAC': 'Corsa OPC',
-  'W0LBA': 'Astra',
-  'W0LBB': 'Astra Sports Tourer',
-  'W0LBC': 'Astra GSe',
-  'W0LBD': 'Astra Electric',
-  'W0LCA': 'Insignia',
-  'W0LCB': 'Insignia Sports Tourer',
-  'W0LCC': 'Insignia Grand Sport',
-  'W0LDA': 'Mokka',
-  'W0LDB': 'Mokka-e',
-  'W0LEA': 'Crossland',
-  'W0LEB': 'Crossland X',
-  'W0LFA': 'Grandland',
-  'W0LFB': 'Grandland X',
-  'W0LFC': 'Grandland GSe',
-  'W0LGA': 'Zafira',
-  'W0LGB': 'Zafira Tourer',
-  'W0LHA': 'Vectra',
-  'W0LHB': 'Vectra Caravan',
-  'W0LJA': 'Meriva',
-  'W0LKA': 'Combo',
-  'W0LLA': 'Vivaro',
-  'W0LMA': 'Cascada',
-  'W0LNA': 'Adam',
-  'W0LPA': 'Karl / Viva',
-  // TMA = Hyundai Motor Manufacturing Czech s.r.o. (Nošovice plant)
-  'TMAAA': 'i20',
-  'TMABA': 'i30',
-  'TMACA': 'Tucson',
-
-  // ═══════════════════════════════════════════════════════════
-  // FORD — European (WF0)
-  // ═══════════════════════════════════════════════════════════
-  'WF0AA': 'Fiesta',
-  'WF0AB': 'Fiesta ST',
-  'WF0BA': 'Focus',
-  'WF0BB': 'Focus ST',
-  'WF0BC': 'Focus RS',
-  'WF0CA': 'Mondeo',
-  'WF0CB': 'Mondeo Hybrid',
-  'WF0DA': 'Kuga',
-  'WF0DB': 'Kuga PHEV',
-  'WF0EA': 'EcoSport',
-  'WF0FA': 'Puma',
-  'WF0FB': 'Puma ST',
-  'WF0GA': 'Galaxy',
-  'WF0HA': 'S-Max',
-  'WF0JA': 'Mustang Mach-E',
-  'WF0KA': 'Explorer',
-  'WF0LA': 'Tourneo Connect',
-  'WF0MA': 'Transit Connect',
-  'WF0NA': 'Transit Custom',
-  'WF0PA': 'Transit',
-
-  // ═══════════════════════════════════════════════════════════
-  // TOYOTA — European (SB1, WBA, JT2, JTD, JTE, JTM, JTN, JT3)
-  // ═══════════════════════════════════════════════════════════
-  'SB1AA': 'Yaris',
-  'SB1AB': 'Yaris GR',
-  'SB1AC': 'Yaris Cross',
-  'SB1BA': 'Corolla',
-  'SB1BB': 'Corolla Touring Sports',
-  'SB1CA': 'C-HR',
-  'SB1CB': 'C-HR PHEV',
-  'SB1DA': 'RAV4',
-  'SB1DB': 'RAV4 PHEV',
-  'SB1EA': 'Camry',
-  'SB1FA': 'Highlander',
-  'SB1GA': 'Land Cruiser',
-  'SB1GB': 'Land Cruiser Prado',
-  'SB1HA': 'bZ4X',
-  'SB1JA': 'Aygo X',
-  'SB1KA': 'Proace',
-  'JTDBA': 'Corolla',
-  'JTDCA': 'Avensis',
-  'JTDDA': 'RAV4',
-  'JTDEA': 'Auris',
-  'JTDFA': 'Yaris',
-  'JTDGA': 'C-HR',
-  'JTDHA': 'Hilux',
-  'JTDJA': 'Land Cruiser',
-
-  // LEXUS
-  'JTJAA': 'UX',
-  'JTJBA': 'NX',
-  'JTJCA': 'RX',
-  'JTJDA': 'GX',
-  'JTJEA': 'LX',
-  'JTJFA': 'IS',
-  'JTJGA': 'ES',
-  'JTJHA': 'GS',
-  'JTJJA': 'LS',
-  'JTJKA': 'RC',
-  'JTJLA': 'LC',
-  'JTJMA': 'CT',
-  'JTJPA': 'RZ',
-
-  // ═══════════════════════════════════════════════════════════
-  // HONDA (JHM, 19X)
-  // ═══════════════════════════════════════════════════════════
-  'JHMAA': 'Jazz',
-  'JHMAB': 'Jazz Crosstar',
-  'JHMAC': 'Jazz e:HEV',
-  'JHMBA': 'Civic',
-  'JHMBB': 'Civic Type R',
-  'JHMBC': 'Civic e:HEV',
-  'JHMCA': 'CR-V',
-  'JHMCB': 'CR-V e:PHEV',
-  'JHMDA': 'HR-V',
-  'JHMEA': 'ZR-V',
-  'JHMFA': 'e:Ny1',
-  'JHMGA': 'Legend',
-  'JHMHA': 'Accord',
-
-  // ═══════════════════════════════════════════════════════════
-  // HYUNDAI (KMH, KMF, TMF)
-  // ═══════════════════════════════════════════════════════════
-  'KMHAA': 'i10',
-  'KMHAB': 'i10 N Line',
-  'KMHBA': 'i20',
-  'KMHBB': 'i20 N',
-  'KMHBC': 'i20 N Line',
-  'KMHCA': 'i30',
-  'KMHCB': 'i30 N',
-  'KMHCC': 'i30 Fastback',
-  'KMHCD': 'i30 SW',
-  'KMHDA': 'i40',
-  'KMHDB': 'i40 Tourer',
-  'KMHEA': 'Elantra',
-  'KMHFA': 'Tucson',
-  'KMHFB': 'Tucson PHEV',
-  'KMHGA': 'Santa Fe',
-  'KMHGB': 'Santa Fe PHEV',
-  'KMHHA': 'Kona',
-  'KMHHB': 'Kona Electric',
-  'KMHJA': 'IONIQ',
-  'KMHJB': 'IONIQ 5',
-  'KMHJC': 'IONIQ 6',
-  'KMHJD': 'IONIQ 9',
-  'KMHKA': 'Staria',
-  'KMHLA': 'Bayon',
-  'KMHMA': 'Nexo',
-  'KMFBA': 'i20',
-  'KMFCA': 'i30',
-  'KMFFA': 'Tucson',
-
-  // ═══════════════════════════════════════════════════════════
-  // KIA (KNA, KND, U5Y, U6Y)
-  // ═══════════════════════════════════════════════════════════
-  'KNAAA': 'Picanto',
-  'KNAAB': 'Picanto GT Line',
-  'KNABA': 'Rio',
-  'KNABB': 'Rio GT Line',
-  'KNACA': 'Ceed',
-  'KNACB': 'Ceed GT',
-  'KNACC': 'ProCeed',
-  'KNACD': 'XCeed',
-  'KNADA': 'Stonic',
-  'KNAEA': 'Soul',
-  'KNAEB': 'Soul EV',
-  'KNAFA': 'Sportage',
-  'KNAFB': 'Sportage PHEV',
-  'KNAGA': 'Niro',
-  'KNAGB': 'Niro EV',
-  'KNAGC': 'Niro PHEV',
-  'KNAHA': 'Sorento',
-  'KNAHB': 'Sorento PHEV',
-  'KNAJA': 'EV6',
-  'KNAJB': 'EV6 GT',
-  'KNAKA': 'EV9',
-  'KNALA': 'Carnival',
-  'KNAMA': 'Telluride',
-  'KNANA': 'EV3',
-  'KNDAA': 'Picanto',
-  'KNDCA': 'Ceed',
-  'KNDFA': 'Sportage',
-  'KNDHA': 'Sorento',
+export const OTHER_DB: Record<string, ModelInfo> = {
 
   // ═══════════════════════════════════════════════════════════
   // VOLVO (YV1, YV4)
-  // YV1 = older/sedan models, YV4 = newer SUV/EV models (2019+)
-  // VSK = Nissan Motor Ibérica S.A., Spain — NOT Volvo
   // ═══════════════════════════════════════════════════════════
-  'YV1AA': 'S40',
-  'YV1BA': 'S60',
-  'YV1BB': 'S60 Recharge',
-  'YV1CA': 'S80',
-  'YV1DA': 'S90',
-  'YV1DB': 'S90 Recharge',
-  'YV1EA': 'V40',
-  'YV1EB': 'V40 Cross Country',
-  'YV1FA': 'V60',
-  'YV1FB': 'V60 Cross Country',
-  'YV1FC': 'V60 Recharge',
-  'YV1GA': 'V70',
-  'YV1HA': 'V90',
-  'YV1HB': 'V90 Cross Country',
-  'YV1HC': 'V90 Recharge',
-  'YV1JA': 'XC40',
-  'YV1JB': 'XC40 Recharge',
-  'YV1KA': 'XC60',
-  'YV1KB': 'XC60 Recharge',
-  'YV1LA': 'XC90',
-  'YV1LB': 'XC90 Recharge',
-  'YV1MA': 'C30',
-  'YV1NA': 'C40 Recharge',
-  'YV1PA': 'EX30',
-  'YV1QA': 'EX40',
-  'YV1RA': 'EX90',
-
+  'YV1AA': { model: 'S40', generation: 'P1', start: 2004, end: 2012 },
+  'YV1BA': { model: 'S60', generation: 'P3', start: 2010 },
+  'YV1BB': { model: 'S60 Recharge', generation: 'P3', start: 2020 },
+  'YV1CA': { model: 'S80', generation: 'P3', start: 2006, end: 2016 },
+  'YV1DA': { model: 'S90', generation: 'SPA', start: 2016 },
+  'YV1DB': { model: 'S90 Recharge', generation: 'SPA', start: 2020 },
+  'YV1EA': { model: 'V40', generation: 'P1', start: 2012, end: 2019 },
+  'YV1EB': { model: 'V40 Cross Country', generation: 'P1', start: 2012, end: 2019 },
+  'YV1FA': { model: 'V60', generation: 'SPA', start: 2018 },
+  'YV1FB': { model: 'V60 Cross Country', generation: 'SPA', start: 2018 },
+  'YV1FC': { model: 'V60 Recharge', generation: 'SPA', start: 2020 },
+  'YV1GA': { model: 'V70', generation: 'P3', start: 2007, end: 2016 },
+  'YV1HA': { model: 'V90', generation: 'SPA', start: 2016 },
+  'YV1HB': { model: 'V90 Cross Country', generation: 'SPA', start: 2017 },
+  'YV1HC': { model: 'V90 Recharge', generation: 'SPA', start: 2021 },
+  'YV1JA': { model: 'XC40', generation: 'CMA', start: 2017 },
+  'YV1JB': { model: 'XC40 Recharge', generation: 'CMA', start: 2020 },
+  'YV1KA': { model: 'XC60', generation: 'SPA', start: 2017 },
+  'YV1KB': { model: 'XC60 Recharge', generation: 'SPA', start: 2021 },
+  'YV1LA': { model: 'XC90', generation: 'SPA', start: 2015 },
+  'YV1LB': { model: 'XC90 Recharge', generation: 'SPA', start: 2020 },
+  'YV1MA': { model: 'C30', generation: 'P1', start: 2006, end: 2013 },
+  'YV1NA': { model: 'C40 Recharge', generation: 'CMA', start: 2021 },
+  'YV1PA': { model: 'EX30', generation: 'SEA', start: 2023 },
+  'YV1QA': { model: 'EX40', generation: 'CMA', start: 2023 },
+  'YV1RA': { model: 'EX90', generation: 'SPA2', start: 2024 },
   // YV4 = newer SUV/electric platform (2019+)
-  // Confirmed: XC60 2023 = YV4L12DM8P1... (pos4='L'), XC90 2025 = YV4M12PJ1S... (pos4='M')
-  'YV4JA': 'XC40',
-  'YV4JB': 'XC40 Recharge',
-  'YV4KA': 'XC60',
-  'YV4KB': 'XC60 Recharge',
-  'YV4LA': 'XC90',
-  'YV4LB': 'XC90 Recharge',
-  'YV4MA': 'XC90',
-  'YV4NA': 'C40 Recharge',
-  'YV4PA': 'EX30',
-  'YV4RA': 'EX90',
-  // 4-char fallback keys for YV4 (when 5-char key doesn't match)
-  'YV4J': 'XC40',
-  'YV4K': 'XC60',
-  'YV4L': 'XC90',
-  'YV4M': 'XC90',
+  'YV4JA': { model: 'XC40', generation: 'CMA', start: 2019 },
+  'YV4JB': { model: 'XC40 Recharge', generation: 'CMA', start: 2020 },
+  'YV4KA': { model: 'XC60', generation: 'SPA', start: 2019 },
+  'YV4KB': { model: 'XC60 Recharge', generation: 'SPA', start: 2021 },
+  'YV4LA': { model: 'XC90', generation: 'SPA', start: 2019 },
+  'YV4LB': { model: 'XC90 Recharge', generation: 'SPA', start: 2020 },
+  'YV4MA': { model: 'XC90', generation: 'SPA', start: 2022 },
+  'YV4NA': { model: 'C40 Recharge', generation: 'CMA', start: 2021 },
+  'YV4PA': { model: 'EX30', generation: 'SEA', start: 2023 },
+  'YV4RA': { model: 'EX90', generation: 'SPA2', start: 2024 },
+  // 4-char fallback keys for YV4
+  'YV4J': { model: 'XC40', generation: 'CMA', start: 2017 },
+  'YV4K': { model: 'XC60', generation: 'SPA', start: 2017 },
+  'YV4L': { model: 'XC90', generation: 'SPA', start: 2015 },
+  'YV4M': { model: 'XC90', generation: 'SPA', start: 2022 },
 
   // ═══════════════════════════════════════════════════════════
-  // JAGUAR (SAJ) + LAND ROVER (SAL, SALJ, SALV, SALW)
+  // JAGUAR (SAJ) + LAND ROVER (SAL)
   // ═══════════════════════════════════════════════════════════
-  'SAJAA': 'XE',
-  'SAJAB': 'XF',
-  'SAJAC': 'XF Sportbrake',
-  'SAJAD': 'XJ',
-  'SAJAE': 'E-Pace',
-  'SAJAF': 'F-Pace',
-  'SAJAG': 'F-Pace SVR',
-  'SAJAH': 'I-Pace',
-  'SAJAJ': 'F-Type',
-  'SAJAK': 'F-Type R',
-  'SAJAL': 'XK',
-  'SALAA': 'Defender 90',
-  'SALAB': 'Defender 110',
-  'SALAC': 'Defender 130',
-  'SALAD': 'Discovery',
-  'SALAE': 'Discovery Sport',
-  'SALAF': 'Freelander',
-  'SALAG': 'Range Rover',
-  'SALAH': 'Range Rover Sport',
-  'SALAJ': 'Range Rover Velar',
-  'SALAK': 'Range Rover Evoque',
-  'SALAL': 'Range Rover SVAutobiography',
+  'SAJAA': { model: 'XE', generation: 'X760', start: 2015 },
+  'SAJAB': { model: 'XF', generation: 'X260', start: 2015 },
+  'SAJAC': { model: 'XF Sportbrake', generation: 'X260', start: 2017 },
+  'SAJAD': { model: 'XJ', generation: 'X351', start: 2009, end: 2019 },
+  'SAJAE': { model: 'E-Pace', generation: 'X540', start: 2017 },
+  'SAJAF': { model: 'F-Pace', generation: 'X761', start: 2016 },
+  'SAJAG': { model: 'F-Pace SVR', generation: 'X761', start: 2018 },
+  'SAJAH': { model: 'I-Pace', generation: 'X590', start: 2018 },
+  'SAJAJ': { model: 'F-Type', generation: 'X152', start: 2013 },
+  'SAJAK': { model: 'F-Type R', generation: 'X152', start: 2014 },
+  'SAJAL': { model: 'XK', generation: 'X150', start: 2006, end: 2015 },
+  'SALAA': { model: 'Defender 90', generation: 'L663', start: 2020 },
+  'SALAB': { model: 'Defender 110', generation: 'L663', start: 2020 },
+  'SALAC': { model: 'Defender 130', generation: 'L663', start: 2022 },
+  'SALAD': { model: 'Discovery', generation: 'L462', start: 2016 },
+  'SALAE': { model: 'Discovery Sport', generation: 'L550', start: 2014 },
+  'SALAF': { model: 'Freelander', generation: 'L359', start: 2006, end: 2014 },
+  'SALAG': { model: 'Range Rover', generation: 'L460', start: 2021 },
+  'SALAH': { model: 'Range Rover Sport', generation: 'L461', start: 2022 },
+  'SALAJ': { model: 'Range Rover Velar', generation: 'L560', start: 2017 },
+  'SALAK': { model: 'Range Rover Evoque', generation: 'L551', start: 2019 },
+  'SALAL': { model: 'Range Rover SVAutobiography', generation: 'L405', start: 2013, end: 2021 },
 
   // ═══════════════════════════════════════════════════════════
   // ALFA ROMEO (ZAR) + FIAT (ZFA) + LANCIA (ZLA)
   // ═══════════════════════════════════════════════════════════
-  'ZARAA': 'Giulia',
-  'ZARAB': 'Giulia GTA',
-  'ZARAC': 'Giulia Quadrifoglio',
-  'ZARAD': 'Stelvio',
-  'ZARAE': 'Stelvio Quadrifoglio',
-  'ZARAF': 'Tonale',
-  'ZARAG': 'Tonale PHEV',
-  'ZARAH': 'Giulietta',
-  'ZARAJ': 'MiTo',
-  'ZARAK': '4C',
-  'ZARAL': '4C Spider',
-  'ZARAM': 'Junior',
-  'ZFAAA': '500',
-  'ZFAAB': '500e',
-  'ZFAAC': '500 Abarth',
-  'ZFABA': 'Panda',
-  'ZFABB': 'Panda 4x4',
-  'ZFABC': 'Panda Cross',
-  'ZFACA': 'Tipo',
-  'ZFACB': 'Tipo Cross',
-  'ZFACC': 'Tipo SW',
-  'ZFADA': 'Doblo',
-  'ZFAEA': 'Bravo',
-  'ZFAFA': '500X',
-  'ZFAFB': '500L',
-  'ZFAGA': 'Punto',
-  'ZFAHA': 'Grande Punto',
-  'ZFAJA': '600',
-  'ZLABA': 'Ypsilon',
-  'ZLABB': 'Ypsilon Hybrid',
+  'ZARAA': { model: 'Giulia', generation: '952', start: 2016 },
+  'ZARAB': { model: 'Giulia GTA', generation: '952', start: 2021 },
+  'ZARAC': { model: 'Giulia Quadrifoglio', generation: '952', start: 2016 },
+  'ZARAD': { model: 'Stelvio', generation: '949', start: 2017 },
+  'ZARAE': { model: 'Stelvio Quadrifoglio', generation: '949', start: 2017 },
+  'ZARAF': { model: 'Tonale', generation: '965', start: 2022 },
+  'ZARAG': { model: 'Tonale PHEV', generation: '965', start: 2023 },
+  'ZARAH': { model: 'Giulietta', generation: '940', start: 2010, end: 2021 },
+  'ZARAJ': { model: 'MiTo', generation: '955', start: 2008, end: 2018 },
+  'ZARAK': { model: '4C', generation: '960', start: 2013, end: 2020 },
+  'ZARAL': { model: '4C Spider', generation: '960', start: 2015, end: 2020 },
+  'ZARAM': { model: 'Junior', generation: '976', start: 2024 },
+  'ZFAAA': { model: '500', generation: '312', start: 2007 },
+  'ZFAAB': { model: '500e', generation: '332', start: 2020 },
+  'ZFAAC': { model: '500 Abarth', generation: '312', start: 2008 },
+  'ZFABA': { model: 'Panda', generation: '312', start: 2012 },
+  'ZFABB': { model: 'Panda 4x4', generation: '312', start: 2012 },
+  'ZFABC': { model: 'Panda Cross', generation: '312', start: 2014 },
+  'ZFACA': { model: 'Tipo', generation: '356', start: 2015 },
+  'ZFACB': { model: 'Tipo Cross', generation: '356', start: 2020 },
+  'ZFACC': { model: 'Tipo SW', generation: '357', start: 2016 },
+  'ZFADA': { model: 'Doblo', generation: '263', start: 2010 },
+  'ZFAEA': { model: 'Bravo', generation: '198', start: 2007, end: 2014 },
+  'ZFAFA': { model: '500X', generation: '334', start: 2014 },
+  'ZFAFB': { model: '500L', generation: '351', start: 2012 },
+  'ZFAGA': { model: 'Punto', generation: '199', start: 2005, end: 2018 },
+  'ZFAHA': { model: 'Grande Punto', generation: '199', start: 2005, end: 2012 },
+  'ZFAJA': { model: '600', generation: '181', start: 2023 },
+  'ZLABA': { model: 'Ypsilon', generation: '843', start: 2011 },
+  'ZLABB': { model: 'Ypsilon Hybrid', generation: '843', start: 2021 },
 
   // ═══════════════════════════════════════════════════════════
-  // NISSAN (JN1, JN6, JN8)
+  // NISSAN (JN1, JN6, JN8) + INFINITI (JNK)
   // ═══════════════════════════════════════════════════════════
-  'JN1AA': 'Micra',
-  'JN1BA': 'Juke',
-  'JN1BB': 'Juke Hybrid',
-  'JN1CA': 'Qashqai',
-  'JN1CB': 'Qashqai e-Power',
-  'JN1DA': 'X-Trail',
-  'JN1DB': 'X-Trail e-Power',
-  'JN1EA': 'Leaf',
-  'JN1FA': 'Ariya',
-  'JN1GA': 'Note',
-  'JN1HA': 'Navara',
-  'JN1JA': 'Pathfinder',
-  'JN1KA': 'Murano',
-  'JN1LA': '370Z',
-  'JN1MA': 'GT-R',
-  'JN6AA': 'Navara',
+  'JN1AA': { model: 'Micra', generation: 'K14', start: 2017 },
+  'JN1BA': { model: 'Juke', generation: 'F16', start: 2019 },
+  'JN1BB': { model: 'Juke Hybrid', generation: 'F16', start: 2021 },
+  'JN1CA': { model: 'Qashqai', generation: 'J12', start: 2021 },
+  'JN1CB': { model: 'Qashqai e-Power', generation: 'J12', start: 2022 },
+  'JN1DA': { model: 'X-Trail', generation: 'T33', start: 2021 },
+  'JN1DB': { model: 'X-Trail e-Power', generation: 'T33', start: 2022 },
+  'JN1EA': { model: 'Leaf', generation: 'ZE1', start: 2017 },
+  'JN1FA': { model: 'Ariya', generation: 'FE0', start: 2021 },
+  'JN1GA': { model: 'Note', generation: 'E13', start: 2020 },
+  'JN1HA': { model: 'Navara', generation: 'D23', start: 2015 },
+  'JN1JA': { model: 'Pathfinder', generation: 'R52', start: 2021 },
+  'JN1KA': { model: 'Murano', generation: 'Z52', start: 2014 },
+  'JN1LA': { model: '370Z', generation: 'Z34', start: 2009, end: 2021 },
+  'JN1MA': { model: 'GT-R', generation: 'R35', start: 2007 },
+  'JN6AA': { model: 'Navara', generation: 'D23', start: 2015 },
+  'JNKAA': { model: 'Q30', generation: 'H15', start: 2016, end: 2019 },
+  'JNKBA': { model: 'Q50', generation: 'V37', start: 2013 },
+  'JNKCA': { model: 'Q60', generation: 'V37', start: 2016 },
+  'JNKDA': { model: 'QX30', generation: 'H15', start: 2016, end: 2019 },
+  'JNKEA': { model: 'QX50', generation: 'J55', start: 2018 },
+  'JNKFA': { model: 'QX55', generation: 'J55', start: 2021 },
+  'JNKGA': { model: 'QX60', generation: 'L50', start: 2021 },
+  'JNKHA': { model: 'QX70', generation: 'S51', start: 2013, end: 2017 },
+  'JNKJA': { model: 'QX80', generation: 'Z62', start: 2014 },
+  // Nissan UK/France (VNV)
+  'VNVAA': { model: 'Micra', generation: 'K14', start: 2017 },
+  'VNVBA': { model: 'Juke', generation: 'F16', start: 2019 },
+  'VNVBB': { model: 'Juke Hybrid', generation: 'F16', start: 2021 },
+  'VNVCA': { model: 'Qashqai', generation: 'J12', start: 2021 },
+  'VNVCB': { model: 'Qashqai e-Power', generation: 'J12', start: 2022 },
+  'VNVDA': { model: 'X-Trail', generation: 'T33', start: 2021 },
+  'VNVDB': { model: 'X-Trail e-Power', generation: 'T33', start: 2022 },
+  'VNVEA': { model: 'Leaf', generation: 'ZE1', start: 2017 },
+  'VNVFA': { model: 'Ariya', generation: 'FE0', start: 2021 },
 
   // ═══════════════════════════════════════════════════════════
-  // MAZDA (JM1, JM4, JMZ — same platform codes, different plants/markets)
+  // MAZDA (JM1, JM4, JMZ)
   // ═══════════════════════════════════════════════════════════
-  'JM1AA': '2',  'JM4AA': '2',
-  'JM1AB': '2 Hybrid',  'JM4AB': '2 Hybrid',
-  'JM1BA': '3',  'JM4BA': '3',
-  'JM1BB': '3 Fastback',  'JM4BB': '3 Fastback',
-  'JM1BP': '3',  'JM4BP': '3',  // BP = 4th gen (2019+) platform
-  'JM1CA': '6',  'JM4CA': '6',
-  'JM1CB': '6 SW',  'JM4CB': '6 SW',
-  'JM1DA': 'CX-3',  'JM4DA': 'CX-3',
-  'JM1EA': 'CX-30',  'JM4EA': 'CX-30',
-  'JM1FA': 'CX-5',  'JM4FA': 'CX-5',
-  'JM1FB': 'CX-5 Skyactiv-X',  'JM4FB': 'CX-5 Skyactiv-X',
-  'JM1GA': 'CX-60',  'JM4GA': 'CX-60',
-  'JM1GB': 'CX-60 PHEV',  'JM4GB': 'CX-60 PHEV',
-  'JM1HA': 'CX-80',  'JM4HA': 'CX-80',
-  'JM1JA': 'CX-90',  'JM4JA': 'CX-90',
-  'JM1KA': 'MX-5',  'JM4KA': 'MX-5',
-  'JM1LA': 'MX-30',  'JM4LA': 'MX-30',
-  'JM1MA': 'MX-30 R-EV',  'JM4MA': 'MX-30 R-EV',
+  'JM1AA': { model: 'Mazda2', generation: 'DJ', start: 2014 },
+  'JM4AA': { model: 'Mazda2', generation: 'DJ', start: 2014 },
+  'JM1AB': { model: 'Mazda2 Hybrid', generation: 'DJ', start: 2022 },
+  'JM4AB': { model: 'Mazda2 Hybrid', generation: 'DJ', start: 2022 },
+  'JM1BA': { model: 'Mazda3', generation: 'BP', start: 2019 },
+  'JM4BA': { model: 'Mazda3', generation: 'BP', start: 2019 },
+  'JM1BB': { model: 'Mazda3 Fastback', generation: 'BP', start: 2019 },
+  'JM4BB': { model: 'Mazda3 Fastback', generation: 'BP', start: 2019 },
+  'JM1BP': { model: 'Mazda3', generation: 'BP', start: 2019 },
+  'JM4BP': { model: 'Mazda3', generation: 'BP', start: 2019 },
+  'JM1CA': { model: 'Mazda6', generation: 'GJ', start: 2012, end: 2023 },
+  'JM4CA': { model: 'Mazda6', generation: 'GJ', start: 2012, end: 2023 },
+  'JM1CB': { model: 'Mazda6 SW', generation: 'GJ', start: 2013, end: 2023 },
+  'JM4CB': { model: 'Mazda6 SW', generation: 'GJ', start: 2013, end: 2023 },
+  'JM1DA': { model: 'CX-3', generation: 'DK', start: 2015 },
+  'JM4DA': { model: 'CX-3', generation: 'DK', start: 2015 },
+  'JM1EA': { model: 'CX-30', generation: 'DM', start: 2019 },
+  'JM4EA': { model: 'CX-30', generation: 'DM', start: 2019 },
+  'JM1FA': { model: 'CX-5', generation: 'KF', start: 2017 },
+  'JM4FA': { model: 'CX-5', generation: 'KF', start: 2017 },
+  'JM1FB': { model: 'CX-5 Skyactiv-X', generation: 'KF', start: 2019 },
+  'JM4FB': { model: 'CX-5 Skyactiv-X', generation: 'KF', start: 2019 },
+  'JM1GA': { model: 'CX-60', generation: 'KH', start: 2022 },
+  'JM4GA': { model: 'CX-60', generation: 'KH', start: 2022 },
+  'JM1GB': { model: 'CX-60 PHEV', generation: 'KH', start: 2022 },
+  'JM4GB': { model: 'CX-60 PHEV', generation: 'KH', start: 2022 },
+  'JM1HA': { model: 'CX-80', generation: 'KH', start: 2024 },
+  'JM4HA': { model: 'CX-80', generation: 'KH', start: 2024 },
+  'JM1JA': { model: 'CX-90', generation: 'KH', start: 2023 },
+  'JM4JA': { model: 'CX-90', generation: 'KH', start: 2023 },
+  'JM1KA': { model: 'MX-5', generation: 'ND', start: 2015 },
+  'JM4KA': { model: 'MX-5', generation: 'ND', start: 2015 },
+  'JM1LA': { model: 'MX-30', generation: 'DR', start: 2020 },
+  'JM4LA': { model: 'MX-30', generation: 'DR', start: 2020 },
+  'JM1MA': { model: 'MX-30 R-EV', generation: 'DR', start: 2023 },
+  'JM4MA': { model: 'MX-30 R-EV', generation: 'DR', start: 2023 },
 
   // ═══════════════════════════════════════════════════════════
   // SUBARU (JF1, JF2)
   // ═══════════════════════════════════════════════════════════
-  'JF1AA': 'Impreza',
-  'JF1AB': 'Impreza WRX',
-  'JF1AC': 'WRX STI',
-  'JF1BA': 'Forester',
-  'JF1BB': 'Forester e-Boxer',
-  'JF1CA': 'Outback',
-  'JF1CB': 'Outback e-Boxer',
-  'JF1DA': 'XV / Crosstrek',
-  'JF1DB': 'XV e-Boxer',
-  'JF1EA': 'Legacy',
-  'JF1FA': 'BRZ',
-  'JF1GA': 'Solterra',
-  'JF2BA': 'Forester',
-  'JF2CA': 'Outback',
-  'JF2DA': 'XV',
+  'JF1AA': { model: 'Impreza', generation: 'GK/GT', start: 2016 },
+  'JF1AB': { model: 'Impreza WRX', generation: 'VB', start: 2022 },
+  'JF1AC': { model: 'WRX STI', generation: 'VA', start: 2014, end: 2021 },
+  'JF1BA': { model: 'Forester', generation: 'SK', start: 2018 },
+  'JF1BB': { model: 'Forester e-Boxer', generation: 'SK', start: 2019 },
+  'JF1CA': { model: 'Outback', generation: 'BT', start: 2019 },
+  'JF1CB': { model: 'Outback e-Boxer', generation: 'BT', start: 2019 },
+  'JF1DA': { model: 'Crosstrek', generation: 'GU', start: 2023 },
+  'JF1DB': { model: 'XV e-Boxer', generation: 'GT', start: 2019, end: 2023 },
+  'JF1EA': { model: 'Legacy', generation: 'BN/BS', start: 2014 },
+  'JF1FA': { model: 'BRZ', generation: 'ZD8', start: 2021 },
+  'JF1GA': { model: 'Solterra', generation: 'E-SUBARU', start: 2022 },
+  'JF2BA': { model: 'Forester', generation: 'SK', start: 2018 },
+  'JF2CA': { model: 'Outback', generation: 'BT', start: 2019 },
+  'JF2DA': { model: 'Crosstrek', generation: 'GU', start: 2023 },
 
   // ═══════════════════════════════════════════════════════════
-  // FERRARI (ZFF) + LAMBORGHINI (ZHW) + MASERATI (ZAM)
+  // MITSUBISHI (JMB, JA3, JA4)
   // ═══════════════════════════════════════════════════════════
-  'ZFF77': 'California T',  // ZFF77XJB user-confirmed
-  'ZFF67': '488',           // 488 GTB / Spider (2015–2019)
-  'ZFF47': '458',           // 458 Italia / Spider (2009–2015)
-  'ZFFAA': 'Roma',
-  'ZFFAB': 'Roma Spider',
-  'ZFFAC': '296 GTB',
-  'ZFFAD': '296 GTS',
-  'ZFFAE': '296 GT3',
-  'ZFFBA': 'Portofino',
-  'ZFFBB': 'Portofino M',
-  'ZFFCA': 'SF90 Stradale',
-  'ZFFCB': 'SF90 Spider',
-  'ZFFDA': '812 Superfast',
-  'ZFFDB': '812 GTS',
-  'ZFFDC': '812 Competizione',
-  'ZFFEA': 'F8 Tributo',
-  'ZFFEB': 'F8 Spider',
-  'ZFFFA': 'Purosangue',
-  'ZFFGA': 'GTC4 Lusso',
-  'ZFFHA': '488 GTB',
-  'ZHWAA': 'Urus',
-  'ZHWAB': 'Urus Performante',
-  'ZHWAC': 'Urus S',
-  'ZHWBA': 'Huracán',
-  'ZHWBB': 'Huracán Evo',
-  'ZHWBC': 'Huracán STO',
-  'ZHWCA': 'Aventador',
-  'ZHWCB': 'Aventador S',
-  'ZHWCC': 'Revuelto',
-  'ZAMAA': 'Ghibli',
-  'ZAMAB': 'Ghibli Hybrid',
-  'ZAMBA': 'Levante',
-  'ZAMBB': 'Levante GT',
-  'ZAMCA': 'Quattroporte',
-  'ZAMDA': 'Grecale',
-  'ZAMDB': 'Grecale GT',
-  'ZAMEA': 'GranTurismo',
-  'ZAMFA': 'MC20',
+  'JMBAA': { model: 'Colt', generation: 'Z30', start: 2023 },
+  'JMBBA': { model: 'Lancer', generation: 'CY', start: 2007, end: 2017 },
+  'JMBBB': { model: 'Lancer Evolution', generation: 'CZ', start: 2007, end: 2016 },
+  'JMBCA': { model: 'Galant', generation: 'DJ', start: 2004, end: 2012 },
+  'JMBDA': { model: 'Eclipse Cross', generation: 'GK', start: 2017 },
+  'JMBDB': { model: 'Eclipse Cross PHEV', generation: 'GK', start: 2021 },
+  'JMBEA': { model: 'Outlander', generation: 'GN', start: 2021 },
+  'JMBEB': { model: 'Outlander PHEV', generation: 'GN', start: 2021 },
+  'JMBEC': { model: 'Outlander Sport', generation: 'GA', start: 2010 },
+  'JMBFA': { model: 'ASX', generation: 'GA', start: 2010 },
+  'JMBFB': { model: 'ASX PHEV', generation: 'GA', start: 2023 },
+  'JMBGA': { model: 'Pajero', generation: 'V80', start: 2006, end: 2021 },
+  'JMBGB': { model: 'Pajero Sport', generation: 'QF', start: 2015 },
+  'JMBHA': { model: 'L200', generation: 'KL', start: 2015 },
+  'JMBJA': { model: 'Space Star', generation: 'A05', start: 2012 },
+  'JA3AA': { model: 'Colt', generation: 'Z30', start: 2023 },
+  'JA3BA': { model: 'Lancer', generation: 'CY', start: 2007, end: 2017 },
+  'JA3CA': { model: 'Eclipse', generation: 'D54', start: 2006, end: 2011 },
+  'JA4AA': { model: 'Outlander', generation: 'GN', start: 2021 },
+  'JA4AB': { model: 'Outlander PHEV', generation: 'GN', start: 2021 },
+  'JA4BA': { model: 'ASX', generation: 'GA', start: 2010 },
 
   // ═══════════════════════════════════════════════════════════
-  // PORSCHE (WP0=sports/luxury/Cayenne, WP1=SUV/Macan)
-  // European VINs use ZZZ format (pos 4-6 = 'ZZZ'); lookup key = WMI + pos7 + pos8.
-  // Type codes: 911→99x, Panamera→97x, 718/Boxster/Cayman→98x, Cayenne→9Y, Macan→95, Taycan→J1
+  // SUZUKI (JS1, JS2, JS3, JS4)
   // ═══════════════════════════════════════════════════════════
-  // WP0 — sports cars, Panamera, Cayenne (EU ZZZ: key = WP0 + pos7 + pos8)
-  'WP099': '911',               // 992/991/997/996 type codes all start with 99
-  'WP097': 'Panamera',          // 970/971 type codes
-  'WP098': 'Boxster / Cayman',  // 986/987/981/982 → all map to pos7+pos8='98'
-  'WP09Y': 'Cayenne',           // 9Y0/9YA (Cayenne + Cayenne Coupé)
-  'WP0J1': 'Taycan',            // J1 type code (Taycan / Taycan Sport Turismo)
-  // WP1 — SUV (EU ZZZ: key = WP1 + pos7 + pos8)
-  'WP195': 'Macan',             // 95B type code (WP1ZZZ95ZNLB33489 user-confirmed)
-  'WP19J': 'Macan',             // J1 = second-gen electric Macan
-  // 4-char fallback keys (WMI + pos4) for non-ZZZ / unrecognised VDS
-  'WP09': '911',
-  'WP19': 'Macan',
+  'JS1AA': { model: 'Swift', generation: 'AZ', start: 2017 },
+  'JS1AB': { model: 'Swift Sport', generation: 'AZ', start: 2017 },
+  'JS1BA': { model: 'Baleno', generation: 'FW', start: 2022 },
+  'JS1CA': { model: 'Vitara', generation: 'LY', start: 2015 },
+  'JS1CB': { model: 'Vitara SHVS', generation: 'LY', start: 2018 },
+  'JS1DA': { model: 'S-Cross', generation: 'JY', start: 2021 },
+  'JS1DB': { model: 'S-Cross Hybrid', generation: 'JY', start: 2022 },
+  'JS1EA': { model: 'Ignis', generation: 'FF', start: 2016 },
+  'JS1FA': { model: 'Jimny', generation: 'JB74', start: 2018 },
+  'JS1GA': { model: 'Across', generation: 'YB', start: 2020 },
+  'JS1HA': { model: 'Swace', generation: 'XB', start: 2020 },
+  'JS2AA': { model: 'Swift', generation: 'AZ', start: 2017 },
+  'JS2CA': { model: 'Vitara', generation: 'LY', start: 2015 },
+  'JS2DA': { model: 'S-Cross', generation: 'JY', start: 2021 },
+  'JS3AA': { model: 'Swift', generation: 'AZ', start: 2017 },
+  'JS3CA': { model: 'Vitara', generation: 'LY', start: 2015 },
+  'JS3FA': { model: 'Jimny', generation: 'JB74', start: 2018 },
+  'JS4AA': { model: 'Swift', generation: 'AZ', start: 2017 },
+  'JS4CA': { model: 'Vitara', generation: 'LY', start: 2015 },
+  'JS4FA': { model: 'Jimny', generation: 'JB74', start: 2018 },
 
   // ═══════════════════════════════════════════════════════════
-  // TESLA (5YJ=US Fremont, SFZ=UK Hethel/Roadster, LRW=Shanghai,
-  //         7SA=Cybertruck, XP7=Giga Berlin)
-  // Source: NHTSA VIN decoder docs (vpic.nhtsa.dot.gov)
-  // YY3 is NOT Tesla Germany — YY = Sweden range; Giga Berlin = XP7
-  // Position 4: S=Model S, X=Model X, 3=Model 3, Y=Model Y, C=Cybertruck
-  // Using 4-char keys (WMI + pos4) to cover all body-style variants.
+  // TESLA (5YJ=US Fremont, SFZ=UK legacy, LRW=Shanghai, XP7=Giga Berlin)
   // ═══════════════════════════════════════════════════════════
-  // US — Fremont, CA (5YJ)
-  '5YJS': 'Model S',
-  '5YJSA': 'Model S',        // pos5=A common variant
-  '5YJSE': 'Model S',        // pos5=E sedan
-  '5YJX': 'Model X',
-  '5YJXC': 'Model X',        // pos5=C common variant
-  '5YJ3': 'Model 3',
-  '5YJ3E': 'Model 3',        // pos5=E sedan LHD
-  '5YJY': 'Model Y',
-  '5YJYG': 'Model Y',        // pos5=G MPV LHD
-  '5YJYC': 'Model Y Performance',
-  // UK / EU legacy (SFZ) — same pos4 model letters
-  'SFZS': 'Model S',
-  'SFZ3': 'Model 3',
-  'SFZY': 'Model Y',
-  // Shanghai (LRW) — same pos4 model letters
-  'LRW3': 'Model 3',
-  'LRWY': 'Model Y',
-  'LRWS': 'Model S',
-  'LRWX': 'Model X',
-  // Giga Berlin (XP7) — same pos4 model letters
-  'XP7Y': 'Model Y',
-  'XP73': 'Model 3',
-
-  // ═══════════════════════════════════════════════════════════
-  // GENESIS (KMT, MAL)
-  // ═══════════════════════════════════════════════════════════
-  'KMTAA': 'G70',
-  'KMTAB': 'G70 Shooting Brake',
-  'KMTBA': 'G80',
-  'KMTCA': 'G90',
-  'KMTDA': 'GV70',
-  'KMTDB': 'GV70 Electrified',
-  'KMTEA': 'GV80',
-  'KMTFA': 'GV60',
-  'KMTGA': 'Electrified G80',
-
-  // ═══════════════════════════════════════════════════════════
-  // DS AUTOMOBILES (VR8 — WMI unconfirmed but PSA-range; kept as best guess)
-  // Confirmed DS WMIs: VF9 (main) and VR1 (PSA 2017 reassignment)
-  // ═══════════════════════════════════════════════════════════
-  'VR8AA': 'DS 3',        'VR8AB': 'DS 3 Crossback',  'VR8AC': 'DS 3 E-Tense',
-  'VR8BA': 'DS 4',        'VR8BB': 'DS 4 E-Tense',
-  'VR8CA': 'DS 5',
-  'VR8DA': 'DS 7',        'VR8DB': 'DS 7 E-Tense',
-  'VR8EA': 'DS 9',        'VR8EB': 'DS 9 E-Tense',
-
-  // ═══════════════════════════════════════════════════════════
-  // ALPINE (VFA)
-  // ═══════════════════════════════════════════════════════════
-  'VFAAA': 'A110',
-  'VFAAB': 'A110 S',
-  'VFAAC': 'A110 R',
-  'VFABA': 'A290',
-  'VFACA': 'A310',
-
-  // ═══════════════════════════════════════════════════════════
-  // TOYOTA FRANCE (VNK) — mirrors SB1 codes
-  // ═══════════════════════════════════════════════════════════
-  'VNKAA': 'Yaris',       'VNKAB': 'Yaris GR',      'VNKAC': 'Yaris Cross',
-  'VNKBA': 'Corolla',     'VNKBB': 'Corolla Touring Sports',
-  'VNKCA': 'C-HR',        'VNKCB': 'C-HR PHEV',
-  'VNKDA': 'RAV4',        'VNKDB': 'RAV4 PHEV',
-  'VNKEA': 'Camry',
-  'VNKHA': 'bZ4X',
-  'VNKJA': 'Aygo X',
-  'VNKKA': 'Proace',      'VNKKB': 'Proace City',
-
-  // ═══════════════════════════════════════════════════════════
-  // TOYOTA JAPAN variants (JTE, JTK, JTM, JTN, JT2, JT3)
-  // ═══════════════════════════════════════════════════════════
-  'JTEBA': 'Corolla',     'JTECA': 'RAV4',      'JTEDA': 'Avensis',
-  'JTEFA': 'Yaris',       'JTEGA': 'C-HR',      'JTEHA': 'Land Cruiser',
-  'JTKBA': 'Corolla',     'JTKCA': 'Camry',     'JTKFA': 'Yaris',
-  'JTMBA': 'RAV4',        'JTMCA': 'Highlander','JTMDA': 'Land Cruiser',
-  'JTNBA': 'Corolla',     'JTNCA': 'Camry',     'JTNDA': 'RAV4',
-  'JT2BA': 'Corolla',     'JT3BA': 'Land Cruiser',
-
-  // ═══════════════════════════════════════════════════════════
-  // LEXUS variants (JTH, JTL)
-  // ═══════════════════════════════════════════════════════════
-  'JTHAA': 'UX',   'JTHBA': 'IS',   'JTHCA': 'ES',
-  'JTHDA': 'GS',   'JTHEA': 'LS',   'JTHFA': 'RC',
-  'JTHGA': 'LC',   'JTHHA': 'RZ',
-  'JTLAA': 'UX',   'JTLBA': 'NX',   'JTLCA': 'RX',
-  'JTLDA': 'GX',   'JTLEA': 'LX',   'JTLFA': 'IS',
-
-  // ═══════════════════════════════════════════════════════════
-  // HONDA UK (SHH) — mirrors JHM codes
-  // ═══════════════════════════════════════════════════════════
-  'SHHAA': 'Jazz',         'SHHAB': 'Jazz Crosstar',   'SHHAC': 'Jazz e:HEV',
-  'SHHBA': 'Civic',        'SHHBB': 'Civic Type R',    'SHHBC': 'Civic e:HEV',
-  'SHHCA': 'CR-V',         'SHHCB': 'CR-V e:PHEV',
-  'SHHDA': 'HR-V',
-  'SHHEA': 'ZR-V',
-  'SHHFA': 'e:Ny1',
-  'SHHHA': 'Accord',
-
-  // ═══════════════════════════════════════════════════════════
-  // NISSAN UK/FRANCE (VNV) — mirrors JN1 codes
-  // ═══════════════════════════════════════════════════════════
-  'VNVAA': 'Micra',        'VNVBA': 'Juke',         'VNVBB': 'Juke Hybrid',
-  'VNVCA': 'Qashqai',      'VNVCB': 'Qashqai e-Power',
-  'VNVDA': 'X-Trail',      'VNVDB': 'X-Trail e-Power',
-  'VNVEA': 'Leaf',         'VNVFA': 'Ariya',
-
-  // ═══════════════════════════════════════════════════════════
-  // INFINITI (JNK)
-  // ═══════════════════════════════════════════════════════════
-  'JNKAA': 'Q30',
-  'JNKBA': 'Q50',
-  'JNKCA': 'Q60',
-  'JNKDA': 'QX30',
-  'JNKEA': 'QX50',
-  'JNKFA': 'QX55',
-  'JNKGA': 'QX60',
-  'JNKHA': 'QX70',
-  'JNKJA': 'QX80',
-
-  // ═══════════════════════════════════════════════════════════
-  // MITSUBISHI comprehensive (JMB, JA3, JA4)
-  // ═══════════════════════════════════════════════════════════
-  'JMBAA': 'Colt',
-  'JMBBA': 'Lancer',       'JMBBB': 'Lancer Evolution',
-  'JMBCA': 'Galant',
-  'JMBDA': 'Eclipse',      'JMBDB': 'Eclipse Cross',   'JMBDC': 'Eclipse Cross PHEV',
-  'JMBEA': 'Outlander',    'JMBEB': 'Outlander PHEV',  'JMBEC': 'Outlander Sport',
-  'JMBFA': 'ASX',          'JMBFB': 'ASX PHEV',
-  'JMBGA': 'Pajero',       'JMBGB': 'Pajero Sport',
-  'JMBHA': 'L200',
-  'JMBJA': 'Space Star',
-  'JA3AA': 'Colt',         'JA3BA': 'Lancer',          'JA3CA': 'Eclipse',
-  'JA4AA': 'Outlander',    'JA4AB': 'Outlander PHEV',  'JA4BA': 'ASX',
-
-  // ═══════════════════════════════════════════════════════════
-  // SUZUKI comprehensive (JS1, JS2, JS3, JS4)
-  // ═══════════════════════════════════════════════════════════
-  'JS1AA': 'Swift',        'JS1AB': 'Swift Sport',
-  'JS1BA': 'Baleno',
-  'JS1CA': 'Vitara',       'JS1CB': 'Vitara SHVS',
-  'JS1DA': 'S-Cross',      'JS1DB': 'S-Cross Hybrid',
-  'JS1EA': 'Ignis',
-  'JS1FA': 'Jimny',
-  'JS1GA': 'Across',
-  'JS1HA': 'Swace',
-  'JS2AA': 'Swift',        'JS2CA': 'Vitara',          'JS2DA': 'S-Cross',
-  'JS3AA': 'Swift',        'JS3CA': 'Vitara',          'JS3FA': 'Jimny',
-  'JS4AA': 'Swift',        'JS4CA': 'Vitara',          'JS4FA': 'Jimny',
-
-  // ═══════════════════════════════════════════════════════════
-  // KIA Slovakia plants (U5Y, U6Y) — mirrors KNA codes
-  // ═══════════════════════════════════════════════════════════
-  'U5YAA': 'Picanto',      'U6YAA': 'Picanto',
-  'U5YCA': 'Ceed',         'U6YCA': 'Ceed',
-  'U5YCB': 'ProCeed',      'U6YCB': 'ProCeed',
-  'U5YDA': 'Stonic',       'U6YDA': 'Stonic',
-  'U5YFA': 'Sportage',     'U6YFA': 'Sportage',
-  'U5YJA': 'EV6',          'U6YJA': 'EV6',
-  'U5YKA': 'EV9',          'U6YKA': 'EV9',
+  '5YJS':  { model: 'Model S', start: 2012 },
+  '5YJSA': { model: 'Model S', start: 2012 },
+  '5YJSE': { model: 'Model S', start: 2012 },
+  '5YJX':  { model: 'Model X', start: 2015 },
+  '5YJXC': { model: 'Model X', start: 2015 },
+  '5YJ3':  { model: 'Model 3', start: 2017 },
+  '5YJ3E': { model: 'Model 3', start: 2017 },
+  '5YJY':  { model: 'Model Y', start: 2020 },
+  '5YJYG': { model: 'Model Y', start: 2020 },
+  '5YJYC': { model: 'Model Y Performance', start: 2020 },
+  'SFZS':  { model: 'Model S', start: 2012 },
+  'SFZ3':  { model: 'Model 3', start: 2017 },
+  'SFZY':  { model: 'Model Y', start: 2020 },
+  'LRW3':  { model: 'Model 3', start: 2020 },
+  'LRWY':  { model: 'Model Y', start: 2021 },
+  'LRWS':  { model: 'Model S', start: 2012 },
+  'LRWX':  { model: 'Model X', start: 2015 },
+  'XP7Y':  { model: 'Model Y', generation: 'Giga Berlin', start: 2022 },
+  'XP73':  { model: 'Model 3', generation: 'Giga Berlin', start: 2023 },
 
   // ═══════════════════════════════════════════════════════════
   // SSANGYONG (KPT, KLA)
   // ═══════════════════════════════════════════════════════════
-  'KPTAA': 'Tivoli',       'KPTAB': 'Tivoli Electric',
-  'KPTBA': 'Korando',      'KPTBB': 'Korando e-Motion',
-  'KPTCA': 'Rexton',       'KPTCB': 'Rexton Sport',
-  'KPTDA': 'Musso',
-  'KLAAA': 'Tivoli',       'KLABA': 'Korando',         'KLACA': 'Rexton',
+  'KPTAA': { model: 'Tivoli', start: 2015 },
+  'KPTAB': { model: 'Tivoli Electric', start: 2020 },
+  'KPTBA': { model: 'Korando', generation: 'C300', start: 2019 },
+  'KPTBB': { model: 'Korando e-Motion', generation: 'C300', start: 2021 },
+  'KPTCA': { model: 'Rexton', generation: 'Y450', start: 2017 },
+  'KPTCB': { model: 'Rexton Sport', generation: 'Y450', start: 2018 },
+  'KPTDA': { model: 'Musso', generation: 'Q201', start: 2018 },
+  'KLAAA': { model: 'Tivoli', start: 2015 },
+  'KLABA': { model: 'Korando', generation: 'C300', start: 2019 },
+  'KLACA': { model: 'Rexton', generation: 'Y450', start: 2017 },
 
   // ═══════════════════════════════════════════════════════════
-  // DELOREAN (SCE) + MCLAREN (SBM)
-  // SCE = DeLorean Motor Cars Ltd., Northern Ireland (NOT McLaren)
-  // SBM = McLaren Automotive Ltd., Woking, Surrey
-  // Source: Wikibooks WMI, dot.report
+  // MCLAREN (SBM)
   // ═══════════════════════════════════════════════════════════
-  'SCEAA': 'DMC-12',
-
-  'SBMAA': '720S',
-  'SBMAB': '720S Spider',
-  'SBMBA': '765LT',
-  'SBMBB': '765LT Spider',
-  'SBMCA': 'GT',
-  'SBMDA': 'Artura',
-  'SBMDB': 'Artura Spider',
-  'SBMEA': '570S',
-  'SBMEB': '570GT',
-  'SBMFA': '600LT',
+  'SBMAA': { model: '720S', generation: 'P14', start: 2017 },
+  'SBMAB': { model: '720S Spider', generation: 'P14', start: 2018 },
+  'SBMBA': { model: '765LT', generation: 'P14', start: 2020 },
+  'SBMBB': { model: '765LT Spider', generation: 'P14', start: 2021 },
+  'SBMCA': { model: 'GT', generation: 'M80S', start: 2019 },
+  'SBMDA': { model: 'Artura', generation: 'M88S', start: 2021 },
+  'SBMDB': { model: 'Artura Spider', generation: 'M88S', start: 2023 },
+  'SBMEA': { model: '570S', generation: 'P13', start: 2015, end: 2021 },
+  'SBMEB': { model: '570GT', generation: 'P13', start: 2016, end: 2021 },
+  'SBMFA': { model: '600LT', generation: 'P13', start: 2018, end: 2021 },
 
   // ═══════════════════════════════════════════════════════════
   // ASTON MARTIN (SCF)
   // ═══════════════════════════════════════════════════════════
-  'SCFAA': 'DB11',         'SCFAB': 'DB11 Volante',
-  'SCFBA': 'DB12',         'SCFBB': 'DB12 Volante',
-  'SCFCA': 'Vantage',      'SCFCB': 'Vantage Roadster',
-  'SCFDA': 'DBS',          'SCFDB': 'DBS Superleggera',
-  'SCFEA': 'DBX',          'SCFEB': 'DBX707',
-  'SCFFA': 'Valkyrie',
-  'SCFGA': 'Vanquish',
+  'SCFAA': { model: 'DB11', generation: 'AM818', start: 2016 },
+  'SCFAB': { model: 'DB11 Volante', generation: 'AM818', start: 2017 },
+  'SCFBA': { model: 'DB12', generation: 'AM823', start: 2023 },
+  'SCFBB': { model: 'DB12 Volante', generation: 'AM823', start: 2023 },
+  'SCFCA': { model: 'Vantage', generation: 'AM814', start: 2018 },
+  'SCFCB': { model: 'Vantage Roadster', generation: 'AM814', start: 2020 },
+  'SCFDA': { model: 'DBS', generation: 'AM818', start: 2018 },
+  'SCFDB': { model: 'DBS Superleggera', generation: 'AM818', start: 2018, end: 2022 },
+  'SCFEA': { model: 'DBX', generation: 'AM827', start: 2020 },
+  'SCFEB': { model: 'DBX707', generation: 'AM827', start: 2022 },
+  'SCFFA': { model: 'Valkyrie', generation: 'AM036', start: 2021 },
+  'SCFGA': { model: 'Vanquish', generation: 'AM835', start: 2024 },
 
   // ═══════════════════════════════════════════════════════════
-  // ROLLS-ROYCE (SCA) / BENTLEY (SCB) / LOTUS (SCC)
+  // ROLLS-ROYCE (SCA) / BENTLEY (SCB) / LOTUS (SCC) / DELOREAN (SCE)
   // ═══════════════════════════════════════════════════════════
-  'SCAAA': 'Phantom',      'SCAAB': 'Phantom EWB',
-  'SCABA': 'Ghost',        'SCABB': 'Ghost EWB',
-  'SCACA': 'Wraith',       'SCACB': 'Wraith Black Badge',
-  'SCADA': 'Dawn',
-  'SCAEA': 'Cullinan',     'SCAEB': 'Cullinan Black Badge',
-  'SCAFA': 'Spectre',
-  'SCBAA': 'Continental GT',  'SCBAB': 'Continental GT Convertible',
-  'SCBBA': 'Flying Spur',
-  'SCBCA': 'Bentayga',     'SCBCB': 'Bentayga EWB',
-  'SCBDA': 'Mulsanne',
-  'SCCAA': 'Emira',
-  'SCCBA': 'Evija',
-  'SCCCA': 'Elise',
-  'SCCDA': 'Exige',
+  'SCAAA': { model: 'Phantom', generation: 'RR12', start: 2017 },
+  'SCAAB': { model: 'Phantom EWB', generation: 'RR12', start: 2017 },
+  'SCABA': { model: 'Ghost', generation: 'RR12', start: 2020 },
+  'SCABB': { model: 'Ghost EWB', generation: 'RR12', start: 2020 },
+  'SCACA': { model: 'Wraith', generation: 'RR11', start: 2013, end: 2023 },
+  'SCACB': { model: 'Wraith Black Badge', generation: 'RR11', start: 2016, end: 2023 },
+  'SCADA': { model: 'Dawn', generation: 'RR11', start: 2015, end: 2023 },
+  'SCAEA': { model: 'Cullinan', generation: 'RR12', start: 2018 },
+  'SCAEB': { model: 'Cullinan Black Badge', generation: 'RR12', start: 2020 },
+  'SCAFA': { model: 'Spectre', generation: 'RR12', start: 2023 },
+  'SCBAA': { model: 'Continental GT', generation: 'G3', start: 2017 },
+  'SCBAB': { model: 'Continental GT Convertible', generation: 'G3', start: 2018 },
+  'SCBBA': { model: 'Flying Spur', generation: 'G3', start: 2019 },
+  'SCBCA': { model: 'Bentayga', generation: 'G1', start: 2015 },
+  'SCBCB': { model: 'Bentayga EWB', generation: 'G1', start: 2022 },
+  'SCBDA': { model: 'Mulsanne', generation: 'G1', start: 2010, end: 2020 },
+  'SCCAA': { model: 'Emira', generation: 'V6/I4', start: 2022 },
+  'SCCBA': { model: 'Evija', start: 2023 },
+  'SCCCA': { model: 'Elise', generation: 'S3', start: 2010, end: 2021 },
+  'SCCDA': { model: 'Exige', generation: 'S3', start: 2011, end: 2021 },
+  'SCEAA': { model: 'DMC-12', start: 1981, end: 1982 },
 
   // ═══════════════════════════════════════════════════════════
-  // FORD additional plants (WF1, SFA, VS6) — WF0 already above
+  // ALPINE (VFA)
   // ═══════════════════════════════════════════════════════════
-  'WF1AA': 'Fiesta',       'WF1BA': 'Focus',          'WF1CA': 'Mondeo',
-  'WF1DA': 'Kuga',         'WF1EA': 'EcoSport',       'WF1FA': 'Puma',
-  'SFAAA': 'Fiesta',       'SFABA': 'Focus',          'SFACA': 'Mondeo',
-  'SFADA': 'Kuga',         'SFAFA': 'Puma',
-  'VS6AA': 'Fiesta',       'VS6BA': 'Focus',          'VS6FA': 'Puma',
+  'VFAAA': { model: 'A110', generation: 'B110', start: 2017 },
+  'VFAAB': { model: 'A110 S', generation: 'B110', start: 2019 },
+  'VFAAC': { model: 'A110 R', generation: 'B110', start: 2022 },
+  'VFABA': { model: 'A290', generation: 'B290', start: 2024 },
+  'VFACA': { model: 'A310', start: 2025 },
 
   // ═══════════════════════════════════════════════════════════
-  // RENAULT additional plants (VF2, VF6, VNE)
-  // VR1 = DS Automobiles (PSA 2017 reassignment), NOT Renault
+  // DS AUTOMOBILES additional (VR1, VR8)
   // ═══════════════════════════════════════════════════════════
-  'VF2AA': 'Clio',         'VF2BA': 'Megane',          'VF2CA': 'Laguna',
-  'VF6AA': 'Clio',         'VF6BA': 'Megane',          'VF6KA': 'Captur',
-  'VNEAA': 'Clio',         'VNEBA': 'Megane',          'VNEKA': 'Captur',
-  // VR1 = DS Automobiles (confirmed: PSA 2017 WMI assignment; DS VIN example VR1JJEHZRJY032632)
-  'VR1AA': 'DS 3',         'VR1AB': 'DS 3 Crossback',  'VR1AC': 'DS 3 E-Tense',
-  'VR1BA': 'DS 4',         'VR1BB': 'DS 4 E-Tense',
-  'VR1CA': 'DS 5',
-  'VR1DA': 'DS 7 Crossback', 'VR1DB': 'DS 7 E-Tense',
-  'VR1EA': 'DS 9',
+  'VR1AA': { model: 'DS 3', generation: 'D34', start: 2019 },
+  'VR1AB': { model: 'DS 3 Crossback', generation: 'D34', start: 2019 },
+  'VR1AC': { model: 'DS 3 E-Tense', generation: 'D34', start: 2020 },
+  'VR1BA': { model: 'DS 4', generation: 'D43', start: 2021 },
+  'VR1BB': { model: 'DS 4 E-Tense', generation: 'D43', start: 2022 },
+  'VR1CA': { model: 'DS 5', generation: 'D52', start: 2011, end: 2018 },
+  'VR1DA': { model: 'DS 7 Crossback', generation: 'D74', start: 2017 },
+  'VR1DB': { model: 'DS 7 E-Tense', generation: 'D74', start: 2020 },
+  'VR1EA': { model: 'DS 9', generation: 'D94', start: 2021 },
+  'VR8AA': { model: 'DS 3', generation: 'D34', start: 2019 },
+  'VR8AB': { model: 'DS 3 Crossback', generation: 'D34', start: 2019 },
+  'VR8AC': { model: 'DS 3 E-Tense', generation: 'D34', start: 2020 },
+  'VR8BA': { model: 'DS 4', generation: 'D43', start: 2021 },
+  'VR8BB': { model: 'DS 4 E-Tense', generation: 'D43', start: 2022 },
+  'VR8CA': { model: 'DS 5', generation: 'D52', start: 2011, end: 2018 },
+  'VR8DA': { model: 'DS 7', generation: 'D74', start: 2017 },
+  'VR8DB': { model: 'DS 7 E-Tense', generation: 'D74', start: 2020 },
+  'VR8EA': { model: 'DS 9', generation: 'D94', start: 2021 },
+  'VR8EB': { model: 'DS 9 E-Tense', generation: 'D94', start: 2022 },
+
+  // ═══════════════════════════════════════════════════════════
+  // FORD EU additional plants (WF1, SFA, VS6)
+  // ═══════════════════════════════════════════════════════════
+  'WF1AA': { model: 'Fiesta', generation: 'MK8', start: 2017, end: 2023 },
+  'WF1BA': { model: 'Focus', generation: 'MK4', start: 2018 },
+  'WF1CA': { model: 'Mondeo', generation: 'MK5', start: 2014, end: 2022 },
+  'WF1DA': { model: 'Kuga', generation: 'MK3', start: 2019 },
+  'WF1EA': { model: 'EcoSport', generation: 'MK2', start: 2013, end: 2022 },
+  'WF1FA': { model: 'Puma', generation: 'MK2', start: 2019 },
+  'SFAAA': { model: 'Fiesta', generation: 'MK8', start: 2017, end: 2023 },
+  'SFABA': { model: 'Focus', generation: 'MK4', start: 2018 },
+  'SFACA': { model: 'Mondeo', generation: 'MK5', start: 2014, end: 2022 },
+  'SFADA': { model: 'Kuga', generation: 'MK3', start: 2019 },
+  'SFAFA': { model: 'Puma', generation: 'MK2', start: 2019 },
+  'VS6AA': { model: 'Fiesta', generation: 'MK8', start: 2017, end: 2023 },
+  'VS6BA': { model: 'Focus', generation: 'MK4', start: 2018 },
+  'VS6FA': { model: 'Puma', generation: 'MK2', start: 2019 },
 };
