@@ -276,6 +276,19 @@ const EU_GENERATION_YEARS: Record<string, number> = {
   'WP097': 2016, // Panamera (971, 2016+)
   'WP0J1': 2019, // Taycan (2019+)
   'WP195': 2014, // Macan (95B, 2014+) — WP1ZZZ95Z user-confirmed
+
+  // ── Mercedes-Benz (WDD=cars, WDC=SUVs) ───────────────────────────────────
+  // Key = WMI + pos4 + pos5 (often encodes the chassis generation, e.g. '176' = W176 A-Class)
+  'WDD17': 2012, // A-Class W176/W177 (2012+) — WDD176... user-confirmed
+  'WDD24': 2011, // B-Class W246/W247 (2011+)
+  'WDD20': 2014, // C-Class W205/W206 (2014+)
+  'WDD21': 2016, // E-Class W213     (2016+)
+  'WDD22': 2013, // S-Class W222/W223 (2013+)
+  'WDD11': 2013, // CLA C117/C118    (2013+)
+  'WDD23': 2018, // CLS C257         (2018+)
+  'WDC16': 2011, // GLE/M-Class W166 (2011+)
+  'WDC25': 2015, // GLC X253/X254    (2015+)
+  'WDC29': 2012, // GLS X166/X167    (2012+)
 };
 
 // European manufacturer WMIs where pos 10 = '0' is a market marker, not a year
@@ -283,7 +296,13 @@ const EU_YEAR_WMI = new Set([
   'WBA', 'WBS', 'WBX', 'WBY', 'WMW', 'WBW', // BMW group
   'ZFF', 'ZHW', 'ZAM', 'ZAR', 'ZFA', 'ZLA', // Italian
   'WP0', 'WP1',                               // Porsche
+  'WDB', 'WDC', 'WDD', 'WDF',                 // Mercedes-Benz DE
 ]);
+
+// German Mercedes WMIs where pos10 is NOT a SAE J1725 year code at all —
+// the VDS uses numeric characters that conflict with the pos7 disambiguation rule.
+// For these VINs we always skip vinYear and rely on NHTSA year or EU_GENERATION_YEARS.
+const UNRELIABLE_YEAR_WMI = new Set(['WDB', 'WDC', 'WDD', 'WDF']);
 
 function decodeYearFromVin(vin: string): number {
   const ch = vin[9]?.toUpperCase(); // position 10 (0-indexed: 9)
@@ -328,6 +347,19 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
   const wmi = cleanVin.slice(0, 3);
   const wmiData = WMI_DATABASE[wmi];
 
+  // Pre-compute year helpers (independent of API result)
+  const isZZZFormat = cleanVin.slice(3, 6) === 'ZZZ';
+  // German Mercedes VINs: pos10 is not a SAE year code; zero-out vinYear for them
+  const isUnreliablePos10 = UNRELIABLE_YEAR_WMI.has(wmi);
+  const vinYear = isUnreliablePos10 ? 0 : decodeYearFromVin(cleanVin);
+  // isEUVin: generation year table applies when pos10='0' (EU market marker) OR WMI has unreliable pos10
+  const isEUVin = EU_YEAR_WMI.has(wmi) && (cleanVin[9] === '0' || isUnreliablePos10);
+  const eu6Key = cleanVin.slice(0, 5) + cleanVin[6]; // WMI+pos4+pos5+pos7
+  const eu5Key = cleanVin.slice(0, 5);                // WMI+pos4+pos5
+  const generationYear = isEUVin
+    ? (EU_GENERATION_YEARS[eu6Key] ?? EU_GENERATION_YEARS[eu5Key] ?? 0)
+    : 0;
+
   try {
     const url = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${cleanVin}?format=json`;
     const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
@@ -353,20 +385,9 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       // Strip make prefix from model (e.g. NHTSA returns "Mazda3" → we show "3")
       const model = cleanModel(rawModel, make);
 
-      // Validate API year: NHTSA sometimes returns '0' for unknown VINs
+      // Validate API year: NHTSA sometimes returns '0' for unknown VINs.
+      // For ZZZ-format VINs NHTSA uses the old 30-year cycle (e.g. N→1992 not 2022).
       const apiYear = yearStr ? parseInt(yearStr, 10) : 0;
-      const vinYear = decodeYearFromVin(cleanVin);
-      // Many European VINs use '0' at position 10 as a market marker (not a year code).
-      // Fall back to known model generation launch year for those VINs.
-      const isEUVin = EU_YEAR_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
-      const eu6Key = cleanVin.slice(0, 5) + cleanVin[6]; // WMI+pos4+pos5+pos7
-      const generationYear = isEUVin
-        ? (EU_GENERATION_YEARS[eu6Key] ?? EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
-        : 0;
-      // For European ZZZ-format VINs (pos 4-6 = 'ZZZ') NHTSA uses the old 30-year
-      // cycle and returns e.g. 1992 instead of 2022 for pos10='N'. Our local
-      // decodeYearFromVin always picks the most-recent cycle, so prefer it here.
-      const isZZZFormat = cleanVin.slice(3, 6) === 'ZZZ';
       const year = (apiYear >= 1900 && apiYear <= 2060 && !isZZZFormat)
         ? apiYear
         : (vinYear > 0 ? vinYear : generationYear);
@@ -414,12 +435,6 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
 
   // WMI-only fallback (when API is unavailable or VIN not in NHTSA DB)
   if (wmiData) {
-    const vinYear = decodeYearFromVin(cleanVin);
-    const isEUVinFb = EU_YEAR_WMI.has(cleanVin.slice(0, 3)) && cleanVin[9] === '0';
-    const eu6KeyFb = cleanVin.slice(0, 5) + cleanVin[6];
-    const generationYear = isEUVinFb
-      ? (EU_GENERATION_YEARS[eu6KeyFb] ?? EU_GENERATION_YEARS[cleanVin.slice(0, 5)] ?? 0)
-      : 0;
     const year = vinYear > 0 ? vinYear : generationYear;
     const localModel = lookupVinModel(cleanVin);
     return {
@@ -447,9 +462,9 @@ function formatMake(s: string): string {
     'FIAT', 'SAAB', 'JEEP',
   ]);
   if (ALL_CAPS_BRANDS.has(upper)) return upper;
-  return s.trim().split(/\s+/).map(word =>
-    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-  ).join(' ');
+  // Capitalise each alphabetic word, preserving hyphens and spaces as-is.
+  // e.g. "MERCEDES-BENZ" → "Mercedes-Benz", "ALFA ROMEO" → "Alfa Romeo"
+  return s.trim().replace(/[A-Za-z]+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
 
 // Remove the make name prefix from the model when NHTSA returns them combined.

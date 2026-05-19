@@ -2,7 +2,7 @@
  * VIN model lookup for all other manufacturers:
  * Renault (VF1/VF2/VF6/VNE), Dacia (UU1/UU3), Peugeot (VF3/VR3),
  * Citroën (VF7/VF8/VR7/VS7), DS (VF9/VR1/VR8), Alpine (VFA),
- * Opel (W0L), Hyundai Czech (TMA), Ford Europe (WF0/WF1/SFA/VS6),
+ * Mercedes-Benz (WDD/WDC/WDB/WDF), Opel (W0L), Hyundai Czech (TMA), Ford Europe (WF0/WF1/SFA/VS6),
  * Toyota (SB1/JTD/JTE/JTK/JTM/JTN/JT2/JT3/VNK),
  * Lexus (JTJ/JTH/JTL), Honda (JHM/SHH), Nissan (JN1/JN6/JN8/VNV),
  * Infiniti (JNK), Mazda (JM1/JM4/JMZ), Mitsubishi (JMB/JA3/JA4),
@@ -130,6 +130,24 @@ export const OTHER_MODELS: Record<string, string> = {
   'VR7HA': 'Jumpy',
   'VR7BA': 'C3',
   'VR7CA': 'C4',
+
+  // ═══════════════════════════════════════════════════════════
+  // MERCEDES-BENZ (WDD=passenger cars, WDC=SUVs, WDB=older/vans, WDF=Sprinter)
+  // European ZZZ format NOT used; key = WMI + pos4 + pos5 (often encodes chassis gen)
+  // e.g. WDD176... → WDD17 = A-Class W176 (user-confirmed VIN WDD1760121J564419)
+  // ═══════════════════════════════════════════════════════════
+  'WDD17': 'A-Class',      // W176 / W177
+  'WDD24': 'B-Class',      // W246 / W247
+  'WDD20': 'C-Class',      // W205 / W206
+  'WDD21': 'E-Class',      // W213 / W214
+  'WDD22': 'S-Class',      // W222 / W223
+  'WDD11': 'CLA',          // C117 / C118
+  'WDD23': 'CLS',          // C257
+  'WDC16': 'GLE',          // W166 / V167
+  'WDC25': 'GLC',          // X253 / X254
+  'WDC29': 'GLS',          // X166 / X167
+  'WDC19': 'GLA',          // H247
+  'WDC18': 'GLB',          // X247
 
   // ═══════════════════════════════════════════════════════════
   // OPEL / VAUXHALL (W0L, X0L)
