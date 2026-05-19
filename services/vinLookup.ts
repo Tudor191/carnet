@@ -1,5 +1,6 @@
-import { VinLookupResult } from '../types';
+import { VinLookupResult, VehicleOrigin } from '../types';
 import { lookupVinModel } from './vinModels';
+import { lookupGeneration, formatGeneration } from './vinModels/generations';
 
 // World Manufacturer Identifier (primele 3 caractere din VIN)
 const WMI_DATABASE: Record<string, { make: string; country: string }> = {
@@ -291,6 +292,21 @@ const EU_GENERATION_YEARS: Record<string, number> = {
   'WDC29': 2012, // GLS X166/X167    (2012+)
 };
 
+const EU_COUNTRIES = new Set([
+  'DE', 'FR', 'IT', 'GB', 'SE', 'ES', 'CZ', 'HU', 'SK', 'RO',
+  'AT', 'BE', 'NL', 'PL', 'PT', 'FI', 'DK', 'NO', 'CH', 'SI',
+  'HR', 'BG', 'GR', 'LT', 'LV', 'EE',
+]);
+const NA_COUNTRIES = new Set(['US', 'CA', 'MX']);
+
+function getOrigin(country: string | undefined): VehicleOrigin {
+  if (!country) return 'OTHER';
+  if (EU_COUNTRIES.has(country)) return 'EU';
+  if (NA_COUNTRIES.has(country)) return 'NA';
+  if (country === 'JP' || country === 'KR') return 'JP';
+  return 'OTHER';
+}
+
 // European manufacturer WMIs where pos 10 = '0' is a market marker, not a year
 const EU_YEAR_WMI = new Set([
   'WBA', 'WBS', 'WBX', 'WBY', 'WMW', 'WBW', // BMW group
@@ -360,6 +376,10 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
     ? (EU_GENERATION_YEARS[eu6Key] ?? EU_GENERATION_YEARS[eu5Key] ?? 0)
     : 0;
 
+  const origin: VehicleOrigin = getOrigin(wmiData?.country);
+  const generationInfo = lookupGeneration(eu5Key, eu6Key);
+  const generation = generationInfo ? formatGeneration(generationInfo) : undefined;
+
   try {
     const url = `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${cleanVin}?format=json`;
     const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
@@ -423,6 +443,8 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
         fuelType,
         transmission,
         bodyType: capitalizeFirst(bodyType),
+        origin,
+        generation,
       };
     }
   } catch (err: any) {
@@ -448,6 +470,8 @@ export async function lookupVin(vin: string): Promise<VinLookupResult> {
       fuelType: 'Necunoscut',
       transmission: 'Necunoscută',
       bodyType: 'Necunoscut',
+      origin,
+      generation,
     };
   }
 

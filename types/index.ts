@@ -1,3 +1,5 @@
+export type VehicleOrigin = 'EU' | 'NA' | 'JP' | 'OTHER';
+
 export interface Car {
   id: string;
   userId: string;
@@ -16,6 +18,8 @@ export interface Car {
   rovinetaExpiry?: string;
   insuranceExpiry?: string;
   itpExpiry?: string;
+  origin?: VehicleOrigin;
+  generation?: string;
   // Service / oil change history
   lastServiceDate?: string;
   lastServiceKm?: string;
@@ -53,5 +57,7 @@ export interface VinLookupResult {
   fuelType: string;
   transmission: string;
   bodyType: string;
+  origin?: VehicleOrigin;
+  generation?: string;
   error?: string;
 }

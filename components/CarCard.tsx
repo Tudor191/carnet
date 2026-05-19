@@ -93,11 +93,17 @@ export default function CarCard({ car, onPress }: Props) {
           <View>
             <Text style={styles.logoText}>CarNet</Text>
             <Text style={styles.logoSubText}>România</Text>
+            {car.origin === 'EU' && <Text style={styles.originFlag}>🇪🇺</Text>}
+            {car.origin === 'NA' && <Text style={styles.originFlag}>🇺🇸</Text>}
+            {car.origin === 'JP' && <Text style={styles.originFlag}>🇯🇵</Text>}
           </View>
           <View style={styles.carNameArea}>
             <Text style={styles.carMake}>{car.make}</Text>
             <Text style={styles.carModel}>{car.model}</Text>
-            <Text style={styles.carYear}>{car.year}</Text>
+            <Text style={styles.carYear}>{car.year > 0 ? car.year : '—'}</Text>
+            {!!car.generation && (
+              <Text style={styles.carGeneration}>{car.generation}</Text>
+            )}
             {hasPlate && (
               <View style={styles.plateBadge}>
                 <View style={styles.plateRO}>
@@ -184,6 +190,8 @@ const styles = StyleSheet.create({
   carMake: { color: '#94A3B8', fontSize: 10, letterSpacing: 1, textTransform: 'uppercase' },
   carModel: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   carYear: { color: '#60A5FA', fontSize: 11, fontWeight: '500' },
+  carGeneration: { color: '#94A3B8', fontSize: 9, marginTop: 1, letterSpacing: 0.3 },
+  originFlag: { fontSize: 16, marginTop: 4 },
   plateBadge: {
     flexDirection: 'row',
     alignItems: 'center',

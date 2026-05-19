@@ -366,7 +366,8 @@ export default function CarDetailScreen() {
               {[
                 { label: 'Marcă', value: car.make },
                 { label: 'Model', value: car.model },
-                { label: 'An fabricație', value: String(car.year) },
+                { label: 'An fabricație', value: car.year > 0 ? String(car.year) : '—' },
+                ...(car.generation ? [{ label: 'Generație', value: car.generation }] : []),
                 { label: 'Număr șasiu', value: car.vin },
               ].map((item, i) => (
                 <View key={i} style={styles.detailRow}>

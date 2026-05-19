@@ -113,7 +113,7 @@ function AvatarDropdown({
 }
 
 export default function HomeScreen() {
-  const { user, cars, canAddCar, deleteCar, logout } = useCarStore();
+  const { user, cars, canAddCar, deleteCar, logout, loadCars } = useCarStore();
   const [refreshing, setRefreshing] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [premiumModalVisible, setPremiumModalVisible] = useState(false);
@@ -125,7 +125,7 @@ export default function HomeScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await new Promise(r => setTimeout(r, 600));
+    await loadCars();
     setRefreshing(false);
   };
 

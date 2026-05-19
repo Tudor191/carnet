@@ -114,6 +114,8 @@ export default function AddCarScreen() {
         fuelType: lookupResult.fuelType,
         transmission: lookupResult.transmission,
         bodyType: lookupResult.bodyType,
+        origin: lookupResult.origin,
+        generation: lookupResult.generation,
         registrationNumber: registrationNumber.trim() || undefined,
         insuranceExpiry: insuranceExpiry || undefined,
         itpExpiry: itpExpiry || undefined,
@@ -199,6 +201,7 @@ export default function AddCarScreen() {
                       { label: 'Marcă', value: lookupResult.make },
                       { label: 'Model', value: lookupResult.model !== 'Necunoscut' ? lookupResult.model : '—' },
                       { label: 'An fabricație', value: lookupResult.year > 0 ? String(lookupResult.year) : '—' },
+                      ...(lookupResult.generation ? [{ label: 'Generație', value: lookupResult.generation }] : []),
                     ].map((item, i) => (
                       <View key={i} style={styles.infoItem}>
                         <Text style={styles.infoLabel}>{item.label}</Text>
