@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCarStore } from '../store/useCarStore';
+import { useThemeStore } from '../store/useThemeStore';
+import { DARK, LIGHT } from '../constants/themes';
 import CarCard from '../components/CarCard';
 import { Colors } from '../constants/colors';
 
@@ -123,6 +125,8 @@ function AlertCard({ carName, docType, dateStr }: {
 
 export default function HomeScreen() {
   const { user, cars, canAddCar, deleteCar, logout, loadCars } = useCarStore();
+  const { theme } = useThemeStore();
+  const tc = theme === 'dark' ? DARK : LIGHT;
   const [refreshing, setRefreshing] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [premiumModalVisible, setPremiumModalVisible] = useState(false);
@@ -177,7 +181,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={s.root}>
+    <View style={[s.root, { backgroundColor: tc.bg }]}>
       <SafeAreaView style={s.safe} edges={['top']}>
 
         {/* ── Navbar ── */}

@@ -12,6 +12,7 @@ import { router, usePathname } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useCarStore } from '../store/useCarStore';
+import { useThemeStore } from '../store/useThemeStore';
 import { Colors } from '../constants/colors';
 
 const SIDEBAR_W = 215;
@@ -21,6 +22,8 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { width } = Dimensions.get('window');
   const { user, logout, canAddCar } = useCarStore();
+  const { theme, toggleTheme } = useThemeStore();
+  const isLight = theme === 'light';
   const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Only visible on wide screens and outside auth pages
@@ -36,12 +39,15 @@ export default function Sidebar() {
     router.replace('/login');
   };
 
-  const isHome = pathname === '/home' || pathname.startsWith('/car/');
+  const isDashboard = pathname === '/dashboard' || pathname.startsWith('/car/');
+
+  const sidebarBg = isLight ? '#FFFFFF' : Colors.primary;
+  const sidebarBorder = isLight ? '#E2E8F0' : 'rgba(255,255,255,0.07)';
 
   return (
-    <View style={styles.sidebar}>
-      {/* ── Brand — click navigates to home ── */}
-      <TouchableOpacity style={styles.brand} onPress={() => router.push('/home')} activeOpacity={0.75}>
+    <View style={[styles.sidebar, { backgroundColor: sidebarBg, borderRightColor: sidebarBorder }]}>
+      {/* ── Brand — click navigates to dashboard ── */}
+      <TouchableOpacity style={styles.brand} onPress={() => router.push('/dashboard')} activeOpacity={0.75}>
         <Svg width={42} height={42} viewBox="0 0 120 120">
           {/* Notebook body */}
           <Rect x="20" y="12" width="76" height="92" rx="12" fill="#FFFFFF" />
@@ -118,15 +124,20 @@ export default function Sidebar() {
       {/* ── Navigation ── */}
       <View style={styles.nav}>
         <TouchableOpacity
-          style={[styles.navItem, isHome && styles.navItemActive]}
-          onPress={() => router.push('/home')}
+          style={[styles.navItem, isDashboard && styles.navItemActive]}
+          onPress={() => router.push('/dashboard')}
         >
           <Text style={styles.navIcon}>🚗</Text>
-          <Text style={[styles.navLabel, isHome && styles.navLabelActive]}>
+          <Text style={[styles.navLabel, isDashboard && styles.navLabelActive, isLight && { color: '#475569' }, isDashboard && isLight && { color: '#0F172A' }]}>
             Mașinile mele
           </Text>
         </TouchableOpacity>
-
+        <TouchableOpacity style={styles.navItem} onPress={toggleTheme}>
+          <Text style={styles.navIcon}>{isLight ? '🌙' : '☀️'}</Text>
+          <Text style={[styles.navLabel, isLight && { color: '#475569' }]}>
+            {isLight ? 'Mod întunecat' : 'Mod luminos'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View style={{ flex: 1 }} />

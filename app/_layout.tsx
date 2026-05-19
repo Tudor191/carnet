@@ -4,6 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet, View } from 'react-native';
 import { useCarStore } from '../store/useCarStore';
+import { useThemeStore } from '../store/useThemeStore';
+import { DARK, LIGHT } from '../constants/themes';
 import LoadingScreen from '../components/LoadingScreen';
 import Sidebar from '../components/Sidebar';
 
@@ -19,6 +21,8 @@ export default function RootLayout() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const segments = useSegments();
+  const { theme, loadTheme } = useThemeStore();
+  const colors = theme === 'dark' ? DARK : LIGHT;
 
   // Show loader only on initial page load / refresh — not on navigation
   useEffect(() => {
@@ -30,6 +34,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     loadCars();
+    loadTheme();
   }, []);
 
   // Protect private screens — redirect unauthenticated users to landing page
@@ -43,9 +48,9 @@ export default function RootLayout() {
   }, [user, isLoading, segments]);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: colors.bg }]}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
+        <StatusBar style={colors.statusBar} />
         <View style={styles.appRow}>
           {segments[0] !== 'home' && <Sidebar />}
           <View style={styles.content}>
