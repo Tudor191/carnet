@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Animated,
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,41 +14,142 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: SW } = Dimensions.get('window');
+const MAX = Math.min(SW, 520);
+const HALF = (MAX - 40) / 2;
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Color tokens ─────────────────────────────────────────────────────────────
+
+const C = {
+  bg:     '#060C18',
+  card:   '#0C1A2E',
+  border: '#152847',
+  accent: '#2570FF',
+  acDark: '#1050CC',
+  text:   '#FFFFFF',
+  sub:    '#7A95B8',
+  muted:  '#3D5570',
+  gold:   '#F59E0B',
+  green:  '#22C55E',
+  warn:   '#F59E0B',
+};
+
+// ─── Mock card (hero visual) ──────────────────────────────────────────────────
+
+function MockDocRow({
+  label, days, status,
+}: { label: string; days: number; status: 'ok' | 'warn' }) {
+  const color = status === 'ok' ? C.green : C.warn;
+  return (
+    <View style={m.docRow}>
+      <Text style={m.docLabel}>{label}</Text>
+      <View style={[m.docBadge, { borderColor: color + '55' }]}>
+        <View style={[m.docDot, { backgroundColor: color }]} />
+        <Text style={[m.docDays, { color }]}>{days} zile</Text>
+      </View>
+    </View>
+  );
+}
+
+function MockCard({ floatY }: { floatY: Animated.Value }) {
+  return (
+    <Animated.View style={[m.wrap, { transform: [{ translateY: floatY }] }]}>
+      <LinearGradient colors={['#102040', '#081628']} style={m.card}>
+        <View style={m.glow} />
+        <View style={m.head}>
+          <Text style={m.flag}>🇩🇪</Text>
+          <View style={m.headText}>
+            <Text style={m.make}>BMW 3 Series</Text>
+            <Text style={m.gen}>G20 · 2022 · EU</Text>
+          </View>
+          <View style={m.onlineDot} />
+        </View>
+        <View style={m.sep} />
+        <MockDocRow label="RCA" days={45} status="ok" />
+        <MockDocRow label="ITP" days={118} status="ok" />
+        <MockDocRow label="Rovinieta" days={12} status="warn" />
+      </LinearGradient>
+    </Animated.View>
+  );
+}
+
+const m = StyleSheet.create({
+  wrap: {
+    marginTop: 32,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#1A3860',
+    shadowColor: C.accent,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  card: { padding: 20, overflow: 'hidden' },
+  glow: {
+    position: 'absolute', top: -40, right: -40,
+    width: 120, height: 120, borderRadius: 60,
+    backgroundColor: '#2570FF20',
+  },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+  flag: { fontSize: 28 },
+  headText: { flex: 1 },
+  make: { color: C.text, fontSize: 16, fontWeight: '700' },
+  gen: { color: C.sub, fontSize: 12, marginTop: 2 },
+  onlineDot: {
+    width: 8, height: 8, borderRadius: 4, backgroundColor: C.green,
+    shadowColor: C.green, shadowOpacity: 0.8, shadowRadius: 4, elevation: 2,
+  },
+  sep: { height: 1, backgroundColor: '#1A3050', marginBottom: 14 },
+  docRow: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between', marginBottom: 10,
+  },
+  docLabel: { color: C.sub, fontSize: 13 },
+  docBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 10, paddingVertical: 4,
+    borderRadius: 20, borderWidth: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  docDot: { width: 6, height: 6, borderRadius: 3 },
+  docDays: { fontSize: 12, fontWeight: '600' },
+});
+
+// ─── Reusable section components ──────────────────────────────────────────────
+
+function SectionLabel({ text }: { text: string }) {
+  return <Text style={g.label}>{text}</Text>;
+}
 
 function BenefitCard({ icon, title, desc }: { icon: string; title: string; desc: string }) {
   return (
-    <View style={s.benefitCard}>
-      <View style={s.benefitIconWrap}>
-        <Text style={s.benefitIcon}>{icon}</Text>
-      </View>
-      <Text style={s.benefitTitle}>{title}</Text>
-      <Text style={s.benefitDesc}>{desc}</Text>
+    <View style={g.benefitCard}>
+      <LinearGradient colors={[C.accent + '22', C.accent + '08']} style={g.benefitIconWrap}>
+        <Text style={g.benefitIcon}>{icon}</Text>
+      </LinearGradient>
+      <Text style={g.benefitTitle}>{title}</Text>
+      <Text style={g.benefitDesc}>{desc}</Text>
     </View>
   );
 }
 
-function FeatureRow({ icon, title, desc }: { icon: string; title: string; desc: string }) {
+function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc: string }) {
   return (
-    <View style={s.featureRow}>
-      <View style={s.featureRowIconWrap}>
-        <Text style={s.featureRowIcon}>{icon}</Text>
-      </View>
-      <View style={s.featureRowContent}>
-        <Text style={s.featureRowTitle}>{title}</Text>
-        <Text style={s.featureRowDesc}>{desc}</Text>
-      </View>
+    <View style={[g.featureCard, { width: HALF }]}>
+      <Text style={g.featureIcon}>{icon}</Text>
+      <Text style={g.featureTitle}>{title}</Text>
+      <Text style={g.featureDesc}>{desc}</Text>
     </View>
   );
 }
 
-function HowCard({ n, title, desc }: { n: string; title: string; desc: string }) {
+function StepCard({ n, title, desc }: { n: string; title: string; desc: string }) {
   return (
-    <View style={s.howCard}>
-      <Text style={s.howN}>{n}</Text>
-      <Text style={s.howTitle}>{title}</Text>
-      <Text style={s.howDesc}>{desc}</Text>
+    <View style={[g.stepCard, { width: HALF }]}>
+      <Text style={g.stepN}>{n}</Text>
+      <Text style={g.stepTitle}>{title}</Text>
+      <Text style={g.stepDesc}>{desc}</Text>
     </View>
   );
 }
@@ -57,227 +159,206 @@ function HowCard({ n, title, desc }: { n: string; title: string; desc: string })
 export default function HomeScreen() {
   const [vin, setVin] = useState('');
 
+  // Entrance animation values
+  const fade = [0, 1, 2, 3].map(() => useRef(new Animated.Value(0)).current);
+  const floatY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Staggered entrance
+    Animated.stagger(
+      120,
+      fade.map(a =>
+        Animated.spring(a, { toValue: 1, useNativeDriver: true, tension: 50, friction: 8 }),
+      ),
+    ).start();
+
+    // Floating mock card
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatY, { toValue: -10, duration: 2800, useNativeDriver: true }),
+        Animated.timing(floatY, { toValue: 0, duration: 2800, useNativeDriver: true }),
+      ]),
+    ).start();
+  }, []);
+
+  const anim = (i: number) => ({
+    opacity: fade[i],
+    transform: [
+      {
+        translateY: fade[i].interpolate({
+          inputRange: [0, 1],
+          outputRange: [28, 0],
+        }),
+      },
+    ],
+  });
+
   return (
-    <SafeAreaView style={s.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={g.safe} edges={['top', 'bottom']}>
       <ScrollView
-        style={s.scroll}
-        contentContainerStyle={s.scrollContent}
+        style={g.scroll}
+        contentContainerStyle={g.scrollContent}
         showsVerticalScrollIndicator={false}
       >
 
         {/* ── Nav ── */}
-        <View style={s.nav}>
-          <Text style={s.navLogo}>CarNet</Text>
-          <TouchableOpacity style={s.navBtn} onPress={() => router.push('/login')}>
-            <Text style={s.navBtnText}>Autentificare</Text>
-          </TouchableOpacity>
+        <View style={g.navOuter}>
+          <View style={g.navInner}>
+            <Text style={g.navLogo}>CarNet</Text>
+            <TouchableOpacity style={g.navBtn} onPress={() => router.push('/login')}>
+              <Text style={g.navBtnText}>Autentificare</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* ── Hero ── */}
-        <LinearGradient colors={['#0C1E3A', '#070E1A']} style={s.hero}>
-          <View style={s.heroGlow} />
+        <LinearGradient colors={['#0C1E3C', C.bg]} style={g.heroOuter}>
+          {/* background glows */}
+          <View style={g.glowTR} />
+          <View style={g.glowBL} />
 
-          <Text style={s.heroTitle}>
-            Organizează documentele mașinii tale în câteva secunde
-          </Text>
-          <Text style={s.heroSub}>
-            Adaugă VIN-ul, CarNet identifică mașina și ține evidența RCA,{' '}
-            ITP și Rovinieta — cu alerte automate înainte de expirare.
-          </Text>
+          <View style={g.heroInner}>
+            <Animated.View style={anim(0)}>
+              <Text style={g.heroLabel}>GESTIONARE AUTO INTELIGENTĂ</Text>
+              <Text style={g.heroTitle}>
+                Organizează documentele mașinii în câteva secunde
+              </Text>
+            </Animated.View>
 
-          {/* VIN input */}
-          <View style={s.vinBox}>
-            <TextInput
-              style={s.vinInput}
-              placeholder="Introdu VIN-ul mașinii tale"
-              placeholderTextColor="#3D5070"
-              value={vin}
-              onChangeText={t => setVin(t.toUpperCase())}
-              maxLength={17}
-              autoCapitalize="characters"
-            />
-            <TouchableOpacity
-              style={s.vinBtn}
-              onPress={() => router.push('/register')}
-              activeOpacity={0.85}
-            >
-              <LinearGradient colors={['#1A6FFF', '#0A4FCC']} style={s.vinBtnGrad}>
-                <Text style={s.vinBtnText}>Verifică acum</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
+            <Animated.View style={[g.heroBullets, anim(1)]}>
+              {[
+                'RCA, ITP și Rovinieta la un loc',
+                'Alerte cu 30 zile înainte de expirare',
+                'Identificare model și origine prin VIN',
+              ].map(t => (
+                <View key={t} style={g.bullet}>
+                  <Text style={g.bulletDot}>✓</Text>
+                  <Text style={g.bulletText}>{t}</Text>
+                </View>
+              ))}
+            </Animated.View>
 
-          <TouchableOpacity
-            style={s.heroCTA2}
-            onPress={() => router.push('/register')}
-            activeOpacity={0.8}
-          >
-            <Text style={s.heroCTA2Text}>Nu am VIN →  Creează cont direct</Text>
-          </TouchableOpacity>
-
-          {/* Checklist */}
-          <View style={s.checkList}>
-            {[
-              'RCA, ITP și Rovinieta la un loc',
-              'Alerte cu 30 de zile înainte de expirare',
-              'Identificare model și origine prin VIN',
-              'Gratuit — fără card bancar',
-            ].map(item => (
-              <View key={item} style={s.checkRow}>
-                <Text style={s.checkMark}>✓</Text>
-                <Text style={s.checkText}>{item}</Text>
+            <Animated.View style={anim(2)}>
+              <View style={g.vinBox}>
+                <TextInput
+                  style={g.vinInput}
+                  placeholder="Introdu VIN-ul mașinii (17 caractere)"
+                  placeholderTextColor={C.muted}
+                  value={vin}
+                  onChangeText={t => setVin(t.toUpperCase())}
+                  maxLength={17}
+                  autoCapitalize="characters"
+                />
+                <TouchableOpacity
+                  style={g.vinBtn}
+                  onPress={() => router.push('/register')}
+                  activeOpacity={0.85}
+                >
+                  <LinearGradient colors={[C.accent, C.acDark]} style={g.vinBtnGrad}>
+                    <Text style={g.vinBtnText}>Verifică acum</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
               </View>
-            ))}
+              <TouchableOpacity
+                style={g.heroSkip}
+                onPress={() => router.push('/register')}
+                activeOpacity={0.7}
+              >
+                <Text style={g.heroSkipText}>Nu am VIN · Creează cont direct →</Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            <Animated.View style={anim(3)}>
+              <MockCard floatY={floatY} />
+            </Animated.View>
           </View>
         </LinearGradient>
 
-        {/* ── De ce CarNet — 3 coloane ── */}
-        <View style={s.section}>
-          <Text style={s.sectionLabel}>DE CE CARNET</Text>
-          <Text style={s.sectionTitle}>
-            De ce șoferii inteligenți aleg CarNet
-          </Text>
-          <Text style={s.sectionSub}>
-            Nu mai alergi după documente. CarNet face totul pentru tine.
-          </Text>
-          <View style={s.benefitsRow}>
-            <BenefitCard
-              icon="🔔"
-              title="Evită amenzile"
-              desc="Alerte automate cu 30 de zile înainte ca orice document să expire."
-            />
-            <BenefitCard
-              icon="📋"
-              title="Tot la un loc"
-              desc="RCA, ITP, Rovinieta — toate mașinile, un singur loc."
-            />
-            <BenefitCard
-              icon="⚡"
-              title="Instantaneu"
-              desc="Introduci VIN-ul și în secunde ai cardul digital complet."
-            />
+        {/* ── De ce CarNet — 3 benefit cards ── */}
+        <View style={g.section}>
+          <SectionLabel text="DE CE CARNET" />
+          <Text style={g.sectionTitle}>De ce șoferii inteligenți{'\n'}aleg CarNet</Text>
+          <Text style={g.sectionSub}>Nu mai alergi după documente. CarNet are grijă de tot.</Text>
+          <View style={g.benefitsRow}>
+            <BenefitCard icon="🔔" title="Evită amenzile" desc="Alertă automată cu 30 zile înainte ca orice document să expire." />
+            <BenefitCard icon="📋" title="Tot la un loc" desc="RCA, ITP, Rovinieta — toate mașinile, un singur dashboard." />
+            <BenefitCard icon="⚡" title="Instantaneu" desc="Introduci VIN-ul și în secunde ai cardul digital complet." />
           </View>
         </View>
 
-        {/* ── Ce gestionăm — feature rows ── */}
-        <View style={[s.section, s.sectionAlt]}>
-          <Text style={s.sectionLabel}>CE GESTIONĂM</Text>
-          <Text style={s.sectionTitle}>
-            Verificăm lucrurile pe care le uiți ușor
-          </Text>
-          <Text style={s.sectionSub}>
-            CarNet urmărește toate documentele obligatorii ale vehiculului tău.
-          </Text>
-
-          <View style={s.featureGrid}>
-            <FeatureRow
-              icon="🛡️"
-              title="RCA — Asigurare obligatorie"
-              desc="Știi exact câte zile mai ai până la expirarea poliței și primești alertă din timp. Nu mai riști amenzi sau probleme la control."
-            />
-            <FeatureRow
-              icon="🔧"
-              title="ITP — Inspecție tehnică periodică"
-              desc="Urmărești data ITP-ului fiecărei mașini. Alerta vine cu 30 de zile înainte — suficient timp să faci programare."
-            />
-            <FeatureRow
-              icon="🛣️"
-              title="Rovinieta"
-              desc="Urmărești valabilitatea rovinietei pe toate mașinile din cont. Nu mai plătești amenzi pentru rovinieta expirată."
-            />
-            <FeatureRow
-              icon="🔍"
-              title="Origine și model prin VIN"
-              desc="Introduci seria VIN de 17 caractere și afli instant marca, modelul, generația și originea vehiculului (EU / NA / JP)."
-            />
+        {/* ── Ce gestionăm — 2×2 feature grid ── */}
+        <View style={[g.section, g.sectionAlt]}>
+          <SectionLabel text="CE GESTIONĂM" />
+          <Text style={g.sectionTitle}>Verificăm tot ce{'\n'}contează</Text>
+          <Text style={g.sectionSub}>Documentele tale obligatorii, urmărite automat.</Text>
+          <View style={g.grid}>
+            <FeatureCard icon="🛡️" title="RCA" desc="Știi exact câte zile ai până la expirarea poliței de asigurare." />
+            <FeatureCard icon="🔧" title="ITP" desc="Urmărești inspecția tehnică a fiecărei mașini. Alertă cu 30 zile înainte." />
+            <FeatureCard icon="🛣️" title="Rovinieta" desc="Valabilitatea rovinietei pe toate mașinile din contul tău." />
+            <FeatureCard icon="🔍" title="VIN Lookup" desc="Introduci VIN-ul și afli instant marca, modelul, generația și originea." />
           </View>
         </View>
 
-        {/* ── Cum funcționează — 2×2 grid ── */}
-        <View style={s.section}>
-          <Text style={s.sectionLabel}>CUM FUNCȚIONEAZĂ</Text>
-          <Text style={s.sectionTitle}>Cum funcționează</Text>
-          <Text style={s.sectionSub}>
-            Aflați ce verificăm, cât de repede se întâmplă și ce primiți:
-          </Text>
-          <View style={s.howGrid}>
-            <HowCard
-              n="1"
-              title="Introdu VIN-ul mașinii"
-              desc="Introdu seria VIN formată din 17 caractere și CarNet identifică automat marca, modelul și generația."
-            />
-            <HowCard
-              n="2"
-              title="Creează contul gratuit"
-              desc="Înregistrare în mai puțin de un minut, fără card bancar și fără date personale inutile."
-            />
-            <HowCard
-              n="3"
-              title="Adaugă documentele"
-              desc="Completezi datele de expirare pentru RCA, ITP și Rovinieta — o singură dată, CarNet ține minte."
-            />
-            <HowCard
-              n="4"
-              title="Primești alerte automate"
-              desc="Cu 30 de zile înainte de fiecare expirare ești notificat. Nicio amendă, niciun document uitat."
-            />
+        {/* ── Cum funcționează — 2×2 step grid ── */}
+        <View style={g.section}>
+          <SectionLabel text="CUM FUNCȚIONEAZĂ" />
+          <Text style={g.sectionTitle}>Patru pași simpli</Text>
+          <Text style={g.sectionSub}>Aflați cât de repede poți începe:</Text>
+          <View style={g.grid}>
+            <StepCard n="01" title="Creează contul" desc="Înregistrare gratuită în mai puțin de un minut, fără card bancar." />
+            <StepCard n="02" title="Introdu VIN-ul" desc="CarNet identifică automat marca, modelul și generația mașinii tale." />
+            <StepCard n="03" title="Adaugă documente" desc="Completezi datele de expirare pentru RCA, ITP și Rovinieta." />
+            <StepCard n="04" title="Primești alerte" desc="Cu 30 de zile înainte de expirare ești notificat automat." />
           </View>
         </View>
 
         {/* ── Premium ── */}
-        <LinearGradient colors={['#0F1F3D', '#0A1628']} style={s.premiumSection}>
-          <View style={s.premiumInner}>
-            <Text style={s.premiumEyebrow}>PREMIUM</Text>
-            <Text style={s.premiumTitle}>Fă un pas în plus</Text>
-            <Text style={s.premiumSub}>
-              Deblochează tot potențialul aplicației cu CarNet Premium.
-            </Text>
-            <View style={s.premiumGrid}>
+        <View style={g.premOuter}>
+          <LinearGradient colors={['#0F1E3A', '#091525']} style={g.premCard}>
+            <View style={g.premGlow} />
+            <Text style={g.premEye}>PREMIUM</Text>
+            <Text style={g.premTitle}>Fă un pas în plus</Text>
+            <Text style={g.premSub}>Deblochează tot potențialul aplicației.</Text>
+            <View style={g.premGrid}>
               {[
-                { icon: '🚗', text: 'Mașini nelimitate în cont' },
-                { icon: '📤', text: 'Export PDF documente' },
-                { icon: '📊', text: 'Rapoarte detaliate per vehicul' },
+                { icon: '🚗', text: 'Mașini nelimitate' },
+                { icon: '📤', text: 'Export PDF' },
+                { icon: '📊', text: 'Rapoarte detaliate' },
                 { icon: '🔔', text: 'Alerte push avansate' },
               ].map(p => (
-                <View key={p.text} style={s.premiumItem}>
-                  <Text style={s.premiumItemIcon}>{p.icon}</Text>
-                  <Text style={s.premiumItemText}>{p.text}</Text>
+                <View key={p.text} style={g.premItem}>
+                  <Text style={g.premItemIcon}>{p.icon}</Text>
+                  <Text style={g.premItemText}>{p.text}</Text>
                 </View>
               ))}
             </View>
             <TouchableOpacity
-              style={s.premiumBtn}
+              style={g.premBtn}
               onPress={() => router.push('/register')}
               activeOpacity={0.85}
             >
-              <LinearGradient colors={['#1A6FFF', '#0A4FCC']} style={s.premiumBtnGrad}>
-                <Text style={s.premiumBtnText}>Încearcă gratuit →</Text>
+              <LinearGradient colors={[C.accent, C.acDark]} style={g.premBtnGrad}>
+                <Text style={g.premBtnText}>Încearcă gratuit →</Text>
               </LinearGradient>
             </TouchableOpacity>
-          </View>
-        </LinearGradient>
+          </LinearGradient>
+        </View>
 
         {/* ── Footer CTA ── */}
-        <View style={s.footerCta}>
-          <Text style={s.footerTitle}>Gata să începi?</Text>
-          <Text style={s.footerSub}>
-            Contul gratuit include toate funcțiile de bază.{'\n'}Niciun card necesar.
-          </Text>
+        <View style={g.footer}>
+          <Text style={g.footerTitle}>Gata să începi?</Text>
+          <Text style={g.footerSub}>Cont gratuit · fără card · în mai puțin de un minut.</Text>
           <TouchableOpacity
-            style={s.footerBtn}
+            style={g.footerBtn}
             onPress={() => router.push('/register')}
             activeOpacity={0.85}
           >
-            <LinearGradient colors={['#1A6FFF', '#0A4FCC']} style={s.footerBtnGrad}>
-              <Text style={s.footerBtnText}>Creează cont gratuit</Text>
+            <LinearGradient colors={[C.accent, C.acDark]} style={g.footerBtnGrad}>
+              <Text style={g.footerBtnText}>Creează cont gratuit</Text>
             </LinearGradient>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={s.footerSecondary}
-            onPress={() => router.push('/login')}
-            activeOpacity={0.8}
-          >
-            <Text style={s.footerSecondaryText}>Ai deja cont? Intră →</Text>
+          <TouchableOpacity onPress={() => router.push('/login')} style={g.footerLink}>
+            <Text style={g.footerLinkText}>Ai deja cont? Intră →</Text>
           </TouchableOpacity>
         </View>
 
@@ -286,317 +367,254 @@ export default function HomeScreen() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Global styles ────────────────────────────────────────────────────────────
 
-const CARD_W = (SW - 48) / 2;
-
-const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#070E1A' },
+const g = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: C.bg },
   scroll: { flex: 1 },
-  scrollContent: { paddingBottom: 48 },
+  scrollContent: { paddingBottom: 60 },
 
-  // ── Nav
-  nav: {
+  // Nav
+  navOuter: { backgroundColor: C.bg, borderBottomWidth: 1, borderBottomColor: C.border },
+  navInner: {
+    maxWidth: MAX,
+    alignSelf: 'center',
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
   },
-  navLogo: { fontSize: 22, fontWeight: '800', color: '#FFFFFF', letterSpacing: 1 },
+  navLogo: { fontSize: 21, fontWeight: '800', color: C.text, letterSpacing: 0.5 },
   navBtn: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: 'rgba(255,255,255,0.18)',
   },
-  navBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+  navBtnText: { color: C.text, fontSize: 13, fontWeight: '600' },
 
-  // ── Hero
-  hero: {
-    paddingHorizontal: 20,
-    paddingTop: 32,
-    paddingBottom: 36,
-    overflow: 'hidden',
+  // Hero
+  heroOuter: { overflow: 'hidden' },
+  glowTR: {
+    position: 'absolute', top: -60, right: -60,
+    width: 260, height: 260, borderRadius: 130,
+    backgroundColor: C.accent + '18',
   },
-  heroGlow: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: '#1A6FFF18',
-    top: -80,
-    right: -80,
+  glowBL: {
+    position: 'absolute', bottom: -40, left: -40,
+    width: 180, height: 180, borderRadius: 90,
+    backgroundColor: C.accent + '10',
+  },
+  heroInner: {
+    maxWidth: MAX,
+    alignSelf: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 36,
+    paddingBottom: 48,
+  },
+  heroLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: C.accent,
+    letterSpacing: 2,
+    marginBottom: 14,
   },
   heroTitle: {
-    fontSize: 34,
+    fontSize: 36,
     fontWeight: '800',
-    color: '#FFFFFF',
-    lineHeight: 42,
-    marginBottom: 16,
+    color: C.text,
+    lineHeight: 44,
+    marginBottom: 24,
   },
-  heroSub: {
-    fontSize: 15,
-    color: '#7A8FAF',
-    lineHeight: 23,
-    marginBottom: 28,
-  },
+  heroBullets: { gap: 10, marginBottom: 28 },
+  bullet: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  bulletDot: { color: C.accent, fontWeight: '700', fontSize: 14, width: 16 },
+  bulletText: { color: C.sub, fontSize: 14, flex: 1 },
 
   // VIN input
   vinBox: {
     backgroundColor: '#0D1B2E',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#1A2E50',
-    padding: 6,
-    gap: 8,
-    marginBottom: 12,
+    borderColor: C.border,
+    overflow: 'hidden',
   },
   vinInput: {
-    color: '#FFFFFF',
+    color: C.text,
     fontSize: 15,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     letterSpacing: 1,
   },
-  vinBtn: { borderRadius: 12, overflow: 'hidden' },
+  vinBtn: {},
   vinBtnGrad: {
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  vinBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
-
-  heroCTA2: {
-    alignItems: 'center',
-    paddingVertical: 10,
-    marginBottom: 20,
-  },
-  heroCTA2Text: { color: '#4A6FA5', fontSize: 13 },
-
-  // Checklist
-  checkList: { gap: 10 },
-  checkRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  checkMark: { color: '#1A6FFF', fontSize: 15, fontWeight: '700', width: 18 },
-  checkText: { color: '#8899BB', fontSize: 14, flex: 1 },
-
-  // ── Sections
-  section: {
-    paddingHorizontal: 20,
-    paddingTop: 44,
-    paddingBottom: 8,
-  },
-  sectionAlt: {
-    backgroundColor: '#0B1525',
-    paddingBottom: 36,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#1A6FFF',
-    letterSpacing: 2,
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    lineHeight: 33,
-    marginBottom: 10,
-  },
-  sectionSub: {
-    fontSize: 14,
-    color: '#6688AA',
-    lineHeight: 21,
-    marginBottom: 28,
-  },
-
-  // ── Benefits — 3 columns
-  benefitsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  benefitCard: {
-    flex: 1,
-    backgroundColor: '#0D1B2E',
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#132040',
-    alignItems: 'center',
-  },
-  benefitIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(26,111,255,0.12)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  benefitIcon: { fontSize: 22 },
-  benefitTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 6,
-  },
-  benefitDesc: {
-    fontSize: 11,
-    color: '#5577AA',
-    textAlign: 'center',
-    lineHeight: 16,
-  },
-
-  // ── Feature rows
-  featureGrid: { gap: 16 },
-  featureRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 14,
-    backgroundColor: '#0D1B2E',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#132040',
-  },
-  featureRowIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(26,111,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  featureRowIcon: { fontSize: 20 },
-  featureRowContent: { flex: 1 },
-  featureRowTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 5,
-  },
-  featureRowDesc: {
-    fontSize: 12,
-    color: '#5577AA',
-    lineHeight: 18,
-  },
-
-  // ── How it works — 2×2 grid
-  howGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  howCard: {
-    width: CARD_W,
-    backgroundColor: '#0D1B2E',
-    borderRadius: 18,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#132040',
-  },
-  howN: {
-    fontSize: 56,
-    fontWeight: '800',
-    color: 'rgba(26,111,255,0.25)',
-    lineHeight: 64,
-    marginBottom: 4,
-  },
-  howTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 8,
-    lineHeight: 20,
-  },
-  howDesc: {
-    fontSize: 12,
-    color: '#5577AA',
-    lineHeight: 18,
-  },
-
-  // ── Premium
-  premiumSection: {
-    marginTop: 44,
-    marginHorizontal: 16,
-    borderRadius: 24,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#1A3060',
-  },
-  premiumInner: { padding: 28 },
-  premiumEyebrow: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#FFB800',
-    letterSpacing: 2,
-    marginBottom: 10,
-  },
-  premiumTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  premiumSub: {
-    fontSize: 14,
-    color: '#6688AA',
-    lineHeight: 21,
-    marginBottom: 24,
-  },
-  premiumGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 28,
-  },
-  premiumItem: {
-    width: (SW - 88) / 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  premiumItemIcon: { fontSize: 18 },
-  premiumItemText: { fontSize: 13, color: '#AABBD4', fontWeight: '500' },
-  premiumBtn: { borderRadius: 14, overflow: 'hidden' },
-  premiumBtnGrad: {
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  premiumBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
-
-  // ── Footer CTA
-  footerCta: {
-    marginTop: 44,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  footerTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  footerSub: {
-    fontSize: 14,
-    color: '#6688AA',
-    textAlign: 'center',
-    lineHeight: 21,
-    marginBottom: 24,
-  },
-  footerBtn: { width: '100%', borderRadius: 14, overflow: 'hidden', marginBottom: 14 },
-  footerBtnGrad: {
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  footerBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 16 },
-  footerSecondary: { paddingVertical: 8 },
-  footerSecondaryText: { color: '#4A6FA5', fontSize: 14 },
+  vinBtnText: { color: C.text, fontWeight: '700', fontSize: 15 },
+  heroSkip: { alignItems: 'center', paddingVertical: 12 },
+  heroSkipText: { color: C.muted, fontSize: 13 },
+
+  // Sections
+  section: {
+    maxWidth: MAX,
+    alignSelf: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 48,
+    paddingBottom: 12,
+  },
+  sectionAlt: {
+    maxWidth: 9999,
+    width: '100%',
+    backgroundColor: '#090F1C',
+    paddingBottom: 48,
+  },
+  label: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: C.accent,
+    letterSpacing: 2.5,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: C.text,
+    lineHeight: 36,
+    marginBottom: 10,
+  },
+  sectionSub: {
+    fontSize: 14,
+    color: C.sub,
+    lineHeight: 21,
+    marginBottom: 28,
+  },
+
+  // Benefits
+  benefitsRow: { flexDirection: 'row', gap: 10 },
+  benefitCard: {
+    flex: 1,
+    backgroundColor: C.card,
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: C.border,
+    alignItems: 'center',
+  },
+  benefitIconWrap: {
+    width: 52, height: 52, borderRadius: 26,
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: 12,
+  },
+  benefitIcon: { fontSize: 24 },
+  benefitTitle: {
+    fontSize: 13, fontWeight: '700', color: C.text,
+    textAlign: 'center', marginBottom: 6,
+  },
+  benefitDesc: {
+    fontSize: 11, color: C.muted, textAlign: 'center', lineHeight: 16,
+  },
+
+  // Feature / Step grid (shared 2×2)
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  featureCard: {
+    backgroundColor: C.card,
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  featureIcon: { fontSize: 28, marginBottom: 12 },
+  featureTitle: {
+    fontSize: 15, fontWeight: '700', color: C.text, marginBottom: 6,
+  },
+  featureDesc: { fontSize: 12, color: C.muted, lineHeight: 17 },
+
+  stepCard: {
+    backgroundColor: C.card,
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  stepN: {
+    fontSize: 48,
+    fontWeight: '800',
+    color: C.accent + '28',
+    lineHeight: 54,
+    marginBottom: 4,
+  },
+  stepTitle: {
+    fontSize: 14, fontWeight: '700', color: C.text, marginBottom: 6, lineHeight: 20,
+  },
+  stepDesc: { fontSize: 12, color: C.muted, lineHeight: 17 },
+
+  // Premium
+  premOuter: {
+    maxWidth: MAX,
+    alignSelf: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 48,
+  },
+  premCard: {
+    borderRadius: 24,
+    padding: 28,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#1A3060',
+  },
+  premGlow: {
+    position: 'absolute', top: -50, right: -50,
+    width: 200, height: 200, borderRadius: 100,
+    backgroundColor: C.accent + '12',
+  },
+  premEye: {
+    fontSize: 10, fontWeight: '800', color: C.gold,
+    letterSpacing: 2.5, marginBottom: 10,
+  },
+  premTitle: { fontSize: 26, fontWeight: '800', color: C.text, marginBottom: 8 },
+  premSub: { fontSize: 14, color: C.sub, marginBottom: 24 },
+  premGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginBottom: 28 },
+  premItem: {
+    width: (MAX - 96) / 2,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+  },
+  premItemIcon: { fontSize: 18 },
+  premItemText: { fontSize: 13, color: '#A0B4CC', fontWeight: '500' },
+  premBtn: { borderRadius: 14, overflow: 'hidden' },
+  premBtnGrad: {
+    paddingVertical: 15, alignItems: 'center', justifyContent: 'center',
+  },
+  premBtnText: { color: C.text, fontWeight: '700', fontSize: 15 },
+
+  // Footer
+  footer: {
+    maxWidth: MAX,
+    alignSelf: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 56,
+    alignItems: 'center',
+  },
+  footerTitle: {
+    fontSize: 30, fontWeight: '800', color: C.text,
+    textAlign: 'center', marginBottom: 10,
+  },
+  footerSub: {
+    fontSize: 14, color: C.sub, textAlign: 'center', marginBottom: 28,
+  },
+  footerBtn: { width: '100%', borderRadius: 14, overflow: 'hidden', marginBottom: 16 },
+  footerBtnGrad: {
+    paddingVertical: 16, alignItems: 'center', justifyContent: 'center',
+  },
+  footerBtnText: { color: C.text, fontWeight: '700', fontSize: 16 },
+  footerLink: { paddingVertical: 8 },
+  footerLinkText: { color: C.muted, fontSize: 14 },
 });
