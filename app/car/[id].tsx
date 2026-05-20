@@ -315,7 +315,7 @@ export default function CarDetailScreen() {
 
   const openRovinieta = () => {
     const norm = (car.registrationNumber || '').replace(/[\s\-\.]/g, '').toUpperCase();
-    Linking.openURL(`https://www.roviniete.ro/ro/verificare-rovinieta?plate=${encodeURIComponent(norm)}`);
+    Linking.openURL('https://www.erovinieta.ro/vignettes-portal-web/#/checkRoadTax');
   };
 
   return (
@@ -498,7 +498,7 @@ export default function CarDetailScreen() {
             />
 
             <TouchableOpacity style={[styles.rovinetaLink, { marginTop: 14 }]} onPress={openRovinieta}>
-              <Text style={styles.rovinetaLinkText}>🔍  Verifică pe roviniete.ro</Text>
+              <Text style={styles.rovinetaLinkText}>🔍  Verifică pe erovinieta.ro</Text>
             </TouchableOpacity>
           </View>
 
