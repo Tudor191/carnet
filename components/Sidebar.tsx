@@ -42,8 +42,14 @@ export default function Sidebar() {
 
   const isDashboard = pathname === '/dashboard' || pathname.startsWith('/car/');
 
+  const isDark = !isLight;
   const sidebarBg = isLight ? '#FFFFFF' : Colors.primary;
   const sidebarBorder = isLight ? '#E2E8F0' : 'rgba(255,255,255,0.07)';
+  const textColor = isLight ? '#0F172A' : '#FFFFFF';
+  const subColor = isLight ? '#475569' : '#64748B';
+  const dividerColor = isLight ? '#E2E8F0' : 'rgba(255,255,255,0.07)';
+  const newBtnBg = isLight ? '#EEF5FF' : 'rgba(255,255,255,0.06)';
+  const newBtnBorder = isLight ? '#DBEAFE' : 'rgba(255,255,255,0.1)';
 
   return (
     <View style={[styles.sidebar, { backgroundColor: sidebarBg, borderRightColor: sidebarBorder }]}>
@@ -84,8 +90,8 @@ export default function Sidebar() {
           <Path d="M24 77 H96" stroke={Colors.secondary} strokeWidth="2.5" strokeLinecap="round" />
         </Svg>
         <View>
-          <Text style={styles.brandName}>CarNet</Text>
-          <Text style={styles.brandSub}>România</Text>
+          <Text style={[styles.brandName, { color: textColor }]}>CarNet</Text>
+          <Text style={[styles.brandSub, { color: subColor }]}>România</Text>
         </View>
       </TouchableOpacity>
 
@@ -114,12 +120,12 @@ export default function Sidebar() {
 
       {/* ── New car button ── */}
       <TouchableOpacity
-        style={styles.newBtn}
+        style={[styles.newBtn, { backgroundColor: newBtnBg, borderColor: newBtnBorder }]}
         onPress={handleNewCar}
         activeOpacity={0.75}
       >
-        <Text style={styles.newBtnPlus}>+</Text>
-        <Text style={styles.newBtnLabel}>Mașină nouă</Text>
+        <Text style={[styles.newBtnPlus, { color: textColor }]}>+</Text>
+        <Text style={[styles.newBtnLabel, { color: subColor }]}>Mașină nouă</Text>
       </TouchableOpacity>
 
       {/* ── Navigation ── */}
@@ -129,18 +135,18 @@ export default function Sidebar() {
           onPress={() => router.push('/dashboard')}
         >
           <Text style={styles.navIcon}>🚗</Text>
-          <Text style={[styles.navLabel, isDashboard && styles.navLabelActive, isLight && { color: '#475569' }, isDashboard && isLight && { color: '#0F172A' }]}>
+          <Text style={[styles.navLabel, { color: isDashboard ? textColor : subColor }, isDashboard && { fontWeight: '700' }]}>
             Mașinile mele
           </Text>
         </TouchableOpacity>
         <View style={[styles.navItem, { justifyContent: 'space-between' }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <Text style={styles.navIcon}>{isLight ? '🌙' : '☀️'}</Text>
-            <Text style={[styles.navLabel, isLight && { color: '#475569' }]}>
-              {isLight ? 'Mod întunecat' : 'Mod luminos'}
+            <Text style={styles.navIcon}>{isDark ? '🌙' : '☀️'}</Text>
+            <Text style={[styles.navLabel, { color: subColor }]}>
+              {isDark ? 'Dark mode' : 'Light mode'}
             </Text>
           </View>
-          <ThemeSwitch isDark={!isLight} onToggle={toggleTheme} />
+          <ThemeSwitch isDark={isDark} onToggle={toggleTheme} />
         </View>
       </View>
 
@@ -168,7 +174,7 @@ export default function Sidebar() {
       )}
 
       {/* ── Divider ── */}
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
       {/* ── User row / auth ── */}
       {user && !user.isGuest ? (
@@ -179,15 +185,15 @@ export default function Sidebar() {
             </Text>
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName} numberOfLines={1}>
+            <Text style={[styles.userName, { color: textColor }]} numberOfLines={1}>
               {user.displayName}
             </Text>
-            <Text style={styles.userSub}>
+            <Text style={[styles.userSub, { color: subColor }]}>
               {user.isPremium ? '⭐ Premium' : 'Cont gratuit'}
             </Text>
           </View>
           <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-            <Text style={styles.logoutIcon}>↪</Text>
+            <Text style={[styles.logoutIcon, { color: subColor }]}>↪</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -196,7 +202,7 @@ export default function Sidebar() {
           onPress={() => router.push('/login')}
         >
           <Text style={styles.authIcon}>🔑</Text>
-          <Text style={styles.authLabel}>Autentifică-te</Text>
+          <Text style={[styles.authLabel, { color: subColor }]}>Autentifică-te</Text>
         </TouchableOpacity>
       )}
     </View>

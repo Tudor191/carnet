@@ -13,8 +13,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useCarStore } from '../../store/useCarStore';
+import { useThemeStore } from '../../store/useThemeStore';
+import { DARK, LIGHT, ThemeColors } from '../../constants/themes';
 import CarCard from '../../components/CarCard';
 import { Colors } from '../../constants/colors';
 import { validateRomanianPlate, formatPlate } from '../../services/rovinieta';
@@ -26,7 +27,9 @@ import {
   clearCredentials,
 } from '../../services/erovinieta';
 
-function DateField({ label, value, onSave }: { label: string; value?: string; onSave: (v: string) => void }) {
+function DateField({ label, value, onSave, tc }: {
+  label: string; value?: string; onSave: (v: string) => void; tc: ThemeColors;
+}) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(value || '');
 
@@ -50,91 +53,82 @@ function DateField({ label, value, onSave }: { label: string; value?: string; on
 
   const statusColor = value
     ? isExpired(value) ? Colors.danger : isExpiringSoon(value) ? Colors.warning : Colors.success
-    : Colors.gray400;
+    : tc.muted;
 
   return (
-    <View style={detailStyles.dateField}>
-      <View style={detailStyles.dateFieldHeader}>
-        <Text style={detailStyles.dateLabel}>{label}</Text>
+    <View style={df.field}>
+      <View style={df.header}>
+        <Text style={[df.label, { color: tc.text }]}>{label}</Text>
         <TouchableOpacity
-          onPress={() => {
-            if (editing) { onSave(text); setEditing(false); }
-            else setEditing(true);
-          }}
-          style={detailStyles.editBtn}
+          onPress={() => { if (editing) { onSave(text); setEditing(false); } else setEditing(true); }}
+          style={[df.editBtn, { backgroundColor: tc.bgAlt }]}
         >
-          <Text style={detailStyles.editBtnText}>{editing ? 'Salvează' : '✏️ Editează'}</Text>
+          <Text style={[df.editBtnText, { color: Colors.accent }]}>{editing ? 'Salvează' : '✏️ Editează'}</Text>
         </TouchableOpacity>
       </View>
       {editing ? (
         <TextInput
-          style={detailStyles.dateInput}
+          style={[df.input, { borderColor: Colors.accent, color: tc.inputText, backgroundColor: tc.inputBg }]}
           value={text}
           onChangeText={t => setText(formatDate(t))}
           placeholder="ZZ.LL.AAAA"
-          placeholderTextColor={Colors.gray400}
+          placeholderTextColor={tc.inputPlaceholder}
           keyboardType="numeric"
           autoFocus
           maxLength={10}
           onSubmitEditing={() => { onSave(text); setEditing(false); }}
         />
       ) : (
-        <View style={detailStyles.dateValue}>
-          <View style={[detailStyles.statusDot, { backgroundColor: statusColor }]} />
-          <Text style={[detailStyles.dateText, { color: statusColor }]}>
+        <View style={df.valueRow}>
+          <View style={[df.dot, { backgroundColor: statusColor }]} />
+          <Text style={[df.valueText, { color: value ? statusColor : tc.muted }]}>
             {value || 'Necompletat — apasă Editează'}
           </Text>
         </View>
       )}
       {value && isExpiringSoon(value) && !isExpired(value) && (
-        <Text style={detailStyles.expiryWarning}>⚠️ Expiră în mai puțin de 30 de zile!</Text>
+        <Text style={df.warn}>⚠️ Expiră în mai puțin de 30 de zile!</Text>
       )}
       {value && isExpired(value) && (
-        <Text style={detailStyles.expiryError}>⛔ Expirat! Reînnoiește cât mai curând.</Text>
+        <Text style={df.danger}>⛔ Expirat! Reînnoiește cât mai curând.</Text>
       )}
     </View>
   );
 }
 
-function Field({ label, value, onSave, placeholder, keyboardType }: {
-  label: string;
-  value?: string;
-  onSave: (v: string) => void;
-  placeholder?: string;
-  keyboardType?: 'default' | 'numeric';
+function Field({ label, value, onSave, placeholder, keyboardType, tc }: {
+  label: string; value?: string; onSave: (v: string) => void;
+  placeholder?: string; keyboardType?: 'default' | 'numeric'; tc: ThemeColors;
 }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(value || '');
 
   return (
-    <View style={detailStyles.dateField}>
-      <View style={detailStyles.dateFieldHeader}>
-        <Text style={detailStyles.dateLabel}>{label}</Text>
+    <View style={df.field}>
+      <View style={df.header}>
+        <Text style={[df.label, { color: tc.text }]}>{label}</Text>
         <TouchableOpacity
-          onPress={() => {
-            if (editing) { onSave(text); setEditing(false); }
-            else setEditing(true);
-          }}
-          style={detailStyles.editBtn}
+          onPress={() => { if (editing) { onSave(text); setEditing(false); } else setEditing(true); }}
+          style={[df.editBtn, { backgroundColor: tc.bgAlt }]}
         >
-          <Text style={detailStyles.editBtnText}>{editing ? 'Salvează' : '✏️ Editează'}</Text>
+          <Text style={[df.editBtnText, { color: Colors.accent }]}>{editing ? 'Salvează' : '✏️ Editează'}</Text>
         </TouchableOpacity>
       </View>
       {editing ? (
         <TextInput
-          style={detailStyles.dateInput}
+          style={[df.input, { borderColor: Colors.accent, color: tc.inputText, backgroundColor: tc.inputBg }]}
           value={text}
           onChangeText={setText}
           placeholder={placeholder || 'Completează...'}
-          placeholderTextColor={Colors.gray400}
+          placeholderTextColor={tc.inputPlaceholder}
           keyboardType={keyboardType || 'default'}
           autoFocus
           onSubmitEditing={() => { onSave(text); setEditing(false); }}
         />
       ) : (
-        <View style={detailStyles.dateValue}>
-          <View style={[detailStyles.statusDot, { backgroundColor: value ? Colors.accent : Colors.gray400 }]} />
-          <Text style={[detailStyles.dateText, { color: value ? Colors.primary : Colors.gray400 }]}>
+        <View style={df.valueRow}>
+          <View style={[df.dot, { backgroundColor: value ? Colors.accent : tc.muted }]} />
+          <Text style={[df.valueText, { color: value ? tc.text : tc.muted }]}>
             {value || 'Necompletat — apasă Editează'}
           </Text>
         </View>
@@ -143,12 +137,8 @@ function Field({ label, value, onSave, placeholder, keyboardType }: {
   );
 }
 
-function PlateField({
-  value,
-  onSave,
-}: {
-  value?: string;
-  onSave: (plate: string) => Promise<void>;
+function PlateField({ value, onSave, tc }: {
+  value?: string; onSave: (plate: string) => Promise<void>; tc: ThemeColors;
 }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(value || '');
@@ -162,27 +152,27 @@ function PlateField({
   };
 
   return (
-    <View style={detailStyles.dateField}>
-      <View style={detailStyles.dateFieldHeader}>
-        <Text style={detailStyles.dateLabel}>Număr de înmatriculare</Text>
+    <View style={df.field}>
+      <View style={df.header}>
+        <Text style={[df.label, { color: tc.text }]}>Număr de înmatriculare</Text>
         <TouchableOpacity
           onPress={() => editing ? handleSave() : setEditing(true)}
-          style={detailStyles.editBtn}
+          style={[df.editBtn, { backgroundColor: tc.bgAlt }]}
           disabled={saving}
         >
           {saving
             ? <ActivityIndicator size="small" color={Colors.accent} />
-            : <Text style={detailStyles.editBtnText}>{editing ? 'Salvează' : '✏️ Editează'}</Text>
+            : <Text style={[df.editBtnText, { color: Colors.accent }]}>{editing ? 'Salvează' : '✏️ Editează'}</Text>
           }
         </TouchableOpacity>
       </View>
       {editing ? (
         <TextInput
-          style={detailStyles.dateInput}
+          style={[df.input, { borderColor: Colors.accent, color: tc.inputText, backgroundColor: tc.inputBg }]}
           value={text}
           onChangeText={t => setText(t.toUpperCase().replace(/[^A-Z0-9\-]/g, ''))}
           placeholder="Ex: B-12-ABC sau CJ-12-XYZ"
-          placeholderTextColor={Colors.gray400}
+          placeholderTextColor={tc.inputPlaceholder}
           autoCapitalize="characters"
           autoCorrect={false}
           maxLength={10}
@@ -190,9 +180,9 @@ function PlateField({
           onSubmitEditing={handleSave}
         />
       ) : (
-        <View style={detailStyles.dateValue}>
-          <View style={[detailStyles.statusDot, { backgroundColor: value ? Colors.accent : Colors.gray400 }]} />
-          <Text style={[detailStyles.dateText, { color: value ? Colors.primary : Colors.gray400 }]}>
+        <View style={df.valueRow}>
+          <View style={[df.dot, { backgroundColor: value ? Colors.accent : tc.muted }]} />
+          <Text style={[df.valueText, { color: value ? tc.text : tc.muted }]}>
             {value ? formatPlate(value) : 'Necompletat — apasă Editează'}
           </Text>
         </View>
@@ -227,6 +217,8 @@ const ROVINIETA_LABELS: Record<RovinetaStatus, { label: string; color: string; i
 export default function CarDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { cars, updateCar, deleteCar } = useCarStore();
+  const { theme } = useThemeStore();
+  const tc = theme === 'dark' ? DARK : LIGHT;
   const car = cars.find(c => c.id === id);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -238,15 +230,10 @@ export default function CarDetailScreen() {
   const [credsError, setCredsError] = useState('');
   const [credsSaving, setCredsSaving] = useState(false);
 
-  useEffect(() => {
-    loadCredentials().then(setCreds);
-  }, []);
+  useEffect(() => { loadCredentials().then(setCreds); }, []);
 
   const handleSaveCreds = async () => {
-    if (!credsUser.trim() || !credsPass.trim()) {
-      setCredsError('Completează ambele câmpuri.');
-      return;
-    }
+    if (!credsUser.trim() || !credsPass.trim()) { setCredsError('Completează ambele câmpuri.'); return; }
     setCredsSaving(true);
     setCredsError('');
     const newCreds = { username: credsUser.trim(), password: credsPass.trim() };
@@ -254,10 +241,7 @@ export default function CarDetailScreen() {
     setCreds(newCreds);
     setShowCredsForm(false);
     setCredsSaving(false);
-    // auto-check with new credentials if plate is set
-    if (car?.registrationNumber) {
-      triggerCheck(newCreds, car.registrationNumber);
-    }
+    if (car?.registrationNumber) triggerCheck(newCreds, car.registrationNumber);
   };
 
   const handleClearCreds = async () => {
@@ -272,97 +256,88 @@ export default function CarDetailScreen() {
     setRovinetaChecking(true);
     try {
       const result = await checkPlateVignette(useCreds, plate);
-      if (result?.expiryDate) {
-        await updateCar(id!, { rovinetaExpiry: result.expiryDate });
-      }
-    } catch {
-      // silent — user can set manually
-    } finally {
-      setRovinetaChecking(false);
-    }
+      if (result?.expiryDate) await updateCar(id!, { rovinetaExpiry: result.expiryDate });
+    } catch { /* silent */ } finally { setRovinetaChecking(false); }
   };
 
   if (!car) {
     return (
-      <LinearGradient colors={[Colors.primary, '#0D1F3C']} style={{ flex: 1 }}>
+      <View style={[s.root, { backgroundColor: tc.bg }]}>
         <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: Colors.white, fontSize: 18 }}>Mașina nu a fost găsită.</Text>
+          <Text style={{ color: tc.text, fontSize: 18 }}>Mașina nu a fost găsită.</Text>
           <TouchableOpacity onPress={() => router.back()}>
             <Text style={{ color: Colors.accent, marginTop: 16 }}>← Înapoi</Text>
           </TouchableOpacity>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
 
   const rovinetaStatus = getRovinetaStatus(car.registrationNumber, car.rovinetaExpiry, rovinetaChecking);
   const rovinetaInfo = ROVINIETA_LABELS[rovinetaStatus];
 
-  const handleDelete = () => setShowDeleteModal(true);
-
   const confirmDelete = async () => {
     setShowDeleteModal(false);
     await deleteCar(car.id);
-    router.replace('/home');
+    router.replace('/dashboard');
   };
 
   const handleSavePlate = async (plate: string) => {
     await updateCar(car.id, { registrationNumber: plate || undefined });
-    if (plate && creds) {
-      triggerCheck(creds, plate);
-    }
+    if (plate && creds) triggerCheck(creds, plate);
   };
 
   const openRovinieta = () => {
-    const norm = (car.registrationNumber || '').replace(/[\s\-\.]/g, '').toUpperCase();
     Linking.openURL('https://www.erovinieta.ro/vignettes-portal-web/#/checkRoadTax');
   };
 
   return (
-    <LinearGradient colors={[Colors.primary, '#0D1F3C']} style={styles.gradient}>
-      <SafeAreaView style={styles.safe} edges={['top']}>
+    <View style={[s.root, { backgroundColor: tc.bg }]}>
+      <SafeAreaView style={s.safe} edges={['top']}>
+
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backIcon}>←</Text>
+        <View style={[s.header, { borderBottomColor: tc.navBorder, backgroundColor: tc.navBg }]}>
+          <TouchableOpacity onPress={() => router.back()} style={[s.backBtn, { backgroundColor: tc.card, borderColor: tc.border }]}>
+            <Text style={[s.backIcon, { color: tc.text }]}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{car.make} {car.model}</Text>
-          <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
-            <Text style={styles.deleteIcon}>🗑</Text>
+          <Text style={[s.headerTitle, { color: tc.text }]}>{car.make} {car.model}</Text>
+          <TouchableOpacity onPress={() => setShowDeleteModal(true)} style={s.deleteBtn}>
+            <Text style={s.deleteIcon}>🗑</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Delete confirmation modal */}
+        {/* Delete modal */}
         <Modal visible={showDeleteModal} transparent animationType="fade">
-          <Pressable style={styles.modalOverlay} onPress={() => setShowDeleteModal(false)}>
-            <Pressable style={styles.modalBox} onPress={() => {}}>
-              <Text style={styles.modalIcon}>🗑️</Text>
-              <Text style={styles.modalTitle}>Șterge mașina</Text>
-              <Text style={styles.modalText}>
+          <Pressable style={s.modalOverlay} onPress={() => setShowDeleteModal(false)}>
+            <Pressable style={[s.modalBox, { backgroundColor: tc.card, borderColor: Colors.danger }]} onPress={() => {}}>
+              <Text style={s.modalIconText}>🗑️</Text>
+              <Text style={s.modalTitle}>Șterge mașina</Text>
+              <Text style={[s.modalText, { color: tc.sub }]}>
                 Ești sigur că vrei să ștergi{'\n'}
-                <Text style={styles.modalBold}>{car.make} {car.model}</Text>?{'\n'}
+                <Text style={[s.modalBold, { color: tc.text }]}>{car.make} {car.model}</Text>?{'\n'}
                 Această acțiune este ireversibilă.
               </Text>
-              <TouchableOpacity style={styles.modalDeleteBtn} onPress={confirmDelete}>
-                <Text style={styles.modalDeleteBtnText}>Da, șterge</Text>
+              <TouchableOpacity style={s.modalDeleteBtn} onPress={confirmDelete}>
+                <Text style={s.modalDeleteBtnText}>Da, șterge</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setShowDeleteModal(false)}>
-                <Text style={styles.modalCancelText}>Nu, anulează</Text>
+                <Text style={[s.modalCancelText, { color: tc.muted }]}>Nu, anulează</Text>
               </TouchableOpacity>
             </Pressable>
           </Pressable>
         </Modal>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
+
           {/* Car Card */}
-          <View style={styles.cardContainer}>
+          <View style={s.cardContainer}>
             <CarCard car={car} />
           </View>
 
           {/* Technical details */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Date tehnice</Text>
-            <View style={styles.detailsGrid}>
+          <View style={[s.section, { backgroundColor: tc.card, borderColor: tc.border, shadowColor: tc.shadowColor, shadowOpacity: tc.shadowOpacity }]}>
+            <Text style={[s.sectionTitle, { color: tc.text }]}>Date tehnice</Text>
+            <View>
               {[
                 { label: 'Marcă', value: car.make },
                 { label: 'Model', value: car.model },
@@ -370,61 +345,47 @@ export default function CarDetailScreen() {
                 ...(car.generation ? [{ label: 'Generație', value: car.generation }] : []),
                 { label: 'Număr șasiu', value: car.vin },
               ].map((item, i) => (
-                <View key={i} style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{item.label}</Text>
-                  <Text style={styles.detailValue} selectable>{item.value || '—'}</Text>
+                <View key={i} style={[s.detailRow, { borderBottomColor: tc.border }]}>
+                  <Text style={[s.detailLabel, { color: tc.sub }]}>{item.label}</Text>
+                  <Text style={[s.detailValue, { color: tc.text }]} selectable>{item.value || '—'}</Text>
                 </View>
               ))}
             </View>
           </View>
 
           {/* Documents & expiry */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Documente & Termene</Text>
-            <View style={styles.expiryContainer}>
-              <DateField
-                label="RCA / Asigurare"
-                value={car.insuranceExpiry}
-                onSave={v => updateCar(car.id, { insuranceExpiry: v || undefined })}
-              />
-              <View style={styles.expiryDivider} />
-              <DateField
-                label="ITP (Inspecție Tehnică Periodică)"
-                value={car.itpExpiry}
-                onSave={v => updateCar(car.id, { itpExpiry: v || undefined })}
-              />
-            </View>
+          <View style={[s.section, { backgroundColor: tc.card, borderColor: tc.border, shadowColor: tc.shadowColor, shadowOpacity: tc.shadowOpacity }]}>
+            <Text style={[s.sectionTitle, { color: tc.text }]}>Documente & Termene</Text>
+            <DateField label="RCA / Asigurare" value={car.insuranceExpiry} onSave={v => updateCar(car.id, { insuranceExpiry: v || undefined })} tc={tc} />
+            <View style={[s.divider, { backgroundColor: tc.border }]} />
+            <DateField label="ITP (Inspecție Tehnică Periodică)" value={car.itpExpiry} onSave={v => updateCar(car.id, { itpExpiry: v || undefined })} tc={tc} />
           </View>
 
           {/* Plate & ROVinieta */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Plăcuță & ROViniete</Text>
+          <View style={[s.section, { backgroundColor: tc.card, borderColor: tc.border, shadowColor: tc.shadowColor, shadowOpacity: tc.shadowOpacity }]}>
+            <Text style={[s.sectionTitle, { color: tc.text }]}>Plăcuță & ROViniete</Text>
 
-            <PlateField value={car.registrationNumber} onSave={handleSavePlate} />
+            <PlateField value={car.registrationNumber} onSave={handleSavePlate} tc={tc} />
 
-            {/* ROVinieta status badge */}
             {car.registrationNumber && (
-              <View style={[styles.rovinetaBadge, { borderColor: rovinetaInfo.color + '40', backgroundColor: rovinetaInfo.color + '12' }]}>
+              <View style={[s.rovinetaBadge, { borderColor: rovinetaInfo.color + '40', backgroundColor: rovinetaInfo.color + '12' }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   {rovinetaStatus === 'checking'
                     ? <ActivityIndicator size="small" color={rovinetaInfo.color} />
                     : <Text style={{ fontSize: 18, color: rovinetaInfo.color, fontWeight: '800' }}>{rovinetaInfo.icon}</Text>
                   }
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.rovinetaBadgeLabel, { color: rovinetaInfo.color }]}>{rovinetaInfo.label}</Text>
+                    <Text style={[s.rovinetaBadgeLabel, { color: rovinetaInfo.color }]}>{rovinetaInfo.label}</Text>
                     {car.rovinetaExpiry && rovinetaStatus !== 'expired' && (
-                      <Text style={styles.rovinetaBadgeSub}>Valabil până la {car.rovinetaExpiry}</Text>
+                      <Text style={[s.rovinetaBadgeSub, { color: tc.sub }]}>Valabil până la {car.rovinetaExpiry}</Text>
                     )}
                     {car.rovinetaExpiry && rovinetaStatus === 'expired' && (
-                      <Text style={[styles.rovinetaBadgeSub, { color: Colors.danger }]}>A expirat la {car.rovinetaExpiry}</Text>
+                      <Text style={[s.rovinetaBadgeSub, { color: Colors.danger }]}>A expirat la {car.rovinetaExpiry}</Text>
                     )}
                   </View>
                   {creds && car.registrationNumber && !rovinetaChecking && (
-                    <TouchableOpacity
-                      onPress={() => triggerCheck(creds, car.registrationNumber!)}
-                      style={styles.reCheckBtn}
-                    >
-                      <Text style={styles.reCheckBtnText}>↻ Verifică</Text>
+                    <TouchableOpacity onPress={() => triggerCheck(creds, car.registrationNumber!)} style={[s.reCheckBtn, { backgroundColor: tc.bgAlt }]}>
+                      <Text style={[s.reCheckBtnText, { color: Colors.accent }]}>↻ Verifică</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -432,357 +393,156 @@ export default function CarDetailScreen() {
             )}
 
             {/* erovinieta.ro credentials */}
-            <View style={styles.credsBox}>
+            <View style={{ marginTop: 10, marginBottom: 2 }}>
               {!creds && !showCredsForm && (
-                <TouchableOpacity onPress={() => setShowCredsForm(true)} style={styles.credsConnectBtn}>
-                  <Text style={styles.credsConnectText}>🔐  Conectează erovinieta.ro pentru verificare automată</Text>
+                <TouchableOpacity onPress={() => setShowCredsForm(true)} style={[s.credsConnectBtn, { backgroundColor: Colors.accent + '12', borderColor: Colors.accent + '30' }]}>
+                  <Text style={[s.credsConnectText, { color: Colors.accent }]}>🔐  Conectează erovinieta.ro pentru verificare automată</Text>
                 </TouchableOpacity>
               )}
-
               {showCredsForm && (
                 <View>
-                  <Text style={styles.credsTitle}>Cont erovinieta.ro</Text>
+                  <Text style={[s.credsTitle, { color: tc.text }]}>Cont erovinieta.ro</Text>
                   <TextInput
-                    style={styles.credsInput}
-                    value={credsUser}
-                    onChangeText={setCredsUser}
-                    placeholder="Email / utilizator"
-                    placeholderTextColor={Colors.gray400}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="email-address"
+                    style={[s.credsInput, { borderColor: Colors.accent, color: tc.inputText, backgroundColor: tc.inputBg }]}
+                    value={credsUser} onChangeText={setCredsUser}
+                    placeholder="Email / utilizator" placeholderTextColor={tc.inputPlaceholder}
+                    autoCapitalize="none" autoCorrect={false} keyboardType="email-address"
                   />
                   <TextInput
-                    style={[styles.credsInput, { marginTop: 8 }]}
-                    value={credsPass}
-                    onChangeText={setCredsPass}
-                    placeholder="Parolă"
-                    placeholderTextColor={Colors.gray400}
+                    style={[s.credsInput, { marginTop: 8, borderColor: Colors.accent, color: tc.inputText, backgroundColor: tc.inputBg }]}
+                    value={credsPass} onChangeText={setCredsPass}
+                    placeholder="Parolă" placeholderTextColor={tc.inputPlaceholder}
                     secureTextEntry
                   />
-                  {credsError ? <Text style={styles.credsError}>{credsError}</Text> : null}
+                  {credsError ? <Text style={s.credsError}>{credsError}</Text> : null}
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-                    <TouchableOpacity
-                      onPress={handleSaveCreds}
-                      style={[styles.credsSaveBtn, credsSaving && { opacity: 0.6 }]}
-                      disabled={credsSaving}
-                    >
+                    <TouchableOpacity onPress={handleSaveCreds} style={[s.credsSaveBtn, credsSaving && { opacity: 0.6 }]} disabled={credsSaving}>
                       {credsSaving
                         ? <ActivityIndicator size="small" color={Colors.white} />
-                        : <Text style={styles.credsSaveBtnText}>Salvează & verifică</Text>
+                        : <Text style={s.credsSaveBtnText}>Salvează & verifică</Text>
                       }
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setShowCredsForm(false)} style={styles.credsCancelBtn}>
-                      <Text style={styles.credsCancelBtnText}>Anulează</Text>
+                    <TouchableOpacity onPress={() => setShowCredsForm(false)} style={[s.credsCancelBtn, { backgroundColor: tc.bgAlt }]}>
+                      <Text style={[s.credsCancelBtnText, { color: tc.sub }]}>Anulează</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               )}
-
               {creds && !showCredsForm && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text style={styles.credsConnectedText}>✓ Conectat: {creds.username}</Text>
+                  <Text style={s.credsConnectedText}>✓ Conectat: {creds.username}</Text>
                   <TouchableOpacity onPress={handleClearCreds}>
-                    <Text style={styles.credsDisconnectText}>Deconectează</Text>
+                    <Text style={s.credsDisconnectText}>Deconectează</Text>
                   </TouchableOpacity>
                 </View>
               )}
             </View>
 
-            <View style={styles.expiryDivider} />
+            <View style={[s.divider, { backgroundColor: tc.border }]} />
+            <DateField label="Dată expirare ROVinieta (manual)" value={car.rovinetaExpiry} onSave={v => updateCar(car.id, { rovinetaExpiry: v || undefined })} tc={tc} />
 
-            <DateField
-              label="Dată expirare ROVinieta (manual)"
-              value={car.rovinetaExpiry}
-              onSave={v => updateCar(car.id, { rovinetaExpiry: v || undefined })}
-            />
-
-            <TouchableOpacity style={[styles.rovinetaLink, { marginTop: 14 }]} onPress={openRovinieta}>
-              <Text style={styles.rovinetaLinkText}>🔍  Verifică pe erovinieta.ro</Text>
+            <TouchableOpacity style={[s.rovinetaLink, { backgroundColor: Colors.accent + '12', borderColor: Colors.accent + '30' }]} onPress={openRovinieta}>
+              <Text style={[s.rovinetaLinkText, { color: Colors.accent }]}>🔍  Verifică pe erovinieta.ro</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Oil change / service history */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Ultimul schimb de ulei</Text>
-            <View style={styles.expiryContainer}>
-              <DateField
-                label="Data schimbului"
-                value={car.lastServiceDate}
-                onSave={v => updateCar(car.id, { lastServiceDate: v || undefined })}
-              />
-              <View style={styles.expiryDivider} />
-              <Field
-                label="KM la schimb"
-                value={car.lastServiceKm}
-                onSave={v => updateCar(car.id, { lastServiceKm: v || undefined })}
-                placeholder="Ex: 150000"
-                keyboardType="numeric"
-              />
-              <View style={styles.expiryDivider} />
-              <Field
-                label="KM următor schimb"
-                value={car.nextServiceKm}
-                onSave={v => updateCar(car.id, { nextServiceKm: v || undefined })}
-                placeholder="Ex: 160000"
-                keyboardType="numeric"
-              />
-              <View style={styles.expiryDivider} />
-              <Field
-                label="Observații"
-                value={car.lastServiceNotes}
-                onSave={v => updateCar(car.id, { lastServiceNotes: v || undefined })}
-                placeholder="Ex: Ulei 5W-40, filtru schimbat"
-              />
-            </View>
+          {/* Oil change */}
+          <View style={[s.section, { backgroundColor: tc.card, borderColor: tc.border, shadowColor: tc.shadowColor, shadowOpacity: tc.shadowOpacity }]}>
+            <Text style={[s.sectionTitle, { color: tc.text }]}>Ultimul schimb de ulei</Text>
+            <DateField label="Data schimbului" value={car.lastServiceDate} onSave={v => updateCar(car.id, { lastServiceDate: v || undefined })} tc={tc} />
+            <View style={[s.divider, { backgroundColor: tc.border }]} />
+            <Field label="KM la schimb" value={car.lastServiceKm} onSave={v => updateCar(car.id, { lastServiceKm: v || undefined })} placeholder="Ex: 150000" keyboardType="numeric" tc={tc} />
+            <View style={[s.divider, { backgroundColor: tc.border }]} />
+            <Field label="KM următor schimb" value={car.nextServiceKm} onSave={v => updateCar(car.id, { nextServiceKm: v || undefined })} placeholder="Ex: 160000" keyboardType="numeric" tc={tc} />
+            <View style={[s.divider, { backgroundColor: tc.border }]} />
+            <Field label="Observații" value={car.lastServiceNotes} onSave={v => updateCar(car.id, { lastServiceNotes: v || undefined })} placeholder="Ex: Ulei 5W-40, filtru schimbat" tc={tc} />
           </View>
 
           <View style={{ height: 40 }} />
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  gradient: { flex: 1 },
+const s = StyleSheet.create({
+  root: { flex: 1 },
   safe: { flex: 1 },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1,
   },
   backBtn: {
-    width: 40, height: 40,
-    justifyContent: 'center', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12,
+    width: 40, height: 40, justifyContent: 'center', alignItems: 'center',
+    borderRadius: 12, borderWidth: 1,
   },
-  backIcon: { color: Colors.white, fontSize: 20, fontWeight: '600' },
-  headerTitle: { color: Colors.white, fontSize: 18, fontWeight: '700' },
+  backIcon: { fontSize: 20, fontWeight: '600' },
+  headerTitle: { fontSize: 18, fontWeight: '700' },
   deleteBtn: {
-    width: 40, height: 40,
-    justifyContent: 'center', alignItems: 'center',
+    width: 40, height: 40, justifyContent: 'center', alignItems: 'center',
     backgroundColor: '#FCA5A5', borderRadius: 12,
   },
   deleteIcon: { fontSize: 18 },
   scroll: { padding: 16 },
   cardContainer: { alignItems: 'center', marginBottom: 20 },
   section: {
-    backgroundColor: Colors.white,
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
+    borderRadius: 20, padding: 20, marginBottom: 16, borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 }, shadowRadius: 8, elevation: 3,
   },
-  sectionTitle: { fontSize: 17, fontWeight: '800', color: Colors.primary, marginBottom: 14 },
-  detailsGrid: { gap: 0 },
+  sectionTitle: { fontSize: 17, fontWeight: '800', marginBottom: 14 },
   detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray100,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+    paddingVertical: 10, borderBottomWidth: 1,
   },
-  detailLabel: { fontSize: 13, color: Colors.gray500, flex: 1 },
-  detailValue: { fontSize: 13, fontWeight: '600', color: Colors.primary, flex: 1, textAlign: 'right' },
-  expiryContainer: { gap: 0 },
-  expiryDivider: { height: 1, backgroundColor: Colors.gray100, marginVertical: 8 },
+  detailLabel: { fontSize: 13, flex: 1 },
+  detailValue: { fontSize: 13, fontWeight: '600', flex: 1, textAlign: 'right' },
+  divider: { height: 1, marginVertical: 8 },
   rovinetaLink: {
-    marginTop: 14,
-    backgroundColor: '#EFF6FF',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: Colors.accent + '30',
+    marginTop: 14, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
+    alignSelf: 'flex-start', borderWidth: 1,
   },
-  rovinetaLinkText: { color: Colors.accent, fontSize: 13, fontWeight: '700' },
-  rovinetaBadge: {
-    borderWidth: 1.5,
-    borderRadius: 14,
-    padding: 14,
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  rovinetaBadgeLabel: {
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-  },
-  rovinetaBadgeSub: {
-    fontSize: 12,
-    color: Colors.gray500,
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  reCheckBtn: {
-    backgroundColor: Colors.gray100,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  reCheckBtnText: {
-    fontSize: 12,
-    color: Colors.accent,
-    fontWeight: '700',
-  },
-  credsBox: {
-    marginTop: 10,
-    marginBottom: 2,
-  },
-  credsConnectBtn: {
-    backgroundColor: '#EFF6FF',
-    borderRadius: 10,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: Colors.accent + '30',
-  },
-  credsConnectText: {
-    fontSize: 13,
-    color: Colors.accent,
-    fontWeight: '600',
-  },
-  credsTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.primary,
-    marginBottom: 8,
-  },
-  credsInput: {
-    borderWidth: 1.5,
-    borderColor: Colors.accent,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: Colors.primary,
-    backgroundColor: Colors.gray100,
-  },
-  credsError: {
-    fontSize: 12,
-    color: Colors.danger,
-    marginTop: 6,
-    fontWeight: '500',
-  },
-  credsSaveBtn: {
-    flex: 1,
-    backgroundColor: Colors.accent,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  credsSaveBtnText: {
-    color: Colors.white,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  credsCancelBtn: {
-    flex: 1,
-    backgroundColor: Colors.gray100,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  credsCancelBtnText: {
-    color: Colors.gray500,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  credsConnectedText: {
-    fontSize: 13,
-    color: Colors.success,
-    fontWeight: '600',
-  },
-  credsDisconnectText: {
-    fontSize: 12,
-    color: Colors.danger,
-    fontWeight: '600',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  modalBox: {
-    backgroundColor: Colors.white,
-    borderRadius: 24,
-    borderWidth: 2.5,
-    borderColor: Colors.danger,
-    padding: 28,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 340,
-  },
-  modalIcon: { fontSize: 48, marginBottom: 12 },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: Colors.danger,
-    marginBottom: 10,
-  },
-  modalText: {
-    fontSize: 14,
-    color: Colors.gray700,
-    textAlign: 'center',
-    lineHeight: 21,
-    marginBottom: 20,
-  },
-  modalBold: { fontWeight: '800', color: Colors.primary },
-  modalDeleteBtn: {
-    backgroundColor: Colors.danger,
-    borderRadius: 14,
-    paddingVertical: 13,
-    paddingHorizontal: 28,
-    marginBottom: 12,
-    width: '100%',
-    alignItems: 'center',
-  },
+  rovinetaLinkText: { fontSize: 13, fontWeight: '700' },
+  rovinetaBadge: { borderWidth: 1.5, borderRadius: 14, padding: 14, marginTop: 12, marginBottom: 4 },
+  rovinetaBadgeLabel: { fontSize: 14, fontWeight: '800', letterSpacing: 0.3 },
+  rovinetaBadgeSub: { fontSize: 12, marginTop: 2, fontWeight: '500' },
+  reCheckBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  reCheckBtnText: { fontSize: 12, fontWeight: '700' },
+  credsConnectBtn: { borderRadius: 10, padding: 12, borderWidth: 1 },
+  credsConnectText: { fontSize: 13, fontWeight: '600' },
+  credsTitle: { fontSize: 14, fontWeight: '700', marginBottom: 8 },
+  credsInput: { borderWidth: 1.5, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
+  credsError: { fontSize: 12, color: Colors.danger, marginTop: 6, fontWeight: '500' },
+  credsSaveBtn: { flex: 1, backgroundColor: Colors.accent, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
+  credsSaveBtnText: { color: Colors.white, fontSize: 13, fontWeight: '700' },
+  credsCancelBtn: { flex: 1, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
+  credsCancelBtnText: { fontSize: 13, fontWeight: '600' },
+  credsConnectedText: { fontSize: 13, color: Colors.success, fontWeight: '600' },
+  credsDisconnectText: { fontSize: 12, color: Colors.danger, fontWeight: '600' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 32 },
+  modalBox: { borderRadius: 24, borderWidth: 2.5, padding: 28, alignItems: 'center', width: '100%', maxWidth: 340 },
+  modalIconText: { fontSize: 48, marginBottom: 12 },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: Colors.danger, marginBottom: 10 },
+  modalText: { fontSize: 14, textAlign: 'center', lineHeight: 21, marginBottom: 20 },
+  modalBold: { fontWeight: '800' },
+  modalDeleteBtn: { backgroundColor: Colors.danger, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 28, marginBottom: 12, width: '100%', alignItems: 'center' },
   modalDeleteBtnText: { color: Colors.white, fontSize: 15, fontWeight: '800' },
-  modalCancelText: { color: Colors.gray400, fontSize: 13, fontWeight: '500' },
+  modalCancelText: { fontSize: 13, fontWeight: '500' },
 });
 
-const detailStyles = StyleSheet.create({
-  dateField: { paddingVertical: 8 },
-  dateFieldHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
+const df = StyleSheet.create({
+  field: { paddingVertical: 8 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  label: { fontSize: 14, fontWeight: '600' },
+  editBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, minWidth: 80, alignItems: 'center' },
+  editBtnText: { fontSize: 12, fontWeight: '600' },
+  input: {
+    borderWidth: 1.5, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 10,
+    fontSize: 15, letterSpacing: 1,
   },
-  dateLabel: { fontSize: 14, fontWeight: '600', color: Colors.primary },
-  editBtn: {
-    backgroundColor: Colors.gray100,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  editBtnText: { fontSize: 12, color: Colors.accent, fontWeight: '600' },
-  dateInput: {
-    borderWidth: 1.5,
-    borderColor: Colors.accent,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: Colors.primary,
-    backgroundColor: Colors.gray100,
-    letterSpacing: 1,
-  },
-  dateValue: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  dateText: { fontSize: 15, fontWeight: '600' },
-  expiryWarning: { fontSize: 12, color: Colors.warning, marginTop: 4, fontWeight: '500' },
-  expiryError: { fontSize: 12, color: Colors.danger, marginTop: 4, fontWeight: '500' },
+  valueRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  valueText: { fontSize: 15, fontWeight: '600' },
+  warn: { fontSize: 12, color: Colors.warning, marginTop: 4, fontWeight: '500' },
+  danger: { fontSize: 12, color: Colors.danger, marginTop: 4, fontWeight: '500' },
 });
