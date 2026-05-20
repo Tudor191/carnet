@@ -16,6 +16,7 @@ import { useCarStore } from '../store/useCarStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { DARK, LIGHT, ThemeColors } from '../constants/themes';
 import CarCard from '../components/CarCard';
+import ThemeSwitch from '../components/ThemeSwitch';
 import { Colors } from '../constants/colors';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -45,10 +46,11 @@ function isExpiringSoon(dateStr?: string): boolean {
 // ─── Avatar Dropdown ─────────────────────────────────────────────────────────
 
 function AvatarDropdown({
-  visible, isGuest, onClose, onLogout, tc,
+  visible, isGuest, onClose, onLogout, tc, isDark, onToggleTheme,
 }: {
   visible: boolean; isGuest: boolean;
   onClose: () => void; onLogout: () => void; tc: ThemeColors;
+  isDark: boolean; onToggleTheme: () => void;
 }) {
   if (!visible) return null;
   return (
@@ -56,6 +58,34 @@ function AvatarDropdown({
       <Pressable style={dd.backdrop} onPress={onClose} />
       <View style={[dd.dropdown, { backgroundColor: tc.card, borderColor: tc.border }]}>
         <View style={[dd.arrow, { backgroundColor: tc.card, borderColor: tc.border }]} />
+
+        {/* Settings */}
+        <TouchableOpacity style={dd.item} onPress={() => { onClose(); router.push('/settings'); }}>
+          <View style={[dd.iconWrap, { backgroundColor: tc.accent + '20' }]}>
+            <Text style={dd.icon}>⚙️</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[dd.label, { color: tc.text }]}>Setări</Text>
+            <Text style={[dd.sub, { color: tc.sub }]}>Configurează aplicația</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* Theme toggle */}
+        <View style={[dd.item, { justifyContent: 'space-between' }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <View style={[dd.iconWrap, { backgroundColor: tc.bgAlt }]}>
+              <Text style={dd.icon}>{isDark ? '🌙' : '☀️'}</Text>
+            </View>
+            <View>
+              <Text style={[dd.label, { color: tc.text }]}>{isDark ? 'Dark mode' : 'Light mode'}</Text>
+              <Text style={[dd.sub, { color: tc.sub }]}>Schimbă tema</Text>
+            </View>
+          </View>
+          <ThemeSwitch isDark={isDark} onToggle={onToggleTheme} />
+        </View>
+
+        <View style={[dd.sep, { backgroundColor: tc.border }]} />
+
         {isGuest ? (
           <>
             <TouchableOpacity style={dd.item} onPress={() => { onClose(); router.push('/login'); }}>
@@ -128,7 +158,7 @@ function AlertCard({ carName, docType, dateStr, tc }: {
 
 export default function HomeScreen() {
   const { user, cars, canAddCar, deleteCar, logout, loadCars } = useCarStore();
-  const { theme } = useThemeStore();
+  const { theme, toggleTheme } = useThemeStore();
   const tc = theme === 'dark' ? DARK : LIGHT;
   const isDark = theme === 'dark';
   const [refreshing, setRefreshing] = useState(false);
@@ -210,6 +240,8 @@ export default function HomeScreen() {
                 onClose={() => setDropdownVisible(false)}
                 onLogout={handleLogout}
                 tc={tc}
+                isDark={isDark}
+                onToggleTheme={toggleTheme}
               />
             </View>
           </View>

@@ -71,6 +71,7 @@ export default function RootLayout() {
               <Stack.Screen name="add-car" />
               <Stack.Screen name="premium" />
               <Stack.Screen name="car/[id]" />
+              <Stack.Screen name="settings" />
             </Stack>
           </View>
         </Animated.View>

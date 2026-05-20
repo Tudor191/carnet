@@ -14,7 +14,6 @@ import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useCarStore } from '../store/useCarStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { Colors } from '../constants/colors';
-import ThemeSwitch from './ThemeSwitch';
 
 const SIDEBAR_W = 215;
 const AUTH_ROUTES = ['/', '/login', '/register'];
@@ -23,7 +22,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { width } = Dimensions.get('window');
   const { user, logout, canAddCar } = useCarStore();
-  const { theme, toggleTheme } = useThemeStore();
+  const { theme } = useThemeStore();
   const isLight = theme === 'light';
   const [showLimitModal, setShowLimitModal] = useState(false);
 
@@ -139,15 +138,6 @@ export default function Sidebar() {
             Mașinile mele
           </Text>
         </TouchableOpacity>
-        <View style={[styles.navItem, { justifyContent: 'space-between' }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <Text style={styles.navIcon}>{isDark ? '🌙' : '☀️'}</Text>
-            <Text style={[styles.navLabel, { color: subColor }]}>
-              {isDark ? 'Dark mode' : 'Light mode'}
-            </Text>
-          </View>
-          <ThemeSwitch isDark={isDark} onToggle={toggleTheme} />
-        </View>
       </View>
 
       <View style={{ flex: 1 }} />
