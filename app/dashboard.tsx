@@ -385,18 +385,18 @@ export default function HomeScreen() {
         {/* ── Premium modal ── */}
         <Modal visible={premiumModalVisible} transparent animationType="fade">
           <Pressable style={s.overlay} onPress={() => setPremiumModalVisible(false)}>
-            <Pressable style={[s.modalBox, { backgroundColor: tc.card, borderColor: tc.accent + '44' }]} onPress={() => {}}>
+            <Pressable style={[s.modalBox, s.limitModalBox]} onPress={() => {}}>
               <Text style={s.modalIcon}>🔒</Text>
-              <Text style={[s.modalTitle, { color: tc.text }]}>Limită atinsă</Text>
-              <Text style={[s.modalText, { color: tc.sub }]}>
+              <Text style={[s.modalTitle, { color: Colors.danger }]}>Limită atinsă</Text>
+              <Text style={[s.modalText, { color: Colors.gray700 }]}>
                 Contul gratuit permite o singură mașină.{'\n'}
-                Treci la <Text style={[s.modalBold, { color: tc.text }]}>CarNet Premium</Text> pentru mașini nelimitate.
+                Treci la <Text style={[s.modalBold, { color: Colors.primary }]}>CarNet Premium</Text> pentru mașini nelimitate.
               </Text>
-              <TouchableOpacity style={s.modalBtn} onPress={() => { setPremiumModalVisible(false); router.push('/premium'); }}>
+              <TouchableOpacity style={[s.modalBtn, { backgroundColor: Colors.primary }]} onPress={() => { setPremiumModalVisible(false); router.push('/premium'); }}>
                 <Text style={s.modalBtnText}>👑  Upgrade Premium</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setPremiumModalVisible(false)}>
-                <Text style={[s.modalCancel, { color: tc.muted }]}>Anulează</Text>
+                <Text style={[s.modalCancel, { color: Colors.gray400 }]}>Anulează</Text>
               </TouchableOpacity>
             </Pressable>
           </Pressable>
@@ -578,6 +578,11 @@ const s = StyleSheet.create({
   modalBox: {
     borderRadius: 24, borderWidth: 1.5, padding: 28,
     alignItems: 'center', width: '100%', maxWidth: 340,
+  },
+  limitModalBox: {
+    backgroundColor: Colors.white,
+    borderColor: Colors.danger,
+    borderWidth: 2.5,
   },
   modalIcon: { fontSize: 48, marginBottom: 12 },
   modalTitle: { fontSize: 20, fontWeight: '800', marginBottom: 10 },
