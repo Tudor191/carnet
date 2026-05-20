@@ -164,6 +164,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [premiumModalVisible, setPremiumModalVisible] = useState(false);
+  const [upsellVisible, setUpsellVisible] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ visible: boolean; carId: string; carName: string }>({
     visible: false, carId: '', carName: '',
   });
@@ -221,7 +222,7 @@ export default function HomeScreen() {
           </View>
           <View style={s.navRight}>
             {!user?.isPremium && (
-              <TouchableOpacity style={s.freePill} onPress={() => setPremiumModalVisible(true)}>
+              <TouchableOpacity style={s.freePill} onPress={() => setUpsellVisible(true)}>
                 <Text style={s.freePillText}>GRATUIT</Text>
               </TouchableOpacity>
             )}
@@ -423,6 +424,53 @@ export default function HomeScreen() {
           </Pressable>
         </Modal>
 
+        {/* ── Premium upsell modal (GRATUIT pill) ── */}
+        <Modal visible={upsellVisible} transparent animationType="fade">
+          <Pressable style={s.overlay} onPress={() => setUpsellVisible(false)}>
+            <Pressable style={[s.modalBox, s.upsellBox]} onPress={() => {}}>
+              <LinearGradient
+                colors={['#92400E', '#B45309', '#D97706']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                style={s.upsellCrownWrap}
+              >
+                <Text style={s.upsellCrownIcon}>👑</Text>
+              </LinearGradient>
+              <Text style={s.upsellTitle}>CarNet Premium</Text>
+              <Text style={s.upsellSub}>Deblochează tot potențialul aplicației</Text>
+              <View style={s.upsellFeatures}>
+                {[
+                  ['🚗', 'Mașini nelimitate'],
+                  ['🔔', 'Notificări expirare'],
+                  ['☁️', 'Backup în cloud'],
+                  ['📄', 'Export PDF'],
+                ].map(([icon, label]) => (
+                  <View key={label} style={s.upsellFeatureRow}>
+                    <Text style={s.upsellFeatureIcon}>{icon}</Text>
+                    <Text style={s.upsellFeatureLabel}>{label}</Text>
+                    <Text style={s.upsellFeatureCheck}>✓</Text>
+                  </View>
+                ))}
+              </View>
+              <TouchableOpacity
+                style={s.upsellBtn}
+                onPress={() => { setUpsellVisible(false); router.push('/premium'); }}
+                activeOpacity={0.85}
+              >
+                <LinearGradient
+                  colors={['#B45309', '#D97706', '#F59E0B']}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  style={s.upsellBtnGrad}
+                >
+                  <Text style={s.upsellBtnText}>👑  Vezi planurile Premium</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setUpsellVisible(false)}>
+                <Text style={[s.modalCancel, { color: Colors.gray400 }]}>Mai târziu</Text>
+              </TouchableOpacity>
+            </Pressable>
+          </Pressable>
+        </Modal>
+
       </SafeAreaView>
     </View>
   );
@@ -595,6 +643,32 @@ const s = StyleSheet.create({
   },
   modalBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
   modalCancel: { fontSize: 13, fontWeight: '500' },
+
+  upsellBox: {
+    backgroundColor: Colors.white,
+    borderColor: '#D97706',
+    borderWidth: 2.5,
+  },
+  upsellCrownWrap: {
+    width: 64, height: 64, borderRadius: 20,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 14,
+  },
+  upsellCrownIcon: { fontSize: 30 },
+  upsellTitle: { fontSize: 22, fontWeight: '900', color: '#92400E', marginBottom: 4, letterSpacing: 0.3 },
+  upsellSub: { fontSize: 13, color: Colors.gray500, textAlign: 'center', marginBottom: 18 },
+  upsellFeatures: { width: '100%', gap: 10, marginBottom: 22 },
+  upsellFeatureRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#FFFBEB', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 9,
+    borderWidth: 1, borderColor: '#FDE68A',
+  },
+  upsellFeatureIcon: { fontSize: 16, width: 22 },
+  upsellFeatureLabel: { flex: 1, fontSize: 13, fontWeight: '600', color: Colors.gray700 },
+  upsellFeatureCheck: { fontSize: 13, fontWeight: '800', color: '#D97706' },
+  upsellBtn: { width: '100%', borderRadius: 14, overflow: 'hidden', marginBottom: 12 },
+  upsellBtnGrad: { paddingVertical: 14, alignItems: 'center', justifyContent: 'center' },
+  upsellBtnText: { color: '#fff', fontSize: 15, fontWeight: '900', letterSpacing: 0.4 },
 });
 
 const dd = StyleSheet.create({
