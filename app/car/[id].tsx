@@ -26,6 +26,7 @@ import {
   saveCredentials,
   clearCredentials,
 } from '../../services/erovinieta';
+import { lookupRCA, RcaLookupResult } from '../../services/rcaLookup';
 
 function DateField({ label, value, onSave, tc }: {
   label: string; value?: string; onSave: (v: string) => void; tc: ThemeColors;
@@ -222,6 +223,8 @@ export default function CarDetailScreen() {
   const car = cars.find(c => c.id === id);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [rcaLookupLoading, setRcaLookupLoading] = useState(false);
+  const [rcaLookupResult, setRcaLookupResult] = useState<RcaLookupResult | null>(null);
   const [rovinetaChecking, setRovinetaChecking] = useState(false);
   const [creds, setCreds] = useState<ErovinetaCreds | null>(null);
   const [showCredsForm, setShowCredsForm] = useState(false);
@@ -242,6 +245,23 @@ export default function CarDetailScreen() {
     setShowCredsForm(false);
     setCredsSaving(false);
     if (car?.registrationNumber) triggerCheck(newCreds, car.registrationNumber);
+  };
+
+  const handleRcaAutoDetect = async () => {
+    if (!car?.registrationNumber) return;
+    setRcaLookupLoading(true);
+    setRcaLookupResult(null);
+    const result = await lookupRCA(car.registrationNumber);
+    setRcaLookupResult(result);
+    if (result.expiryFormatted) {
+      await updateCar(car.id, {
+        insuranceExpiry: result.expiryFormatted,
+        ...(result.asigurator ? { insuranceName: result.asigurator } : {}),
+      });
+    } else if (result.asigurator) {
+      await updateCar(car.id, { insuranceName: result.asigurator });
+    }
+    setRcaLookupLoading(false);
   };
 
   const handleClearCreds = async () => {
@@ -356,7 +376,55 @@ export default function CarDetailScreen() {
           {/* Documents & expiry */}
           <View style={[s.section, { backgroundColor: tc.card, borderColor: tc.border, shadowColor: tc.shadowColor, shadowOpacity: tc.shadowOpacity }]}>
             <Text style={[s.sectionTitle, { color: tc.text }]}>Documente & Termene</Text>
+
             <DateField label="RCA / Asigurare" value={car.insuranceExpiry} onSave={v => updateCar(car.id, { insuranceExpiry: v || undefined })} tc={tc} />
+
+            {/* Auto-detect RCA via verificrca.ro */}
+            {car.registrationNumber && (
+              <View style={s.rcaDetectWrap}>
+                {car.insuranceName && !rcaLookupLoading && (
+                  <Text style={[s.rcaInsuranceName, { color: tc.sub }]}>
+                    🏢 {car.insuranceName}
+                  </Text>
+                )}
+                <TouchableOpacity
+                  style={[s.rcaDetectBtn, { borderColor: Colors.accent + '50', backgroundColor: Colors.accent + '10' }, rcaLookupLoading && { opacity: 0.6 }]}
+                  onPress={handleRcaAutoDetect}
+                  disabled={rcaLookupLoading}
+                  activeOpacity={0.75}
+                >
+                  {rcaLookupLoading
+                    ? <ActivityIndicator size="small" color={Colors.accent} />
+                    : <Text style={[s.rcaDetectBtnText, { color: Colors.accent }]}>🔍 Detectează automat RCA</Text>
+                  }
+                </TouchableOpacity>
+                {rcaLookupResult && !rcaLookupLoading && (
+                  <View style={[s.rcaResultBadge, {
+                    backgroundColor: rcaLookupResult.status === 'valid' ? Colors.success + '15'
+                      : rcaLookupResult.status === 'not_found' ? Colors.danger + '15'
+                      : Colors.warning + '15',
+                    borderColor: rcaLookupResult.status === 'valid' ? Colors.success + '50'
+                      : rcaLookupResult.status === 'not_found' ? Colors.danger + '50'
+                      : Colors.warning + '50',
+                  }]}>
+                    <Text style={[s.rcaResultText, {
+                      color: rcaLookupResult.status === 'valid' ? Colors.success
+                        : rcaLookupResult.status === 'not_found' ? Colors.danger
+                        : Colors.warning,
+                    }]}>
+                      {rcaLookupResult.status === 'valid' && '✓ RCA activ'}
+                      {rcaLookupResult.status === 'warning' && '⚠️ RCA expiră curând'}
+                      {rcaLookupResult.status === 'expired' && '✗ RCA expirat'}
+                      {rcaLookupResult.status === 'not_found' && '✗ RCA negăsit'}
+                      {rcaLookupResult.status === 'processing' && '⏳ Se procesează — încearcă din nou'}
+                      {rcaLookupResult.status === 'error' && '⚠️ Eroare — verifică conexiunea'}
+                      {rcaLookupResult.asigurator && ` · ${rcaLookupResult.asigurator}`}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
             <View style={[s.divider, { backgroundColor: tc.border }]} />
             <DateField label="ITP (Inspecție Tehnică Periodică)" value={car.itpExpiry} onSave={v => updateCar(car.id, { itpExpiry: v || undefined })} tc={tc} />
           </View>
@@ -527,6 +595,16 @@ const s = StyleSheet.create({
   modalDeleteBtn: { backgroundColor: Colors.danger, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 28, marginBottom: 12, width: '100%', alignItems: 'center' },
   modalDeleteBtnText: { color: Colors.white, fontSize: 15, fontWeight: '800' },
   modalCancelText: { fontSize: 13, fontWeight: '500' },
+  rcaDetectWrap: { marginTop: 6, marginBottom: 4, gap: 8 },
+  rcaInsuranceName: { fontSize: 12, fontWeight: '600', paddingLeft: 2 },
+  rcaDetectBtn: {
+    borderWidth: 1, borderRadius: 10,
+    paddingVertical: 9, paddingHorizontal: 14,
+    alignItems: 'center', flexDirection: 'row', justifyContent: 'center',
+  },
+  rcaDetectBtnText: { fontSize: 13, fontWeight: '600' },
+  rcaResultBadge: { borderWidth: 1, borderRadius: 10, paddingVertical: 8, paddingHorizontal: 12 },
+  rcaResultText: { fontSize: 12, fontWeight: '600', textAlign: 'center' },
 });
 
 const df = StyleSheet.create({
