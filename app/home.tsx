@@ -8,12 +8,12 @@ import {
   Pressable,
   TextInput,
   Animated,
-  Easing,
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Rect as SvgRect } from 'react-native-svg';
 import { useThemeStore } from '../store/useThemeStore';
 import { DARK, LIGHT, ThemeColors } from '../constants/themes';
 import ThemeSwitch from '../components/ThemeSwitch';
@@ -67,6 +67,20 @@ function NavButton({
   );
 }
 
+// ─── German flag SVG (emoji renders as "DE" on Windows/Chrome) ────────────────
+
+function GermanFlag() {
+  return (
+    <View style={{ width: 44, height: 28, borderRadius: 5, overflow: 'hidden' }}>
+      <Svg width={44} height={28} viewBox="0 0 44 28">
+        <SvgRect x="0" y="0" width="44" height="10" fill="#000000" />
+        <SvgRect x="0" y="9" width="44" height="10" fill="#DD0000" />
+        <SvgRect x="0" y="18" width="44" height="10" fill="#FFCE00" />
+      </Svg>
+    </View>
+  );
+}
+
 // ─── Mock card ─────────────────────────────────────────────────────────────────
 
 function MockDocRow({ label, days, color }: { label: string; days: number; color: string }) {
@@ -105,7 +119,7 @@ function MockCard({ floatY, colors }: { floatY: Animated.Value; colors: ThemeCol
         <View style={[m.glow, { backgroundColor: colors.accent + '18' }]} />
 
         <View style={m.head}>
-          <Text style={m.flag}>🇩🇪</Text>
+          <GermanFlag />
           <View style={m.headText}>
             <Text style={[m.make, { color: nameCol }]}>BMW 3 Series</Text>
             <Text style={[m.gen, { color: genCol }]}>G20 · 2022 · EU</Text>
@@ -125,6 +139,7 @@ function MockCard({ floatY, colors }: { floatY: Animated.Value; colors: ThemeCol
 
 const m = StyleSheet.create({
   wrap: {
+    width: 300,
     borderRadius: 22,
     overflow: 'hidden',
     borderWidth: 1,
@@ -132,13 +147,12 @@ const m = StyleSheet.create({
     shadowRadius: 28,
     elevation: 14,
   },
-  card: { padding: 26, overflow: 'hidden' },
+  card: { padding: 22, overflow: 'hidden' },
   glow: {
     position: 'absolute', top: -40, right: -40,
     width: 140, height: 140, borderRadius: 70,
   },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 18 },
-  flag: { fontSize: 34 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   headText: { flex: 1 },
   make: { fontSize: 19, fontWeight: '700' },
   gen: { fontSize: 14, marginTop: 3 },
@@ -277,6 +291,7 @@ export default function HomeScreen() {
 
   const fade = [0, 1, 2, 3].map(() => useRef(new Animated.Value(0)).current);
   const floatY = useRef(new Animated.Value(0)).current;
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     Animated.stagger(
@@ -284,22 +299,16 @@ export default function HomeScreen() {
       fade.map(a => Animated.spring(a, { toValue: 1, useNativeDriver: true, tension: 50, friction: 8 })),
     ).start();
 
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatY, {
-          toValue: -14,
-          duration: 3200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatY, {
-          toValue: 0,
-          duration: 3200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
+    // Pure cosine float: runs via requestAnimationFrame for true 60fps on web
+    let start = 0;
+    const loop = (ts: number) => {
+      if (!start) start = ts;
+      const t = ((ts - start) % 5000) / 5000; // 0..1 over 5s
+      floatY.setValue(-6 * (1 - Math.cos(2 * Math.PI * t))); // 0 → -12 → 0
+      rafRef.current = requestAnimationFrame(loop);
+    };
+    rafRef.current = requestAnimationFrame(loop);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, []);
 
   const anim = (i: number) => ({
