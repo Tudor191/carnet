@@ -8,6 +8,8 @@ import {
   Pressable,
   TextInput,
   Animated,
+  Easing,
+  Platform,
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -96,50 +98,71 @@ function MockDocRow({ label, days, color }: { label: string; days: number; color
 }
 
 function MockCard({ floatY, colors }: { floatY: Animated.Value; colors: ThemeColors }) {
+  // On web: inject CSS keyframes once and let the GPU compositor handle the float
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const id = 'cn-float-css';
+    if (!document.getElementById(id)) {
+      const el = document.createElement('style');
+      el.id = id;
+      el.textContent =
+        '@keyframes cnFloat{0%,100%{transform:translateY(0px)}50%{transform:translateY(-12px)}}';
+      document.head.appendChild(el);
+    }
+  }, []);
+
   const isDark = colors === DARK;
   const cardGrad = isDark ? ['#122244', '#090F20'] : ['#FFFFFF', '#F0F6FF'];
   const borderCol = isDark ? '#1E3870' : colors.border;
   const nameCol = isDark ? '#FFFFFF' : colors.text;
   const genCol = isDark ? '#7A95B8' : colors.sub;
   const sepCol = isDark ? '#1A3050' : colors.border;
+  const shadow = {
+    shadowColor: isDark ? colors.accent : '#1A3060',
+    shadowOpacity: isDark ? 0.25 : 0.14,
+  };
 
+  const inner = (
+    <LinearGradient colors={cardGrad as [string, string]} style={m.card}>
+      <View style={[m.glow, { backgroundColor: colors.accent + '18' }]} />
+      <View style={m.head}>
+        <GermanFlag />
+        <View style={m.headText}>
+          <Text style={[m.make, { color: nameCol }]}>BMW 3 Series</Text>
+          <Text style={[m.gen, { color: genCol }]}>G20 · 2022 · EU</Text>
+        </View>
+        <View style={[m.onlineDot, { backgroundColor: colors.green, shadowColor: colors.green }]} />
+      </View>
+      <View style={[m.sep, { backgroundColor: sepCol }]} />
+      <MockDocRow label="RCA" days={45} color={colors.green} />
+      <MockDocRow label="ITP" days={118} color={colors.green} />
+      <MockDocRow label="Rovinieta" days={12} color={colors.warn} />
+    </LinearGradient>
+  );
+
+  if (Platform.OS === 'web') {
+    // Plain View + CSS animation = GPU compositor, no JS thread involved
+    return (
+      <View
+        style={[m.wrap, { borderColor: borderCol, ...shadow },
+          { animation: 'cnFloat 5s ease-in-out infinite' } as any]}
+      >
+        {inner}
+      </View>
+    );
+  }
   return (
     <Animated.View
-      style={[
-        m.wrap,
-        {
-          borderColor: borderCol,
-          shadowColor: isDark ? colors.accent : '#1A3060',
-          shadowOpacity: isDark ? 0.25 : 0.14,
-          transform: [{ translateY: floatY }],
-        },
-      ]}
+      style={[m.wrap, { borderColor: borderCol, ...shadow, transform: [{ translateY: floatY }] }]}
     >
-      <LinearGradient colors={cardGrad as [string, string]} style={m.card}>
-        <View style={[m.glow, { backgroundColor: colors.accent + '18' }]} />
-
-        <View style={m.head}>
-          <GermanFlag />
-          <View style={m.headText}>
-            <Text style={[m.make, { color: nameCol }]}>BMW 3 Series</Text>
-            <Text style={[m.gen, { color: genCol }]}>G20 · 2022 · EU</Text>
-          </View>
-          <View style={[m.onlineDot, { backgroundColor: colors.green, shadowColor: colors.green }]} />
-        </View>
-
-        <View style={[m.sep, { backgroundColor: sepCol }]} />
-
-        <MockDocRow label="RCA" days={45} color={colors.green} />
-        <MockDocRow label="ITP" days={118} color={colors.green} />
-        <MockDocRow label="Rovinieta" days={12} color={colors.warn} />
-      </LinearGradient>
+      {inner}
     </Animated.View>
   );
 }
 
 const m = StyleSheet.create({
   wrap: {
-    width: 300,
+    width: 360,
     borderRadius: 22,
     overflow: 'hidden',
     borderWidth: 1,
@@ -299,12 +322,15 @@ export default function HomeScreen() {
       fade.map(a => Animated.spring(a, { toValue: 1, useNativeDriver: true, tension: 50, friction: 8 })),
     ).start();
 
-    // Pure cosine float: runs via requestAnimationFrame for true 60fps on web
+    // Web: CSS animation handles the float (GPU compositor)
+    // Native: Animated.loop with cosine interpolation via RAF
+    if (Platform.OS === 'web') return;
+
     let start = 0;
     const loop = (ts: number) => {
       if (!start) start = ts;
-      const t = ((ts - start) % 5000) / 5000; // 0..1 over 5s
-      floatY.setValue(-6 * (1 - Math.cos(2 * Math.PI * t))); // 0 → -12 → 0
+      const t = ((ts - start) % 5000) / 5000;
+      floatY.setValue(-6 * (1 - Math.cos(2 * Math.PI * t)));
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
