@@ -17,7 +17,6 @@ export interface Car {
   registrationNumber?: string;
   rovinetaExpiry?: string;
   insuranceExpiry?: string;
-  insuranceName?: string;  // auto-detected from verificrca.ro
   itpExpiry?: string;
   origin?: VehicleOrigin;
   generation?: string;
