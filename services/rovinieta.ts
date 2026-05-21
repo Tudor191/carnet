@@ -13,11 +13,13 @@ export function validateRomanianPlate(plate: string): boolean {
 
 export function formatPlate(plate: string): string {
   const normalized = plate.replace(/[\s\-\.]/g, '').toUpperCase();
-  if (normalized.startsWith('B')) {
+  // Bucharest: B followed immediately by a digit (e.g. B12ADC, B191TDR)
+  if (/^B\d/.test(normalized)) {
     const digits = normalized.slice(1).match(/^\d+/)?.[0] || '';
     const letters = normalized.slice(1 + digits.length);
     return `B-${digits}-${letters}`;
   }
+  // County code: first 2 letters (e.g. BT, CJ, SV...)
   const county = normalized.slice(0, 2);
   const rest = normalized.slice(2);
   const digits = rest.match(/^\d+/)?.[0] || '';

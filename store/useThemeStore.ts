@@ -11,7 +11,7 @@ interface ThemeStore {
 }
 
 export const useThemeStore = create<ThemeStore>((set, get) => ({
-  theme: 'dark',
+  theme: 'light',
 
   toggleTheme: async () => {
     const next: ThemeKey = get().theme === 'dark' ? 'light' : 'dark';
