@@ -1,115 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { G, Rect, Circle, Path } from 'react-native-svg';
+import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/colors';
 
-const { width: W } = Dimensions.get('window');
-const SVG_W = Math.min(W * 0.72, 300);
-const SVG_H = SVG_W * 0.8;
+const TRACK_WIDTH = 160;
+const TOTAL_MS = 2000;
 
-// ── Wheel component with animated spokes ──────────────────────────────────────
-function Wheel({ cx, cy, r, rotation }: { cx: number; cy: number; r: number; rotation: number }) {
-  const spokeDeg = rotation % 360;
-  // 4 spokes at 90° intervals, drawn as 2 crossing lines
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const spokes = [0, 45].map(offset => {
-    const a1 = toRad(spokeDeg + offset);
-    const a2 = toRad(spokeDeg + offset + 180);
-    return {
-      x1: cx + Math.cos(a1) * r,
-      y1: cy + Math.sin(a1) * r,
-      x2: cx + Math.cos(a2) * r,
-      y2: cy + Math.sin(a2) * r,
-    };
-  });
-
-  return (
-    <G>
-      {/* Tire */}
-      <Circle cx={cx} cy={cy} r={r} fill="#000000" />
-      {/* Spokes */}
-      {spokes.map((s, i) => (
-        <Path
-          key={i}
-          d={`M${s.x1} ${s.y1} L${s.x2} ${s.y2}`}
-          stroke="#94A3B8"
-          strokeWidth={1.5}
-        />
-      ))}
-      {/* Hub */}
-      <Circle cx={cx} cy={cy} r={r * 0.28} fill="#64748B" />
-      <Circle cx={cx} cy={cy} r={r * 0.12} fill="#CBD5E1" />
-    </G>
-  );
-}
-
-// ── Road dash component ───────────────────────────────────────────────────────
-function RoadDashes({ offset, y, xStart, xEnd }: { offset: number; y: number; xStart: number; xEnd: number }) {
-  const dashW = 28;
-  const gap = 18;
-  const step = dashW + gap;
-  const dashes = [];
-  for (let x = xStart + (offset % step) - step; x < xEnd + dashW; x += step) {
-    const cx = Math.max(x, xStart);
-    const ce = Math.min(x + dashW, xEnd);
-    if (ce > cx) {
-      dashes.push(
-        <Rect key={x} x={cx} y={y} width={ce - cx} height={3} rx={1.5} fill="#64748B" opacity={0.9} />
-      );
-    }
-  }
-  return <G>{dashes}</G>;
-}
-
-// ── Main Loading Screen ───────────────────────────────────────────────────────
 export default function LoadingScreen() {
-  const [tick, setTick] = useState(0);
   const [dots, setDots] = useState('');
-  const startTime = useRef(Date.now());
+  const startTimeRef = useRef(Date.now());
+  const [fillWidth, setFillWidth] = useState(0);
+  const scaleAnim = useRef(new Animated.Value(0.7)).current;
+  const glowAnim = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
-    // Reset start time every time the component mounts
-    startTime.current = Date.now();
-    // Animation loop ~60fps
-    const id = setInterval(() => setTick(t => t + 1), 16);
+    startTimeRef.current = Date.now();
+    const id = setInterval(() => {
+      const elapsed = Date.now() - startTimeRef.current;
+      setFillWidth(Math.min(elapsed / TOTAL_MS, 1) * TRACK_WIDTH);
+    }, 16);
     return () => clearInterval(id);
   }, []);
 
   useEffect(() => {
-    // Loading dots cycle
     const id = setInterval(() => {
       setDots(d => (d.length >= 3 ? '' : d + '.'));
     }, 400);
     return () => clearInterval(id);
   }, []);
 
-  // Animation values derived from tick
-  const wheelDeg = (tick * 4) % 360;           // wheel rotation speed
-  const roadOffset = (tick * 1.8) % (28 + 18); // road dash scroll speed
-  const bobY = Math.sin(tick * 0.18) * 1.2;    // subtle car body bob
-
-  // Progress bar: linear 0→100% over 2000ms
-  const TOTAL_MS = 2000;
-  const elapsed = Date.now() - startTime.current;
-  const progress = Math.min(elapsed / TOTAL_MS, 1) * 100;
-
-  // ── SVG coordinate constants ─────────────────────────────────────────────
-  const VW = 200;  // viewBox width
-  const VH = 160;  // viewBox height
-
-  // Notebook
-  const NB = { x: 14, y: 8, w: 172, h: 145, rx: 14 };
-  const COVER_H = 22;
-
-  // Car (centered in notebook content area)
-  const WR = 13;       // wheel radius
-  const LWX = 58;      // left wheel X
-  const RWX = 142;     // right wheel X
-  const WY = 103;      // wheel center Y  (road surface)
-
-  // Car body & roof offset by bobY for the driving feel
-  const carBob = bobY;
+  useEffect(() => {
+    Animated.spring(scaleAnim, { toValue: 1, tension: 60, friction: 7, useNativeDriver: true }).start();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, { toValue: 1, duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(glowAnim, { toValue: 0.4, duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
 
   return (
     <LinearGradient
@@ -118,131 +46,18 @@ export default function LoadingScreen() {
       end={{ x: 0.4, y: 1 }}
       style={styles.container}
     >
-      {/* Animated SVG */}
-      <Svg
-        width={SVG_W}
-        height={SVG_H}
-        viewBox={`0 0 ${VW} ${VH}`}
-        style={styles.svg}
-      >
-        {/* ── Notebook shadow ── */}
-        <Rect
-          x={NB.x + 4} y={NB.y + 4}
-          width={NB.w} height={NB.h}
-          rx={NB.rx}
-          fill="#000" opacity={0.3}
-        />
+      <Animated.View style={[styles.iconWrap, { transform: [{ scale: scaleAnim }] }]}>
+        <Animated.View style={[styles.glow, { opacity: glowAnim }]} />
+        <View style={styles.iconCircle}>
+          <Text style={styles.carEmoji}>🚗</Text>
+        </View>
+      </Animated.View>
 
-        {/* ── Notebook body ── */}
-        <Rect
-          x={NB.x} y={NB.y}
-          width={NB.w} height={NB.h}
-          rx={NB.rx}
-          fill="#F8FAFC"
-        />
-
-        {/* ── Notebook cover (top bar) ── */}
-        <Rect
-          x={NB.x} y={NB.y}
-          width={NB.w} height={COVER_H}
-          rx={NB.rx}
-          fill={Colors.secondary}
-        />
-        <Rect
-          x={NB.x} y={NB.y + NB.rx}
-          width={NB.w} height={COVER_H - NB.rx}
-          fill={Colors.secondary}
-        />
-
-        {/* ── Spiral binding ── */}
-        {[18, 30, 42, 54, 66, 78, 90, 102, 114, 126, 138].map((y) => (
-          <G key={y}>
-            <Circle cx={NB.x} cy={y} r={5} fill={Colors.primary} />
-            <Circle cx={NB.x} cy={y} r={2.8} fill={Colors.accent} opacity={0.6} />
-          </G>
-        ))}
-
-        {/* ── Notebook lines — above car ── */}
-        <Rect x={NB.x + 14} y={35} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
-        <Rect x={NB.x + 14} y={42} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
-        <Rect x={NB.x + 14} y={49} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
-
-        {/* ── Road surface + dashes clipped to notebook width ── */}
-        <G>
-          <Rect
-            x={NB.x + 1} y={WY + WR}
-            width={NB.w - 2} height={18}
-            fill="#000000" opacity={0.9}
-          />
-          <RoadDashes offset={roadOffset} y={WY + WR + 6} xStart={NB.x + 1} xEnd={NB.x + NB.w - 1} />
-        </G>
-
-        {/* ── Notebook lines — below road ── */}
-        <Rect x={NB.x + 14} y={130} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
-        <Rect x={NB.x + 14} y={137} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.7} />
-        <Rect x={NB.x + 14} y={144} width={NB.w - 22} height={2} rx={1} fill={Colors.gray200} opacity={0.4} />
-
-        {/* ── Car body (bobs slightly) ── */}
-        <G y={carBob}>
-          {/* Car undercarriage / body */}
-          <Path
-            d={`M${LWX - 26} ${WY} L${LWX - 18} ${WY - 16} L${LWX + 4} ${WY - 22} L${RWX - 4} ${WY - 22} L${RWX + 18} ${WY - 16} L${RWX + 26} ${WY} Z`}
-            fill={Colors.secondary}
-          />
-          {/* Car roof */}
-          <Path
-            d={`M${LWX - 4} ${WY - 22} L${LWX + 6} ${WY - 38} L${RWX - 6} ${WY - 38} L${RWX + 4} ${WY - 22} Z`}
-            fill={Colors.primary}
-          />
-          {/* Left window */}
-          <Path
-            d={`M${LWX - 2} ${WY - 22} L${LWX + 5} ${WY - 36} H${100} V${WY - 22} Z`}
-            fill={Colors.accentLight}
-            opacity={0.5}
-          />
-          {/* Right window */}
-          <Path
-            d={`M${102} ${WY - 36} H${RWX - 5} L${RWX + 2} ${WY - 22} H${102} Z`}
-            fill={Colors.accentLight}
-            opacity={0.5}
-          />
-          {/* Window divider */}
-          <Path
-            d={`M100 ${WY - 36} L100 ${WY - 22}`}
-            stroke={Colors.primary} strokeWidth={1.5}
-          />
-          {/* Headlight */}
-          <Rect
-            x={RWX + 18} y={WY - 12}
-            width={8} height={5}
-            rx={2}
-            fill="#FCD34D"
-            opacity={0.9}
-          />
-          {/* Taillight */}
-          <Rect
-            x={LWX - 27} y={WY - 12}
-            width={6} height={5}
-            rx={2}
-            fill="#EF4444"
-            opacity={0.8}
-          />
-        </G>
-
-        {/* ── Wheels (outside car body group, so bob doesn't affect them) ── */}
-        <Wheel cx={LWX} cy={WY} r={WR} rotation={wheelDeg} />
-        <Wheel cx={RWX} cy={WY} r={WR} rotation={wheelDeg} />
-      </Svg>
-
-      {/* App name */}
       <Text style={styles.appName}>CarNet</Text>
       <Text style={styles.tagline}>Se încarcă{dots}</Text>
 
-      {/* Loading bar */}
       <View style={styles.loadingBarTrack}>
-        <View
-          style={[styles.loadingBarFill, { width: `${progress}%` }]}
-        />
+        <View style={[styles.loadingBarFill, { width: fillWidth }]} />
       </View>
     </LinearGradient>
   );
@@ -253,10 +68,31 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
-  svg: {
-    marginBottom: 8,
+  iconWrap: {
+    marginBottom: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  glow: {
+    position: 'absolute',
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: Colors.accent,
+  },
+  iconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  carEmoji: {
+    fontSize: 44,
   },
   appName: {
     color: Colors.white,
@@ -270,17 +106,18 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     minWidth: 100,
     textAlign: 'center',
+    marginTop: 6,
   },
   loadingBarTrack: {
-    width: 160,
+    width: TRACK_WIDTH,
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 2,
-    marginTop: 16,
+    marginTop: 20,
     overflow: 'hidden',
   },
   loadingBarFill: {
-    height: '100%',
+    height: 4,
     backgroundColor: Colors.accent,
     borderRadius: 2,
   },

@@ -15,7 +15,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Rect as SvgRect } from 'react-native-svg';
 import { useThemeStore } from '../store/useThemeStore';
 import { DARK, LIGHT, ThemeColors } from '../constants/themes';
 import ThemeSwitch from '../components/ThemeSwitch';
@@ -69,16 +68,14 @@ function NavButton({
   );
 }
 
-// ─── German flag SVG (emoji renders as "DE" on Windows/Chrome) ────────────────
+// ─── German flag (pure Views — avoids react-native-svg Fabric issues) ─────────
 
 function GermanFlag() {
   return (
     <View style={{ width: 44, height: 28, borderRadius: 5, overflow: 'hidden' }}>
-      <Svg width={44} height={28} viewBox="0 0 44 28">
-        <SvgRect x="0" y="0" width="44" height="10" fill="#000000" />
-        <SvgRect x="0" y="9" width="44" height="10" fill="#DD0000" />
-        <SvgRect x="0" y="18" width="44" height="10" fill="#FFCE00" />
-      </Svg>
+      <View style={{ flex: 1, backgroundColor: '#000000' }} />
+      <View style={{ flex: 1, backgroundColor: '#DD0000' }} />
+      <View style={{ flex: 1, backgroundColor: '#FFCE00' }} />
     </View>
   );
 }

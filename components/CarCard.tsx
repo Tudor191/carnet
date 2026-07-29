@@ -8,7 +8,6 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
 import { Car } from '../types';
 import { Colors } from '../constants/colors';
 import { formatPlate } from '../services/rovinieta';
@@ -68,22 +67,28 @@ function OriginBadge({ origin }: { origin?: string }) {
   return null;
 }
 
-function CarSilhouette({ color }: { color: string }) {
+// Pure View-based car silhouette — avoids react-native-svg Fabric prop-type issues
+function CarSilhouette() {
   return (
-    <Svg width={120} height={58} viewBox="0 0 140 70">
-      <Path d="M10 48 L15 32 L28 22 L88 22 L102 32 L118 48 Z" fill={color} opacity={0.25} />
-      <Path d="M30 32 L38 14 H88 L98 32 Z" fill={color} opacity={0.3} />
-      <Path d="M34 32 L41 17 H85 L92 32 Z" fill={color} opacity={0.15} />
-      <Path d="M8 48 H122" stroke={color} strokeWidth={2.5} opacity={0.4} />
-      <Circle cx={32} cy={49} r={11} fill={color} opacity={0.35} />
-      <Circle cx={32} cy={49} r={6} fill={color} opacity={0.15} />
-      <Circle cx={32} cy={49} r={2} fill={color} opacity={0.3} />
-      <Circle cx={97} cy={49} r={11} fill={color} opacity={0.35} />
-      <Circle cx={97} cy={49} r={6} fill={color} opacity={0.15} />
-      <Circle cx={97} cy={49} r={2} fill={color} opacity={0.3} />
-      <Ellipse cx={112} cy={42} rx={6} ry={4} fill={color} opacity={0.4} />
-      <Ellipse cx={16} cy={42} rx={5} ry={3.5} fill={color} opacity={0.25} />
-    </Svg>
+    <View style={{ width: 120, height: 58, marginTop: 2, marginBottom: 2 }}>
+      {/* Road line */}
+      <View style={{ position: 'absolute', top: 40, left: 5, right: 5, height: 2, backgroundColor: 'rgba(255,255,255,0.4)' }} />
+      {/* Body */}
+      <View style={{ position: 'absolute', top: 26, left: 8, right: 8, height: 15, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 4 }} />
+      {/* Cabin */}
+      <View style={{ position: 'absolute', top: 10, left: 25, right: 25, height: 18, backgroundColor: 'rgba(255,255,255,0.3)', borderTopLeftRadius: 6, borderTopRightRadius: 6 }} />
+      {/* Windows */}
+      <View style={{ position: 'absolute', top: 13, left: 27, width: 24, height: 11, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
+      <View style={{ position: 'absolute', top: 13, right: 27, width: 24, height: 11, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
+      {/* Left wheel */}
+      <View style={{ position: 'absolute', top: 30, left: 15, width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.35)' }}>
+        <View style={{ position: 'absolute', top: 6, left: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.15)' }} />
+      </View>
+      {/* Right wheel */}
+      <View style={{ position: 'absolute', top: 30, right: 15, width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.35)' }}>
+        <View style={{ position: 'absolute', top: 6, left: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.15)' }} />
+      </View>
+    </View>
   );
 }
 
@@ -166,7 +171,7 @@ export default function CarCard({ car, onPress }: Props) {
 
         {/* Car silhouette */}
         <View style={styles.silhouetteArea}>
-          <CarSilhouette color="#FFFFFF" />
+          <CarSilhouette />
         </View>
 
         {/* Chip + VIN */}
